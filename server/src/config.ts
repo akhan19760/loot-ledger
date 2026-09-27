@@ -11,6 +11,8 @@ const Env = z.object({
   DB_PATH: z.string().default("data/ugs.db"),
   // Still at the repo root while the Python scripts read it; moves to server/ at cleanup.
   STORES_FILE: z.string().default("../stores.json"),
+  // Pause between page requests to the same store, to be polite.
+  FETCH_DELAY_MS: z.coerce.number().int().min(0).default(1000),
 });
 
 const env = Env.parse(process.env);
