@@ -1,0 +1,9 @@
+[
+  {"id": "venturegames", "name": "Venture Games", "platform": "shopify",     "base": "https://www.venturegames.com.pk"},
+  {"id": "gamestop",     "name": "GameStop.pk",   "platform": "shopify",     "base": "https://gamestop.com.pk"},
+  {"id": "games4u",      "name": "Games4U",       "platform": "shopify",     "base": "https://games4u.pk"},
+  {"id": "khanani",      "name": "Khanani Store", "platform": "shopify",     "base": "https://khananistore.com"},
+  {"id": "gamepark",     "name": "GamePark",      "platform": "woocommerce", "base": "https://gamepark.pk", "link_style": "query"},
+  {"id": "gamesource",   "name": "GameSource",    "platform": "woocommerce", "base": "https://gamesource.pk"},
+  {"id": "skygames",     "name": "Sky Games",     "platform": "woocommerce", "base": "https://www.skygames.com.pk"}
+]

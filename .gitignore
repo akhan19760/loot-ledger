@@ -1,0 +1,10 @@
+raw/
+site/data.js
+__pycache__/
+*.pyc
+.claude/
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+server/data/
