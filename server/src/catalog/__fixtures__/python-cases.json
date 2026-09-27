@@ -1,0 +1,1036 @@
+{
+ "titles": [
+  {
+   "raw": "Pokémon Legends: Z-A - Nintendo Switch",
+   "clean": "Pokémon Legends: Z-A",
+   "key": "pokemon legends z a",
+   "platform": "Switch",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "God of War Ragnarök - PS5",
+   "clean": "God of War Ragnarök",
+   "key": "god of war ragnarok",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "FIFA 23 (Used) PS4",
+   "clean": "FIFA 23",
+   "key": "fifa 23",
+   "platform": "PS4",
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "raw": "Marvel's Spider-Man 2 Standard Edition PS5",
+   "clean": "Marvel's Spider-Man 2",
+   "key": "marvels spider man 2",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Marvel&#8217;s Spider-Man: Miles Morales PS4",
+   "clean": "Marvel’s Spider-Man: Miles Morales",
+   "key": "marvels spider man miles morales",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Final Fantasy VII Rebirth",
+   "clean": "Final Fantasy VII Rebirth",
+   "key": "final fantasy 7 rebirth",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "The Last of Us Part II Remastered PS5",
+   "clean": "The Last of Us Part II Remastered",
+   "key": "last of us 2 remastered",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Mouse: P.I. For Hire",
+   "clean": "Mouse: P.I. For Hire",
+   "key": "mouse p i for hire",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Sony PS5 DualSense Wireless Controller",
+   "clean": "Sony DualSense Wireless Controller",
+   "key": "sony dualsense wireless controller",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "PlayStation®5 Console Slim",
+   "clean": "Console Slim",
+   "key": "console slim",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "PlayStation 5 Pro Console 2TB",
+   "clean": "Pro Console 2TB",
+   "key": "pro console 2tb",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "$10 PSN Card",
+   "clean": "$10 PSN Card",
+   "key": "10 psn card",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Grand Theft Auto V – Premium Edition (PS4)",
+   "clean": "Grand Theft Auto V",
+   "key": "grand theft auto 5",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Uncharted: Legacy of Thieves Collection | PS5 | Brand New",
+   "clean": "Uncharted: Legacy of Thieves Collection",
+   "key": "uncharted legacy of thieves collection",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Wreckreation for - PS5",
+   "clean": "Wreckreation",
+   "key": "wreckreation",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Call of Duty®: Black Ops 6 - PS4",
+   "clean": "Call of Duty: Black Ops 6",
+   "key": "call of duty black ops 6",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Tom Clancy&#8217;s Rainbow Six Siege",
+   "clean": "Tom Clancy’s Rainbow Six Siege",
+   "key": "tom clancys rainbow six siege",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Assassin&#039;s Creed Mirage",
+   "clean": "Assassin's Creed Mirage",
+   "key": "assassins creed mirage",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Ghost of Tsushima Director&amp;s Cut",
+   "clean": "Ghost of Tsushima Director&s Cut",
+   "key": "ghost of tsushima director and s cut",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "EA SPORTS FC 25 R2",
+   "clean": "EA SPORTS FC 25",
+   "key": "ea sports fc 25",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "NHL 20 Arabic Version",
+   "clean": "NHL 20",
+   "key": "nhl 20",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Resident Evil 4 Gold Edition",
+   "clean": "Resident Evil 4",
+   "key": "resident evil 4",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Hogwarts Legacy Deluxe Edition Digital Code",
+   "clean": "Hogwarts Legacy",
+   "key": "hogwarts legacy",
+   "platform": null,
+   "condition": "new",
+   "digital": true
+  },
+  {
+   "raw": "Minecraft Nintendo Switch Game",
+   "clean": "Minecraft",
+   "key": "minecraft",
+   "platform": "Switch",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Halo Infinite Xbox Series X|S",
+   "clean": "Halo Infinite",
+   "key": "halo infinite",
+   "platform": "Xbox Series",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Mortal Kombat 1 Pre-Owned",
+   "clean": "Mortal Kombat 1",
+   "key": "mortal kombat 1",
+   "platform": null,
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "raw": "Elden Ring New",
+   "clean": "Elden Ring",
+   "key": "elden ring",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "ELDEN RING NEW",
+   "clean": "ELDEN RING",
+   "key": "elden ring",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Super Mario Bros.™ Wonder",
+   "clean": "Super Mario Bros. Wonder",
+   "key": "super mario bros wonder",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Café International PS5",
+   "clean": "Café International",
+   "key": "cafe international",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "PS5 Slim 1TB Digital Edition",
+   "clean": "Slim 1TB",
+   "key": "slim 1tb",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": true
+  },
+  {
+   "raw": "Nioh 2 Remastered – The Complete Edition",
+   "clean": "Nioh 2 Remastered – The",
+   "key": "nioh 2 remastered the",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Tekken 8 Launch Edition PS5",
+   "clean": "Tekken 8",
+   "key": "tekken 8",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Batman Arkham Knight (PlayStation Hits) PS4",
+   "clean": "Batman Arkham Knight",
+   "key": "batman arkham knight",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Crash Bandicoot N. Sane Trilogy – PS4 Games",
+   "clean": "Crash Bandicoot N. Sane Trilogy",
+   "key": "crash bandicoot n sane trilogy",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Stellar Blade – PS5 – Region 2",
+   "clean": "Stellar Blade",
+   "key": "stellar blade",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Horizon Forbidden West (Asian Version)",
+   "clean": "Horizon Forbidden West",
+   "key": "horizon forbidden west",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Rise of the Ronin (US) PS5",
+   "clean": "Rise of the Ronin",
+   "key": "rise of the ronin",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Astro Bot [ ] PS5",
+   "clean": "Astro Bot",
+   "key": "astro bot",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Death Stranding  -  -  Director's Cut",
+   "clean": "Death Stranding - Director's Cut",
+   "key": "death stranding directors cut",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Ōkami HD",
+   "clean": "Ōkami HD",
+   "key": "okami hd",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Ninja Gaiden Σ",
+   "clean": "Ninja Gaiden Σ",
+   "key": "ninja gaiden",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Tony Hawk's Pro Skater 1 + 2",
+   "clean": "Tony Hawk's Pro Skater 1 + 2",
+   "key": "tony hawks pro skater 1 2",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Need for Speed Unbound PS5 Game",
+   "clean": "Need for Speed Unbound",
+   "key": "need for speed unbound",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "LEGO® Star Wars™: The Skywalker Saga",
+   "clean": "LEGO Star Wars: The Skywalker Saga",
+   "key": "lego star wars the skywalker saga",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "It Takes Two FOR PS4",
+   "clean": "It Takes Two",
+   "key": "it takes two",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Spider-Man 2 PS5 Used\n",
+   "clean": "Spider-Man 2",
+   "key": "spider man 2",
+   "platform": "PS5",
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "raw": "Days Gone new\n",
+   "clean": "Days Gone",
+   "key": "days gone",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Split Fiction for",
+   "clean": "Split Fiction",
+   "key": "split fiction",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "PS VR2 Horizon Call of the Mountain Bundle",
+   "clean": "Horizon Call of the Mountain Bundle",
+   "key": "horizon call of the mountain bundle",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Nintendo Switch OLED Model",
+   "clean": "OLED Model",
+   "key": "oled model",
+   "platform": "Switch",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Xbox One X 1TB",
+   "clean": "1TB",
+   "key": "1tb",
+   "platform": "Xbox One",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Steam Deck OLED 512GB",
+   "clean": "Steam Deck OLED 512GB",
+   "key": "steam deck oled 512gb",
+   "platform": "PC",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "Cyberpunk 2077 Ultimate Edition PC",
+   "clean": "Cyberpunk 2077",
+   "key": "cyberpunk 2077",
+   "platform": "PC",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "  -  ",
+   "clean": "-",
+   "key": "",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "raw": "™",
+   "clean": "™",
+   "key": "tm",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  }
+ ],
+ "variants": [
+  {
+   "variant": "",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "variant": "",
+   "title": "Used Games Bundle",
+   "platform": null,
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "variant": "Used",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "variant": "Used",
+   "title": "Used Games Bundle",
+   "platform": null,
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "variant": "New / PS5",
+   "title": "Elden Ring PS4",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "variant": "New / PS5",
+   "title": "Used Games Bundle",
+   "platform": "PS5",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "variant": "Disc",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "variant": "Disc",
+   "title": "Used Games Bundle",
+   "platform": null,
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "variant": "Primary Account",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": true
+  },
+  {
+   "variant": "Primary Account",
+   "title": "Used Games Bundle",
+   "platform": null,
+   "condition": "used",
+   "digital": true
+  },
+  {
+   "variant": "PS4 - Pre-Owned",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "variant": "PS4 - Pre-Owned",
+   "title": "Used Games Bundle",
+   "platform": "PS4",
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "variant": "Brand New Sealed",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "variant": "Brand New Sealed",
+   "title": "Used Games Bundle",
+   "platform": null,
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "variant": "New Arrival",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": false
+  },
+  {
+   "variant": "New Arrival",
+   "title": "Used Games Bundle",
+   "platform": null,
+   "condition": "used",
+   "digital": false
+  },
+  {
+   "variant": "Digital Code",
+   "title": "Elden Ring PS4",
+   "platform": "PS4",
+   "condition": "new",
+   "digital": true
+  },
+  {
+   "variant": "Digital Code",
+   "title": "Used Games Bundle",
+   "platform": null,
+   "condition": "used",
+   "digital": true
+  }
+ ],
+ "kinds": [
+  {
+   "title": "Mouse: P.I. For Hire",
+   "meta": [
+    "PS5 Games"
+   ],
+   "kind": "game"
+  },
+  {
+   "title": "Mouse: P.I. For Hire",
+   "meta": [],
+   "kind": "hardware"
+  },
+  {
+   "title": "Wireless Mouse",
+   "meta": [
+    "Accessories"
+   ],
+   "kind": "hardware"
+  },
+  {
+   "title": "Spider-Man 2",
+   "meta": [
+    "Games"
+   ],
+   "kind": "game"
+  },
+  {
+   "title": "Spider-Man 2",
+   "meta": [
+    "Gaming Accessories"
+   ],
+   "kind": "hardware"
+  },
+  {
+   "title": "PlayStation Plus 12 Months",
+   "meta": [
+    "Gift Cards"
+   ],
+   "kind": "giftcard"
+  },
+  {
+   "title": "Minecraft",
+   "meta": [
+    "Gift Card",
+    "PS4 Games"
+   ],
+   "kind": "game"
+  },
+  {
+   "title": "Random Thing",
+   "meta": [
+    "Consoles"
+   ],
+   "kind": "hardware"
+  },
+  {
+   "title": "Random Thing",
+   "meta": [],
+   "kind": "other"
+  },
+  {
+   "title": "Random Thing PS5",
+   "meta": [],
+   "kind": "game"
+  },
+  {
+   "title": "PS5 Console Edition Game",
+   "meta": [
+    "Video Games"
+   ],
+   "kind": "game"
+  },
+  {
+   "title": "Fan for PS5",
+   "meta": [
+    "PS5 Games"
+   ],
+   "kind": "game"
+  },
+  {
+   "title": "Fan for PS5",
+   "meta": [],
+   "kind": "hardware"
+  },
+  {
+   "title": "Xbox Series X",
+   "meta": [
+    "video game console"
+   ],
+   "kind": "hardware"
+  },
+  {
+   "title": "Elden Ring",
+   "meta": [
+    "Apparel"
+   ],
+   "kind": "hardware"
+  },
+  {
+   "title": "Batman $20 Wallet Top-Up",
+   "meta": [],
+   "kind": "giftcard"
+  },
+  {
+   "title": "Call of Duty 100 USD",
+   "meta": [
+    "Games"
+   ],
+   "kind": "giftcard"
+  },
+  {
+   "title": "RGB Light Strip",
+   "meta": [
+    "PS5 Games"
+   ],
+   "kind": "game"
+  },
+  {
+   "title": "RGB Light Strip",
+   "meta": [
+    "Accessories"
+   ],
+   "kind": "hardware"
+  }
+ ],
+ "broadGenres": [
+  {
+   "in": [
+    "action-adventure game",
+    "hack and slash"
+   ],
+   "out": [
+    "Action",
+    "Adventure"
+   ]
+  },
+  {
+   "in": [
+    "role-playing video game",
+    "soulslike",
+    "open world"
+   ],
+   "out": [
+    "Action",
+    "RPG",
+    "Open World"
+   ]
+  },
+  {
+   "in": [
+    "first-person shooter",
+    "battle royale game"
+   ],
+   "out": [
+    "Shooter"
+   ]
+  },
+  {
+   "in": [
+    "association football video game"
+   ],
+   "out": [
+    "Sports"
+   ]
+  },
+  {
+   "in": [
+    "racing video game",
+    "kart racing game"
+   ],
+   "out": [
+    "Racing"
+   ]
+  },
+  {
+   "in": [
+    "survival horror"
+   ],
+   "out": [
+    "Horror",
+    "Survival"
+   ]
+  },
+  {
+   "in": [
+    "real-time strategy",
+    "tower defense"
+   ],
+   "out": [
+    "Strategy"
+   ]
+  },
+  {
+   "in": [
+    "farming simulation",
+    "life simulation game"
+   ],
+   "out": [
+    "Simulation"
+   ]
+  },
+  {
+   "in": [
+    "rhythm game",
+    "party video game"
+   ],
+   "out": [
+    "Party & Music"
+   ]
+  },
+  {
+   "in": [
+    "massively multiplayer online role-playing game"
+   ],
+   "out": [
+    "RPG",
+    "Online / MMO"
+   ]
+  },
+  {
+   "in": [
+    "visual novel"
+   ],
+   "out": [
+    "Adventure"
+   ]
+  },
+  {
+   "in": [],
+   "out": []
+  }
+ ],
+ "wikidata": {
+  "Q1": {
+   "label": "God of War Ragnarök",
+   "alts": [
+    "GoW Ragnarok"
+   ],
+   "genres": [
+    "action-adventure game",
+    "hack and slash"
+   ]
+  },
+  "Q2": {
+   "label": "Spider-Man 2",
+   "alts": [
+    "Marvel's Spider-Man 2"
+   ],
+   "genres": [
+    "action-adventure game",
+    "open world"
+   ]
+  },
+  "Q3": {
+   "label": "Spider-Man 2",
+   "alts": [],
+   "genres": [
+    "platform game"
+   ]
+  },
+  "Q4": {
+   "label": "Rainbow Six Siege",
+   "alts": [],
+   "genres": [
+    "tactical shooter"
+   ]
+  },
+  "Q5": {
+   "label": "Death Stranding",
+   "alts": [],
+   "genres": [
+    "action game",
+    "stealth game"
+   ]
+  },
+  "Q6": {
+   "label": "No Genre Game",
+   "alts": [],
+   "genres": [
+    "experimental"
+   ]
+  },
+  "Q7": {
+   "label": "Final Fantasy VII",
+   "alts": [
+    "FF7"
+   ],
+   "genres": [
+    "role-playing video game"
+   ]
+  },
+  "Q8": {
+   "label": "Alternate",
+   "alts": [
+    "Spider-Man 2"
+   ],
+   "genres": [
+    "puzzle video game"
+   ]
+  }
+ },
+ "genreIndex": {
+  "god of war ragnarok": [
+   "Action",
+   "Adventure"
+  ],
+  "gow ragnarok": [
+   "Action",
+   "Adventure"
+  ],
+  "spider man 2": [
+   "Action",
+   "Adventure",
+   "Platformer",
+   "Open World"
+  ],
+  "marvels spider man 2": [
+   "Action",
+   "Adventure",
+   "Open World"
+  ],
+  "rainbow six siege": [
+   "Shooter",
+   "Strategy"
+  ],
+  "death stranding": [
+   "Action",
+   "Stealth"
+  ],
+  "final fantasy 7": [
+   "RPG"
+  ],
+  "ff7": [
+   "RPG"
+  ],
+  "alternate": [
+   "Puzzle"
+  ]
+ },
+ "lookups": [
+  {
+   "key": "god of war ragnarok",
+   "genres": [
+    "Action",
+    "Adventure"
+   ]
+  },
+  {
+   "key": "spider man 2",
+   "genres": [
+    "Action",
+    "Adventure",
+    "Platformer",
+    "Open World"
+   ]
+  },
+  {
+   "key": "marvels spider man 2",
+   "genres": [
+    "Action",
+    "Adventure",
+    "Open World"
+   ]
+  },
+  {
+   "key": "tom clancys rainbow six siege",
+   "genres": [
+    "Shooter",
+    "Strategy"
+   ]
+  },
+  {
+   "key": "death stranding directors cut",
+   "genres": [
+    "Action",
+    "Stealth"
+   ]
+  },
+  {
+   "key": "death stranding 2 on the beach",
+   "genres": [
+    "Action",
+    "Stealth"
+   ]
+  },
+  {
+   "key": "final fantasy 7",
+   "genres": [
+    "RPG"
+   ]
+  },
+  {
+   "key": "final fantasy 7 rebirth",
+   "genres": [
+    "RPG"
+   ]
+  },
+  {
+   "key": "fc 25",
+   "genres": [
+    "Sports"
+   ]
+  },
+  {
+   "key": "ea sports fc 25",
+   "genres": [
+    "Sports"
+   ]
+  },
+  {
+   "key": "nhl 20",
+   "genres": [
+    "Sports"
+   ]
+  },
+  {
+   "key": "gran turismo 7",
+   "genres": [
+    "Racing"
+   ]
+  },
+  {
+   "key": "call of duty black ops 6",
+   "genres": [
+    "Shooter"
+   ]
+  },
+  {
+   "key": "mortal kombat 1",
+   "genres": [
+    "Fighting"
+   ]
+  },
+  {
+   "key": "totally unknown game",
+   "genres": []
+  },
+  {
+   "key": "no genre game",
+   "genres": []
+  },
+  {
+   "key": "lego spider man 2",
+   "genres": [
+    "Action",
+    "Adventure",
+    "Platformer",
+    "Open World"
+   ]
+  },
+  {
+   "key": "ab cd",
+   "genres": []
+  }
+ ]
+}

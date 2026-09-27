@@ -6,12 +6,16 @@
     "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
     "typecheck": "tsc -p .",
     "db:generate": "drizzle-kit generate",
-    "import:legacy": "tsx --env-file-if-exists=.env scripts/import-legacy.ts"
+    "import:legacy": "tsx --env-file-if-exists=.env scripts/import-legacy.ts",
+    "build:library": "tsx --env-file-if-exists=.env scripts/rebuild.ts",
+    "parity": "tsx --env-file-if-exists=.env scripts/parity.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@ugs/shared": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "drizzle-orm": "^0.45.3",
+    "entities": "^8.1.0",
     "fastify": "^5.6.0",
     "zod": "^4.1.0"
   },
@@ -20,6 +24,7 @@
     "@types/node": "^22.18.0",
     "drizzle-kit": "^0.31.11",
     "tsx": "^4.20.0",
-    "typescript": "~6.0.2"
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.2"
   }
 }

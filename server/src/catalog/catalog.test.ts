@@ -1,0 +1,66 @@
+import { describe, expect, it } from "vitest";
+import { DIGITAL, detectCondition, detectKind, detectPlatform } from "./detect.ts";
+import { broadGenres, buildGenreIndex, lookupGenres, type WikidataGames } from "./genres.ts";
+import { pyRegex, stripChars } from "./pyregex.ts";
+import { cleanTitle, gameKey } from "./titles.ts";
+import cases from "./__fixtures__/python-cases.json" with { type: "json" };
+
+// python-cases.json holds outputs of build.py's own functions for tricky inputs,
+// generated while the Python scripts were still the reference implementation.
+
+describe("titles (golden cases from build.py)", () => {
+  it.each(cases.titles)("$raw", (c) => {
+    const clean = cleanTitle(c.raw);
+    expect(clean).toBe(c.clean);
+    expect(gameKey(clean)).toBe(c.key);
+    expect(detectPlatform(c.raw)).toBe(c.platform);
+    expect(detectCondition(c.raw)).toBe(c.condition);
+    expect(DIGITAL.test(c.raw)).toBe(c.digital);
+  });
+});
+
+describe("variant beats title (golden cases from build.py)", () => {
+  it.each(cases.variants)("$variant / $title", (c) => {
+    expect(detectPlatform(c.variant, c.title)).toBe(c.platform);
+    expect(detectCondition(c.variant, c.title)).toBe(c.condition);
+    expect(DIGITAL.test(`${c.title} ${c.variant}`)).toBe(c.digital);
+  });
+});
+
+describe("kind (golden cases from build.py)", () => {
+  it.each(cases.kinds)("$title $meta", (c) => {
+    expect(detectKind(c.title, c.meta)).toBe(c.kind);
+  });
+});
+
+describe("genres (golden cases from build.py)", () => {
+  it.each(cases.broadGenres)("$in", (c) => {
+    expect(broadGenres(c.in)).toEqual(c.out);
+  });
+
+  const index = buildGenreIndex(cases.wikidata as WikidataGames);
+  it("builds the same title index", () => {
+    expect(Object.fromEntries(index)).toEqual(cases.genreIndex);
+  });
+  it.each(cases.lookups)("lookup $key", (c) => {
+    expect(lookupGenres(c.key, index)).toEqual(c.genres);
+  });
+});
+
+describe("Python regex compatibility", () => {
+  it("treats accented letters as word characters for \\b", () => {
+    expect(pyRegex(String.raw`\bmon\b`, "i").test("Pokémon")).toBe(false);
+    expect(pyRegex(String.raw`\bmon\b`, "i").test("Poké mon")).toBe(true);
+  });
+  it("matches $ before a trailing newline", () => {
+    expect("Days Gone new\n".replace(pyRegex(String.raw`\bnew\b$`, "gi"), "")).toBe("Days Gone \n");
+  });
+  it("is case-sensitive unless asked", () => {
+    expect(pyRegex(String.raw`\s+for$`).test("It Takes Two FOR")).toBe(false);
+    expect(pyRegex(String.raw`\s+for$`, "i").test("It Takes Two FOR")).toBe(true);
+  });
+  it("strips a character set from both ends like str.strip", () => {
+    expect(stripChars(" -|Title: -", " -–—|/,:")).toBe("Title");
+    expect(stripChars("---", "-")).toBe("");
+  });
+});
