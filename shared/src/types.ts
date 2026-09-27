@@ -41,6 +41,58 @@ export interface HealthResponse {
   time: string;
 }
 
+// ---------------------------------------------------------------- /api/games, /api/filters
+
+export type SortOrder = "price" | "spread" | "stores" | "az";
+
+/** Query for /api/games. Empty strings mean "any". */
+export interface GamesQuery {
+  q: string;
+  genre: string;
+  store: string;
+  /** A platform name, or a group: "PS" (PS3/4/5), "Xbox" (every Xbox). */
+  platform: string;
+  condition: Condition | "";
+  kind: Kind | "";
+  inStock: boolean;
+  sort: SortOrder;
+  page: number;
+  pageSize: number;
+}
+
+/** A game with only what a grid card needs; details come from /api/games/:id. */
+export interface GameSummary {
+  id: string;
+  title: string;
+  kind: Kind;
+  genres: string[];
+  image: string | null;
+  /** Cheapest matching offer (in stock first). */
+  best: Listing;
+  /** Offers and stores matching the listing filters. */
+  offerCount: number;
+  storeCount: number;
+  /** Highest minus lowest in-stock matching price; 0 with fewer than 2. */
+  spread: number;
+}
+
+export interface GamesResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  items: GameSummary[];
+}
+
+export interface FiltersResponse {
+  /** When the library was last built (ISO), null before the first build. */
+  generated: string | null;
+  stores: Store[];
+  /** Genres by number of games, most first. */
+  genres: { name: string; count: number }[];
+  platforms: string[];
+  totals: { games: number; offers: number };
+}
+
 // ---------------------------------------------------------------- /api/status
 
 export type RunType = "prices" | "genres";
