@@ -1,0 +1,12 @@
+{
+  "name": "universal-game-store",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @ugs/server --filter @ugs/web dev",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
