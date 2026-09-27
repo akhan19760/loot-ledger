@@ -57,6 +57,12 @@ export const listings = sqliteTable(
   (t) => [index("listings_game_idx").on(t.gameId), index("listings_store_idx").on(t.storeId)],
 );
 
+/** Small facts about the data, e.g. "library_built_at". */
+export const meta = sqliteTable("meta", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+});
+
 /** One row per scheduled refresh (store prices or Wikidata genres). */
 export const refreshRuns = sqliteTable("refresh_runs", {
   id: integer("id").primaryKey({ autoIncrement: true }),

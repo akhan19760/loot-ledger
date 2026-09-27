@@ -1,8 +1,9 @@
+import { eq } from "drizzle-orm";
 import { normalizeSearch } from "@ugs/shared";
 import type { BuildInput, Library } from "../catalog/build.ts";
 import type { WikidataGames } from "../catalog/genres.ts";
 import type { Db } from "./client.ts";
-import { games, listings, rawFeeds, stores } from "./schema.ts";
+import { games, listings, meta, rawFeeds, stores } from "./schema.ts";
 
 /** Everything buildLibrary needs, read from the stored raw feeds. */
 export function loadBuildInput(db: Db, storeOrder: string[]): BuildInput {
@@ -54,5 +55,11 @@ export function saveLibrary(db: Db, lib: Library) {
     );
     for (let i = 0; i < gameRows.length; i += CHUNK) tx.insert(games).values(gameRows.slice(i, i + CHUNK)).run();
     for (let i = 0; i < listingRows.length; i += CHUNK) tx.insert(listings).values(listingRows.slice(i, i + CHUNK)).run();
+    const builtAt = { key: "library_built_at", value: new Date().toISOString() };
+    tx.insert(meta).values(builtAt).onConflictDoUpdate({ target: meta.key, set: builtAt }).run();
   });
+}
+
+export function libraryBuiltAt(db: Db): string | null {
+  return db.select().from(meta).where(eq(meta.key, "library_built_at")).get()?.value ?? null;
 }

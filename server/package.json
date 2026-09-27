@@ -10,12 +10,13 @@
     "build:library": "tsx --env-file-if-exists=.env scripts/rebuild.ts",
     "refresh:prices": "tsx --env-file-if-exists=.env scripts/refresh.ts prices",
     "refresh:genres": "tsx --env-file-if-exists=.env scripts/refresh.ts genres",
-    "parity":"tsx --env-file-if-exists=.env scripts/parity.ts",
+    "parity": "tsx --env-file-if-exists=.env scripts/parity.ts",
     "test": "vitest run"
   },
   "dependencies": {
     "@ugs/shared": "workspace:*",
     "better-sqlite3": "^13.0.3",
+    "croner": "^10.0.1",
     "drizzle-orm": "^0.45.3",
     "entities": "^8.1.0",
     "fastify": "^5.6.0",

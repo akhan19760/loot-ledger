@@ -7,7 +7,7 @@ import { eq, inArray } from "drizzle-orm";
 import type { StoreConfig } from "../catalog/adapters.ts";
 import type { Db } from "../db/client.ts";
 import { rawFeeds, refreshRuns, stores } from "../db/schema.ts";
-import type { Log } from "../ingest/http.ts";
+import { describeError, type Log } from "../ingest/http.ts";
 import { fetchStore } from "../ingest/stores.ts";
 import { fetchWikidataGames } from "../ingest/wikidata.ts";
 import { rebuildLibrary } from "./rebuild.ts";
@@ -51,9 +51,10 @@ async function exclusive(type: RunType, ctx: RefreshContext, work: (results: Rec
       for (const line of stats) log.info(line);
     }
   } catch (err) {
+    // The message goes in refresh_runs (shown by /api/status); the stack only in the log.
     status = "failed";
-    error = (err as Error).stack ?? String(err);
-    log.error(`${type} refresh failed: ${error}`);
+    error = describeError(err);
+    log.error(`${type} refresh failed: ${(err as Error).stack ?? error}`);
   } finally {
     db.update(refreshRuns).set({ finishedAt: now(), status, results, error }).where(eq(refreshRuns.id, run.id)).run();
     current = null;
