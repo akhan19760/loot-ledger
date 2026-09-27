@@ -13,6 +13,15 @@ const Env = z.object({
   STORES_FILE: z.string().default("../stores.json"),
   // Pause between page requests to the same store, to be polite.
   FETCH_DELAY_MS: z.coerce.number().int().min(0).default(1000),
+  // Refresh schedules (cron syntax; an optional 6th leading field is seconds).
+  CRON_PRICES: z.string().default("0 */6 * * *"), // every 6 hours
+  CRON_GENRES: z.string().default("0 4 1 * *"), // 04:00 on the 1st of each month
+  // IANA zone for the schedules, e.g. "Asia/Karachi". Default: the machine's zone.
+  CRON_TIMEZONE: z.string().optional(),
+  // At startup: "if-empty" fetches stores that have never been fetched (and the
+  // genre list if missing); "always" also refreshes every store; "never" waits
+  // for the schedule.
+  REFRESH_ON_START: z.enum(["if-empty", "always", "never"]).default("if-empty"),
 });
 
 const env = Env.parse(process.env);

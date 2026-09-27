@@ -40,3 +40,29 @@ export interface HealthResponse {
   ok: true;
   time: string;
 }
+
+// ---------------------------------------------------------------- /api/status
+
+export type RunType = "prices" | "genres";
+
+export interface RefreshRun {
+  id: number;
+  type: RunType;
+  status: "running" | "ok" | "partial" | "failed";
+  startedAt: string;
+  finishedAt: string | null;
+  /** Per source (store id or "wikidata"): item count on success, error otherwise. */
+  results: Record<string, { ok: true; count: number; ms: number } | { ok: false; error: string; ms: number }> | null;
+  error: string | null;
+}
+
+export interface StatusResponse {
+  running: RunType | null;
+  schedule: {
+    timezone: string;
+    jobs: Record<RunType, { cron: string; nextRun: string | null; lastRun: RefreshRun | null }>;
+  };
+  recentRuns: RefreshRun[];
+  stores: { id: string; name: string; lastFetchedAt: string | null; lastStatus: "ok" | "failed" | null; lastError: string | null }[];
+  library: { builtAt: string | null; games: number; listings: number };
+}
