@@ -55,7 +55,8 @@ export default function App() {
       <Grain />
       <SiteHeader filters={meta.data} online={!meta.isError} introDone={introDone} />
 
-      <main className="mx-auto grid max-w-[1600px] grid-cols-1 gap-2 px-2 pt-[calc(var(--height-bar-mobile)+1rem)] pb-2 md:pt-[calc(var(--height-bar)+1rem)]">
+      {/* Full width: only the 8px edge padding, matching the header's inset (WG --gap) */}
+      <main className="grid grid-cols-1 gap-2 px-2 pt-[calc(var(--height-bar-mobile)+1rem)] pb-2 md:pt-[calc(var(--height-bar)+1rem)]">
         <Hero meta={meta.data} covers={covers.data ?? []} play={introDone} onBrowse={() => scrollTo("library")} onStores={() => scrollTo("stores")} />
 
         <section id="library" className="grid scroll-mt-24 grid-cols-1 gap-2">
@@ -126,7 +127,7 @@ export default function App() {
 }
 
 function Grid({ className = "", children }: { className?: string; children: React.ReactNode }) {
-  return <div className={`grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 ${className}`}>{children}</div>
+  return <div className={`grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 ${className}`}>{children}</div>
 }
 
 function Message({ title, body, action }: { title: string; body: string; action: React.ReactNode }) {

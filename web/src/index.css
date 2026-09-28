@@ -42,6 +42,9 @@
   --radius-lg: var(--radius);
   --radius-xl: var(--radius);
   --radius-2xl: var(--radius);
+
+  /* Ultra-wide screens get a 7th grid column (2200px) */
+  --breakpoint-3xl: 137.5rem;
 }
 
 :root {
