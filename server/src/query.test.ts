@@ -44,6 +44,17 @@ describe("queryGames", () => {
     expect(ids({ platform: "Switch 2" })).toEqual([]);
   });
 
+  it("counts a listing that only says PlayStation in the PS group, not in PS5/PS4", () => {
+    const withGeneric: LibrarySnapshot = {
+      ...lib,
+      games: [...lib.games, game("game:wolverine", "Marvel's Wolverine", [offer("a", "PlayStation", 18999)])],
+    };
+    const find = (platform: string) => queryGames(withGeneric, q({ platform })).items.some((g) => g.id === "game:wolverine");
+    expect(find("PS")).toBe(true);
+    expect(find("PS5")).toBe(false);
+    expect(find("PS4")).toBe(false);
+  });
+
   it("searches without accents or punctuation", () => {
     expect(ids({ q: "ragnarok" })).toEqual(["game:god-of-war-ragnarok"]);
     expect(ids({ q: "super-mario bros" })).toEqual(["game:mario-wonder"]);

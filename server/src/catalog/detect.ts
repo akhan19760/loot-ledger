@@ -19,6 +19,14 @@ const PLATFORMS: [string, RegExp][] = [ // order matters: more specific first
   ["PC", rx(String.raw`\bpc\b|\bsteam\b`)],
 ];
 
+/**
+ * Some listings only say "PlayStation" (e.g. Venture Games' new releases, tagged
+ * just "PlayStation"). That is used only when no text names a specific console,
+ * so a generic word in the title never beats a "PS5" in the tags.
+ */
+const PLAYSTATION_ANY = rx(String.raw`\bplaystation\b`);
+export const GENERIC_PLAYSTATION = "PlayStation";
+
 /** First text that mentions a platform wins (variant > title > tags/categories). */
 export function detectPlatform(...texts: string[]): string | null {
   for (const text of texts) {
@@ -32,7 +40,7 @@ export function detectPlatform(...texts: string[]): string | null {
     }
     if (bestName) return bestName;
   }
-  return null;
+  return texts.some((t) => t && PLAYSTATION_ANY.test(t)) ? GENERIC_PLAYSTATION : null;
 }
 
 // ---------------------------------------------------------------- condition / format
@@ -88,5 +96,7 @@ export function detectKind(title: string, meta: string[]): Kind {
   if (gameCat) return "game";
   if (meta.some((m) => GIFTCARD.test(m))) return "giftcard";
   if (meta.some((m) => HW_META.test(m))) return "hardware";
-  return detectPlatform(title) ? "game" : "other";
+  // Only a specific console hints "game" here: "PlayStation VR 2" is not a game.
+  const platform = detectPlatform(title);
+  return platform && platform !== GENERIC_PLAYSTATION ? "game" : "other";
 }
