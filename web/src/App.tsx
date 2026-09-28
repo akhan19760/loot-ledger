@@ -14,11 +14,13 @@ import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
 import { SiteFooter } from "@/components/site-footer"
+import { BackupButtons, ShelfSummary } from "@/components/shelf-summary"
 import { SiteHeader } from "@/components/site-header"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DEFAULT_FILTERS, useLibraryUrl } from "@/hooks/use-library-url"
+import { DEFAULT_FILTERS, useLibraryUrl, type Filters, type LibraryList } from "@/hooks/use-library-url"
+import { idsOn, useShelf } from "@/hooks/use-shelf"
 import { api } from "@/lib/api"
 import { thumb } from "@/lib/images"
 import { ease } from "@/lib/motion"
@@ -27,8 +29,26 @@ const PAGE_SIZE = 60
 
 const withArt = (r: GamesResponse) => r.items.filter((g) => g.image)
 
+const HEADINGS: Record<LibraryList, { text: string; neon: string }> = {
+  all: { text: "Cheapest offer first.", neon: "first." },
+  wishlist: { text: "Your wishlist.", neon: "wishlist." },
+  collection: { text: "Your collection.", neon: "collection." },
+}
+
+const EMPTY_LIST = {
+  wishlist: { title: "Your wishlist is empty", body: "Tap the heart on any game to save it here, with today's cheapest price for everything on it." },
+  collection: { title: "Your collection is empty", body: "Tap the tick on any game you own to build your shelf here." },
+} as const
+
+/** Every listing filter off: what "Show all" means on a wishlist or collection. */
+const SHOW_ALL: Partial<Filters> = { q: "", genre: "", store: "", platform: "", condition: "", kind: "", inStock: false }
+
 export default function App() {
-  const { filters, gameId, setFilters, resetFilters, setGameId } = useLibraryUrl()
+  const { filters, list, gameId, setFilters, resetFilters, setList, setGameId } = useLibraryUrl()
+  const shelf = useShelf()
+  const shelfIds = useMemo(() => (list === "all" ? null : idsOn(shelf, list)), [shelf, list])
+  const counts = useMemo(() => ({ wishlist: idsOn(shelf, "wishlist").length, collection: idsOn(shelf, "collection").length }), [shelf])
+  const listEmpty = shelfIds?.length === 0
   const scrollTo = useScrollTo()
   const [introDone, setIntroDone] = useState(false)
   const onIntroDone = useCallback(() => setIntroDone(true), [])
@@ -47,8 +67,12 @@ export default function App() {
   // The same 400px copies the hero shows, so the loading screen's preload is what the hero reuses.
   const heroArt = useMemo(() => heroCovers.map((g) => thumb(g.image!, 400)), [heroCovers])
   const games = useInfiniteQuery({
-    queryKey: ["games", filters],
-    queryFn: ({ pageParam }) => api.games({ ...filters, page: pageParam, pageSize: PAGE_SIZE }),
+    queryKey: ["games", filters, shelfIds],
+    queryFn: ({ pageParam }) => {
+      const query = { ...filters, page: pageParam, pageSize: PAGE_SIZE }
+      return shelfIds ? api.lookup({ ...query, ids: shelfIds }) : api.games(query)
+    },
+    enabled: !listEmpty,
     initialPageParam: 1,
     getNextPageParam: (last) => (last.page * last.pageSize < last.total ? last.page + 1 : undefined),
     placeholderData: keepPreviousData, // keep the grid while a new filter loads
@@ -63,7 +87,7 @@ export default function App() {
       <LoadingScreen
         meta={meta.data}
         metaFailed={meta.isError}
-        matches={games.data?.pages[0]?.total}
+        matches={listEmpty ? 0 : games.data?.pages[0]?.total}
         matchesFailed={games.isError}
         covers={wallArt}
         coversFailed={covers.isError}
@@ -82,15 +106,46 @@ export default function App() {
           <Reveal className="grid gap-4 px-2 pt-16 pb-8 md:px-6 md:pt-28 md:pb-12">
             <Eyebrow className="text-primary-ink">The library</Eyebrow>
             <h2 className="font-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85] uppercase">
-              <SplitText text="Cheapest offer first." stagger={0.08} partClassName={(w) => (w === "first." ? "text-neon" : undefined)} />
+              <SplitText
+                key={list}
+                text={HEADINGS[list].text}
+                stagger={0.08}
+                partClassName={(w) => (w === HEADINGS[list].neon ? "text-neon" : undefined)}
+              />
             </h2>
           </Reveal>
 
           <Reveal>
-            <FilterBar filters={filters} meta={meta.data} total={total} onChange={setFilters} onReset={resetFilters} />
+            <FilterBar
+              filters={filters}
+              meta={meta.data}
+              total={listEmpty ? 0 : total}
+              onChange={setFilters}
+              onReset={resetFilters}
+              list={list}
+              counts={counts}
+              onListChange={setList}
+            />
           </Reveal>
 
-          {games.isError ? (
+          {list !== "all" && shelfIds && !listEmpty && (
+            <ShelfSummary list={list} shelf={shelf} ids={shelfIds} data={games.data?.pages[0]} onShowAll={() => setFilters(SHOW_ALL)} />
+          )}
+
+          {list !== "all" && listEmpty ? (
+            <Message
+              title={EMPTY_LIST[list].title}
+              body={EMPTY_LIST[list].body}
+              action={
+                <div className="grid justify-items-center gap-4">
+                  <Button onClick={() => setList("all")}>
+                    <RollText>Browse all games</RollText>
+                  </Button>
+                  <BackupButtons />
+                </div>
+              }
+            />
+          ) : games.isError ? (
             <Message title="Couldn't load games" body={games.error.message} action={<Button onClick={() => games.refetch()}><RollText>Try again</RollText></Button>} />
           ) : games.isPending ? (
             <Grid>
@@ -103,8 +158,8 @@ export default function App() {
               title="No games match these filters"
               body="Try another search, or widen the platform, condition or stock filters."
               action={
-                <Button variant="secondary" onClick={resetFilters}>
-                  <RollText>Reset filters</RollText>
+                <Button variant="secondary" onClick={list === "all" ? resetFilters : () => setFilters(SHOW_ALL)}>
+                  <RollText>{list === "all" ? "Reset filters" : "Show all"}</RollText>
                 </Button>
               }
             />

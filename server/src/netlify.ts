@@ -27,9 +27,10 @@ const HOP_BY_HOP = new Set(["connection", "keep-alive", "transfer-encoding"]);
 
 // Every deploy clears Netlify's CDN cache and the data only changes with a deploy,
 // so library answers stay cached until the next one. Status says when the next
-// refresh is due, so it is only cached for a minute; health is never cached.
-function cdnCache(path: string, status: number): string {
-  if (path === "/api/health" || (status !== 200 && status !== 404)) return "no-store";
+// refresh is due, so it is only cached for a minute; health and lookups (a reader's
+// own wishlist or collection) are never cached.
+function cdnCache(method: string, path: string, status: number): string {
+  if ((method !== "GET" && method !== "HEAD") || path === "/api/health" || (status !== 200 && status !== 404)) return "no-store";
   if (path === "/api/status") return "public, durable, max-age=60";
   return "public, durable, max-age=31536000";
 }
@@ -66,7 +67,7 @@ export function createHandler(snapshot: Snapshot, rateLimit: { max: number; time
       if (HOP_BY_HOP.has(name)) continue;
       for (const v of [value ?? []].flat()) headers.append(name, String(v));
     }
-    headers.set("Netlify-CDN-Cache-Control", cdnCache(url.pathname, res.statusCode));
+    headers.set("Netlify-CDN-Cache-Control", cdnCache(req.method, url.pathname, res.statusCode));
     return new Response(req.method === "HEAD" ? null : res.body, { status: res.statusCode, headers });
   };
 }
