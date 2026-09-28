@@ -6,7 +6,8 @@ export const PLATFORM_FILTERS = ["PS", "Xbox", "PS5", "PS4", "PS3", "Switch 2", 
 export function platformMatches(listingPlatform: string | null, filter: string): boolean {
   if (!filter) return true;
   const p = listingPlatform ?? "";
-  if (filter === "PS") return /^PS[345]$/.test(p);
+  // "PlayStation" = the store didn't say which console; it still belongs to the group.
+  if (filter === "PS") return /^(PS[345]|PlayStation)$/.test(p);
   if (filter === "Xbox") return p.startsWith("Xbox");
   return p === filter;
 }

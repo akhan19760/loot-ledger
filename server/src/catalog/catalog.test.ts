@@ -47,6 +47,24 @@ describe("genres (golden cases from build.py)", () => {
   });
 });
 
+describe("generic PlayStation fallback (not in build.py)", () => {
+  it("uses PlayStation when a listing names no specific console", () => {
+    // Venture Games: title, variant and tags never say PS4/PS5
+    expect(detectPlatform("New", "EA Sports FC 27", "Games | Games | PlayStation")).toBe("PlayStation");
+  });
+  it("never beats a specific console mentioned anywhere", () => {
+    expect(detectPlatform("", "Spider-Man PlayStation Hits", "PS4 Games")).toBe("PS4");
+    expect(detectPlatform("", "PlayStation 5 Console", "")).toBe("PS5");
+  });
+  it("still returns null with no hint at all", () => {
+    expect(detectPlatform("", "Scrabble: Original Crossword Game", "")).toBeNull();
+  });
+  it("does not make a listing a game on its own", () => {
+    expect(detectKind("PlayStation VR 2", [])).toBe("other");
+    expect(detectKind("Random Thing PS5", [])).toBe("game");
+  });
+});
+
 describe("Python regex compatibility", () => {
   it("treats accented letters as word characters for \\b", () => {
     expect(pyRegex(String.raw`\bmon\b`, "i").test("Pokémon")).toBe(false);
