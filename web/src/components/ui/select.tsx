@@ -28,7 +28,7 @@ function SelectValue({
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
-// WG contact-form select: transparent, white/20 border, 16px radius; white border
+// WG contact-form select: transparent, `input` border, 16px radius; foreground border
 // on focus; neon border + text once a value is chosen (`chosen`).
 function SelectTrigger({
   className,
@@ -43,7 +43,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-chosen={chosen}
       className={cn(
-        "group/select flex h-[42px] w-fit items-center justify-between gap-2 rounded-2xl border border-input bg-transparent px-4 text-sm leading-none whitespace-nowrap text-foreground transition-[color,border-color,box-shadow] duration-300 outline-none select-none hover:border-white/40 data-[chosen=true]:shadow-[0_0_18px_-6px_rgb(212_251_8/0.6)] data-[state=open]:border-white focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:text-destructive data-placeholder:text-muted-foreground data-[chosen=true]:border-primary data-[chosen=true]:text-primary *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group/select flex h-[42px] w-fit items-center justify-between gap-2 rounded-2xl border border-input bg-transparent px-4 text-sm leading-none whitespace-nowrap text-foreground transition-[color,border-color,box-shadow] duration-300 outline-none select-none hover:border-foreground/40 data-[chosen=true]:shadow-[0_0_18px_-6px_rgb(212_251_8/0.6)] data-[state=open]:border-foreground focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:text-destructive data-placeholder:text-muted-foreground data-[chosen=true]:border-primary-ink data-[chosen=true]:text-primary-ink *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -113,7 +113,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         // Options cascade in (pass style.animationDelay per item for the stagger).
-        "relative flex w-full cursor-default items-center gap-1.5 rounded-sm py-2.5 pr-8 pl-3 text-sm outline-hidden transition-[background-color,color,padding] duration-300 select-none animate-in fade-in-0 slide-in-from-left-2 fill-mode-both focus:bg-accent focus:pl-4 focus:text-accent-foreground data-[state=checked]:text-primary data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-default items-center gap-1.5 rounded-sm py-2.5 pr-8 pl-3 text-sm outline-hidden transition-[background-color,color,padding] duration-300 select-none animate-in fade-in-0 slide-in-from-left-2 fill-mode-both focus:bg-accent focus:pl-4 focus:text-accent-foreground data-[state=checked]:text-primary-inkdata-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}

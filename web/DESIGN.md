@@ -5,7 +5,7 @@ Every token, component style and animation below comes from one of two reference
 - **WG** = [wondermakers.games](https://wondermakers.games/) (screenshots + its CSS/markup). This is the **base**: surfaces, buttons, fields, chips, the header bar.
 - **INK** = [inkgames.com](https://inkgames.com/) (screenshots + its CSS). **Accents** only: the headline type, "■ LABEL" eyebrows, and image cards with the title over the art.
 
-Dark theme only; both references are dark. The one light WG section was not used.
+Both references are dark, so dark is the default theme. A light theme is available from the header toggle (remembered per browser); it is derived from the dark tokens rather than taken from a reference. The hero, the game cards and the loading screen stay dark in both themes (they carry the `dark` class), the same way the footer stays neon: they are panels over artwork, not page background.
 
 ## Fonts
 
@@ -36,6 +36,25 @@ No monospace font: INK's mono eyebrows were tried with JetBrains Mono and droppe
 | `destructive` | `#ff2e00` | WG `text-invalid` / `border-invalid` |
 | `popover` | `#252525` | WG gradient stop `#252525` |
 | `neon-from` → `neon-to` | `#abf62c` → `#f6fd02` | WG gradient hero words, sampled from the screenshot; used as `text-neon` / `text-neon-reverse` |
+| `primary-ink` | `#d4fb08` | Neon used as a text or line colour (prices, eyebrows, outline chips, chosen selects). Same as `primary` in dark; see below |
+
+### Light theme
+
+White-alpha tokens become black-alpha, and neon stays the fill for buttons, chips and the footer. Neon text is unreadable on a light background, so anything that is neon *text* uses `primary-ink` instead of `primary`.
+
+| Token | Light value |
+|---|---|
+| `background` / `foreground` | `#f1f1ec` / `#0b0b0b` |
+| `popover` | `#fff` |
+| `surface` / `card` | black 4% |
+| `secondary` / `muted` / `accent` | black 6% |
+| `muted-foreground` | black 60% |
+| `border` / `input` | black 10% / black 20% |
+| `primary-ink` | `#4a6400` (dark olive, 5.7:1 on the background) |
+| `destructive` | `#d42600` |
+| `neon-from` → `neon-to` | `#2f7a12` → `#7a6b00` |
+
+For the few effects that can't be a token (the secondary button's gradient, the dialog's glass), the `light:` variant targets the page in light theme but not the always-dark panels.
 
 ## Shape, spacing, effects
 
@@ -48,6 +67,8 @@ No monospace font: INK's mono eyebrows were tried with JetBrains Mono and droppe
 | Panel blur | 37.5px | WG `backdrop-blur-[37.5px]` on content blocks |
 | Overlay | black 50% + 8px blur | WG `#00000080`, `blur(8px)` |
 | Glow | `drop-shadow(0 0 15px #d4fb08)` | WG neon drop-shadows |
+| Scrollbars | Slim pill in the `input` colour on a clear track, `primary-ink` on hover; inset from rounded edges | — (matches WG chips/fields) |
+| Dialog | At most 44rem tall; the body scrolls inside the rounded panel, the close button stays pinned | WG content block |
 | Stripes | 45° neon stripes | WG hazard-stripe panels |
 
 ## Components
@@ -105,7 +126,8 @@ Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkro
 | Selects | Chevron flips, chosen select glows, options cascade in | WG select states + INK stagger |
 | Cards | Scroll-in stagger; cover wipes in (clip-path) and zooms; 3D tilt toward the pointer with a neon glare; neon glow + border; arrow circle spins in; "View N offers" rises | INK cards, clip-path, tilt; WG glow |
 | Grid | When filters change, cards that stay glide to their new place | — (layout animation) |
-| Dialog | Rises and scales in with `ease.wg`; title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
+| Dialog | Grows out of the clicked card: a panel carrying the card's cover flies to the dialog's box while the cover fades, then hands over to the dialog; closing flies back into the card. Opened from a link (no card on screen), it rises and scales in with `ease.wg`. Then the title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | Material container transform, WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
+| Header | Theme toggle: black circle, sun/moon roll through it; the new theme spreads in a circle from the button (View Transitions) | WG round icon + INK roll |
 | Footer | Neon hazard stripes slide endlessly; giant white wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |
 | Loading | Skeletons with a sweeping light band (`sweep`) | — |
 

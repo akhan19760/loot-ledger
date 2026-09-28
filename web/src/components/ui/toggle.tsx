@@ -7,7 +7,7 @@ import { Toggle as TogglePrimitive } from "radix-ui"
 
 // WG tag chips: white/10 fill; pressed = the neon chip variant.
 const toggleVariants = cva(
-  "group/toggle inline-flex items-center justify-center gap-1.5 rounded-2xl bg-secondary text-sm leading-none font-medium whitespace-nowrap text-secondary-foreground transition-colors duration-100 outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-primary data-[state=on]:text-black data-[state=on]:hover:bg-primary-hover [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/toggle inline-flex items-center justify-center gap-1.5 rounded-2xl bg-secondary text-sm leading-none font-medium whitespace-nowrap text-secondary-foreground transition-colors duration-100 outline-none hover:bg-foreground/20 focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-primary data-[state=on]:text-black data-[state=on]:hover:bg-primary-hover [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

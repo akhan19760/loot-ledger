@@ -78,7 +78,7 @@ export default function App() {
 
         <section id="library" className="grid scroll-mt-24 grid-cols-1 gap-2">
           <Reveal className="grid gap-4 px-2 pt-16 pb-8 md:px-6 md:pt-28 md:pb-12">
-            <Eyebrow className="text-primary">The library</Eyebrow>
+            <Eyebrow className="text-primary-ink">The library</Eyebrow>
             <h2 className="font-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85] uppercase">
               <SplitText text="Cheapest offer first." stagger={0.08} partClassName={(w) => (w === "first." ? "text-neon" : undefined)} />
             </h2>
@@ -149,7 +149,7 @@ function Grid({ className = "", children }: { className?: string; children: Reac
 
 function Message({ title, body, action }: { title: string; body: string; action: React.ReactNode }) {
   return (
-    <Reveal className="grid justify-items-center gap-4 rounded-2xl border border-white/5 bg-surface px-6 py-20 text-center">
+    <Reveal className="grid justify-items-center gap-4 rounded-2xl border border-border/50 bg-surface px-6 py-20 text-center">
       <Eyebrow className="text-muted-foreground">Library</Eyebrow>
       <h2 className="font-display text-4xl uppercase md:text-6xl">
         <SplitText text={title} onMount stagger={0.05} />

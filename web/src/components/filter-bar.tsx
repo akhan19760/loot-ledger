@@ -41,7 +41,7 @@ export function FilterBar({ filters, meta, total, onChange, onReset }: Props) {
   const platforms = PLATFORMS.some(([v]) => v === filters.platform) ? PLATFORMS : [...PLATFORMS, [filters.platform, filters.platform] as const]
 
   return (
-    <section aria-label="Filters" className="grid grid-cols-1 gap-6 rounded-2xl border border-white/5 bg-surface p-5 md:gap-8 md:p-8">
+    <section aria-label="Filters" className="grid grid-cols-1 gap-6 rounded-2xl border border-border/50 bg-surface p-5 md:gap-8 md:p-8">
       <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[auto_auto_minmax(0,1fr)]">

@@ -37,8 +37,8 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        // WG: black 50% + 8px blur
-        "fixed inset-0 isolate z-50 bg-black/50 duration-500 supports-backdrop-filter:backdrop-blur-[8px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-200",
+        // WG: black 50% + 8px blur (lighter in light theme, so the white panel stays white)
+        "fixed inset-0 isolate z-50 bg-black/50 light:bg-black/25 duration-500 supports-backdrop-filter:backdrop-blur-[8px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-200",
         className
       )}
       {...props}
@@ -48,27 +48,40 @@ function DialogOverlay({
 
 function DialogContent({
   className,
+  bodyClassName,
   children,
   showCloseButton = true,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  bodyClassName?: string
 }) {
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        data-lenis-prevent
         className={cn(
-          // WG content block: 16px radius, neutral-700/20 + 37.5px blur
+          // WG content block: 16px radius, neutral-700/20 + 37.5px blur (white in light theme).
+          // Height capped; the body scrolls inside the rounded edge, the close button stays put.
           // Opens with WG's ease: rises 2rem while scaling up; closes quicker.
-          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 gap-6 overflow-y-auto overscroll-contain rounded-2xl border border-border bg-neutral-700/20 p-5 text-foreground outline-none supports-backdrop-filter:backdrop-blur-[37.5px] sm:max-w-lg sm:p-8 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-90 data-open:slide-in-from-bottom-8 data-open:duration-700 data-open:ease-[cubic-bezier(0.3,0,0.04,1)] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:duration-200",
+          "fixed top-1/2 left-1/2 z-50 flex max-h-[min(calc(100dvh-2rem),44rem)] w-full max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-border bg-neutral-700/20 text-foreground outline-none supports-backdrop-filter:backdrop-blur-[37.5px] light:bg-white/85 sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-90 data-open:slide-in-from-bottom-8 data-open:duration-700 data-open:ease-[cubic-bezier(0.3,0,0.04,1)] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:duration-200",
           className
         )}
         {...props}
       >
-        {children}
+        <div
+          data-slot="dialog-body"
+          data-lenis-prevent
+          className={cn(
+            // The scrollbar's track stops short of the rounded corners; on desktop its gutter
+            // is reserved and taken out of the right padding, so both sides stay 32px.
+            "grid min-h-0 flex-1 gap-6 overflow-y-auto overscroll-contain p-5 sm:p-8 sm:pr-[18px] sm:[scrollbar-gutter:stable] [&::-webkit-scrollbar-track]:my-4",
+            bodyClassName
+          )}
+        >
+          {children}
+        </div>
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
