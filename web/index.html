@@ -5,6 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
+    <script>
+      // Apply a saved light theme before first paint (see src/hooks/use-theme.ts).
+      try {
+        if (localStorage.getItem("lootledger-theme") === "light") {
+          document.documentElement.classList.remove("dark")
+          document.querySelector('meta[name="theme-color"]').content = "#f1f1ec"
+        }
+      } catch {}
+    </script>
     <meta name="description" content="LootLedger: compare new and used PlayStation game prices across Pakistani game stores in one place." />
     <title>LootLedger</title>
   </head>

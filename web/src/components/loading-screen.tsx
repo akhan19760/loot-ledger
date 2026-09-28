@@ -223,7 +223,7 @@ function Screen({ meta, metaFailed, matches, matchesFailed, covers, coversFailed
   return (
     <motion.div
       ref={root}
-      className="fixed inset-x-0 top-0 z-[100] flex h-[calc(100dvh+var(--band))] flex-col select-none [--band:4rem] md:[--band:6rem]"
+      className="dark fixed inset-x-0 top-0 z-[100] flex text-foreground h-[calc(100dvh+var(--band))] flex-col select-none [--band:4rem] md:[--band:6rem]"
       exit={{ y: "-100%" }}
       transition={{ duration: 1.2, ease: ease.wgWipe }}
       onPointerMove={(e) => {

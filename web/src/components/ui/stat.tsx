@@ -15,9 +15,9 @@ function Stat({
   return (
     <div data-slot="stat" className={cn("flex flex-col items-center gap-1 leading-none", className)} {...props}>
       {dot ? (
-        <span aria-hidden className={cn("my-0.5 size-1.5 rounded-full", dot === "live" ? "bg-primary glow-primary" : "bg-white")} />
+        <span aria-hidden className={cn("my-0.5 size-1.5 rounded-full", dot === "live" ? "bg-primary glow-primary" : "bg-foreground")} />
       ) : (
-        <span className="text-xs font-medium text-primary tabular-nums">{value}</span>
+        <span className="text-xs font-medium text-primary-ink tabular-nums">{value}</span>
       )}
       <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{label}</span>
     </div>

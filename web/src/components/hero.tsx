@@ -73,7 +73,7 @@ export function Hero({ meta, covers, play, onBrowse, onStores }: Props) {
       ref={ref}
       aria-labelledby="hero-title"
       onPointerMove={onPointerMove}
-      className="relative isolate flex min-h-[calc(100svh-var(--height-bar-mobile)-1.5rem)] flex-col justify-between overflow-hidden rounded-2xl bg-black md:min-h-[calc(100svh-var(--height-bar)-1.5rem)]"
+      className="dark relative isolate flex min-h-[calc(100svh-var(--height-bar-mobile)-1.5rem)] flex-col justify-between overflow-hidden rounded-2xl bg-black text-foreground md:min-h-[calc(100svh-var(--height-bar)-1.5rem)]"
     >
       {/* WG star glow: a blurred neon light that follows the pointer */}
       <motion.div

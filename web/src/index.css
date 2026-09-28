@@ -5,9 +5,11 @@
 @import "@fontsource/anton";
 @import "lenis/dist/lenis.css";
 
-/* Tokens and their sources: see DESIGN.md. Dark theme only. */
+/* Tokens and their sources: see DESIGN.md. Dark is the default theme; light is opt-in. */
 
 @custom-variant dark (&:is(.dark *));
+/* Outside every `.dark` scope: the page in light theme, but not the always-dark panels in it. */
+@custom-variant light (&:not(.dark *));
 /* Stacked (below lg) on a short screen, e.g. an iPhone SE: the loading screen tightens up. */
 @custom-variant compact (@media (max-width: 1023.98px) and (max-height: 760px));
 
@@ -25,6 +27,7 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-ink: var(--primary-ink);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -54,6 +57,38 @@
   --height-bar: 80px;
   --height-bar-mobile: 56px;
 
+  /* Light theme. Neon stays the fill colour; text that would be neon uses primary-ink,
+     since neon on a light background is unreadable. */
+  --background: #f1f1ec;
+  --foreground: #0b0b0b;
+  --card: rgb(0 0 0 / 0.04);
+  --card-foreground: #0b0b0b;
+  --popover: #fff;
+  --popover-foreground: #0b0b0b;
+  --primary: #d4fb08;
+  --primary-hover: #bae200;
+  --primary-foreground: #253300;
+  --primary-ink: #4a6400;
+  --secondary: rgb(0 0 0 / 0.06);
+  --secondary-foreground: #0b0b0b;
+  --muted: rgb(0 0 0 / 0.06);
+  --muted-foreground: rgb(0 0 0 / 0.6);
+  --accent: rgb(0 0 0 / 0.06);
+  --accent-foreground: #0b0b0b;
+  --surface: rgb(0 0 0 / 0.04);
+  --destructive: #d42600;
+  --border: rgb(0 0 0 / 0.1);
+  --input: rgb(0 0 0 / 0.2);
+  --ring: #0b0b0b;
+  --neon-from: #2f7a12;
+  --neon-to: #7a6b00;
+
+  color-scheme: light;
+}
+
+/* Dark theme: on <html> by default, and on panels that stay dark in either theme
+   (hero, game cards, loading screen). */
+.dark {
   --background: #000;
   --foreground: #fff;
   --card: rgb(255 255 255 / 0.05);
@@ -63,6 +98,7 @@
   --primary: #d4fb08;
   --primary-hover: #bae200;
   --primary-foreground: #253300;
+  --primary-ink: #d4fb08;
   --secondary: rgb(255 255 255 / 0.1);
   --secondary-foreground: #fff;
   --muted: rgb(255 255 255 / 0.1);
@@ -95,6 +131,39 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
+  /* Scrollbars: a slim pill in the input colour, neon on hover, floating on a clear
+     track. The transparent border insets the pill from the edge. Chrome ignores these
+     ::-webkit rules once scrollbar-color is set, so that is left to Firefox. */
+  ::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 5px solid transparent;
+    border-radius: 999px;
+    background: var(--input) padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary-ink);
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--input) transparent;
+    }
+  }
+}
+
+/* Theme switch: the new theme spreads in a circle from the toggle (see use-theme.ts). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 @utility glow-primary {
@@ -103,12 +172,12 @@
 
 /* WG gradient words; `-reverse` runs yellow → green like their alternate words. */
 @utility text-neon {
-  background-image: linear-gradient(90deg, var(--neon-from), var(--primary) 50%, var(--neon-to));
+  background-image: linear-gradient(90deg, var(--neon-from), var(--primary-ink) 50%, var(--neon-to));
   background-clip: text;
   color: transparent;
 }
 @utility text-neon-reverse {
-  background-image: linear-gradient(90deg, var(--neon-to), var(--primary) 50%, var(--neon-from));
+  background-image: linear-gradient(90deg, var(--neon-to), var(--primary-ink) 50%, var(--neon-from));
   background-clip: text;
   color: transparent;
 }
@@ -153,8 +222,8 @@
   animation: glow-pulse 2.4s ease-in-out infinite;
 }
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 1px var(--primary), 0 0 6px rgb(212 251 8 / 0.25); }
-  50% { box-shadow: 0 0 0 1px var(--primary), 0 0 22px rgb(212 251 8 / 0.45); }
+  0%, 100% { box-shadow: 0 0 0 1px var(--primary-ink), 0 0 6px rgb(212 251 8 / 0.25); }
+  50% { box-shadow: 0 0 0 1px var(--primary-ink), 0 0 22px rgb(212 251 8 / 0.45); }
 }
 
 /* Loading sweep: a soft light band crossing a surface. (Not `shimmer`: shadcn's utility of

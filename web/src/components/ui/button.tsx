@@ -16,10 +16,11 @@ const buttonVariants = cva(
         default:
           "rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover hover:shadow-[0_0_25px_rgb(212_251_8/0.45)]",
         secondary:
-          "rounded-sm border-white/10 bg-gradient-to-br from-black/30 to-neutral-700/30 text-foreground hover:-translate-y-px hover:border-white/25 hover:to-neutral-800/50 active:translate-y-0",
-        ghost: "rounded-sm text-foreground hover:text-primary",
-        round: "rounded-full border border-white/10 bg-black text-foreground hover:border-primary hover:text-primary",
-        link: "text-primary underline-offset-4 hover:underline",
+          "rounded-sm border-white/10 bg-gradient-to-br from-black/30 to-neutral-700/30 text-foreground hover:-translate-y-px hover:border-white/25 hover:to-neutral-800/50 active:translate-y-0 light:border-black/10 light:from-white/70 light:to-neutral-200/70 light:hover:border-black/25 light:hover:to-neutral-300/70",
+        ghost: "rounded-sm text-foreground hover:text-primary-ink",
+        // Always a black circle, in either theme
+        round: "rounded-full border border-white/10 bg-black text-white hover:border-primary hover:text-primary",
+        link: "text-primary-ink underline-offset-4 hover:underline",
       },
       size: {
         default: "h-[42px] px-6",

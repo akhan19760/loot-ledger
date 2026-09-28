@@ -70,12 +70,17 @@ export function GameCard({ game, storeName, index, onOpen }: Props) {
     >
       <motion.button
         type="button"
-        onClick={onOpen}
+        // The game dialog opens out of (and closes back into) the element with this attribute.
+        data-game-card={game.id}
+        onClick={() => {
+          onPointerLeave() // level the tilt so the dialog grows from the card's resting box
+          onOpen()
+        }}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
         whileTap={{ scale: 0.97 }}
         style={reduced ? undefined : { rotateX, rotateY }}
-        className="group/card relative block aspect-[4/5] w-full overflow-hidden rounded-2xl bg-surface text-left shadow-[0_0_0_0_rgb(212_251_8/0)] transition-shadow duration-500 outline-none hover:shadow-[0_0_40px_-8px_rgb(212_251_8/0.55)] focus-visible:ring-2 focus-visible:ring-primary"
+        className="dark group/card relative block aspect-[4/5] w-full overflow-hidden rounded-2xl bg-surface text-left text-foreground shadow-[0_0_0_0_rgb(212_251_8/0)] transition-shadow duration-500 outline-none hover:shadow-[0_0_40px_-8px_rgb(212_251_8/0.55)] focus-visible:ring-2 focus-visible:ring-primary"
       >
         {/* INK clip-path reveal, then a slow zoom on hover */}
         <motion.div className="absolute inset-0" variants={art}>

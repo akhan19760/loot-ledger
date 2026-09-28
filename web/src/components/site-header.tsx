@@ -1,4 +1,5 @@
-import { motion, useMotionValueEvent, useScroll } from "motion/react"
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react"
+import { Moon, Sun } from "lucide-react"
 import { useState } from "react"
 import { cn } from "cn"
 import type { FiltersResponse } from "@ugs/shared"
@@ -8,6 +9,7 @@ import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { Button } from "@/components/ui/button"
 import { Stat } from "@/components/ui/stat"
+import { useTheme } from "@/hooks/use-theme"
 import { timeAgo } from "@/lib/format"
 import { ease } from "@/lib/motion"
 
@@ -34,7 +36,7 @@ export function SiteHeader({ filters, online, introDone }: { filters: FiltersRes
       transition={{ duration: 0.8, ease: ease.wg }}
       className={cn(
         "fixed inset-x-2 top-2 z-40 flex h-(--height-bar-mobile) items-center justify-between gap-4 rounded-2xl border px-3 backdrop-blur-[16px] transition-colors duration-500 md:h-(--height-bar) md:px-4",
-        scrolled ? "border-white/10 bg-neutral-900/70" : "border-transparent bg-neutral-800/40",
+        scrolled ? "border-border bg-popover/70" : "border-transparent bg-popover/40",
       )}
     >
       <div className="flex items-center gap-4 md:gap-5">
@@ -69,9 +71,41 @@ export function SiteHeader({ filters, online, introDone }: { filters: FiltersRes
           <RollText>Stores</RollText>
         </Button>
         {filters?.generated && (
-          <Stat className="ml-2" value={timeAgo(filters.generated)} label="Updated" title={new Date(filters.generated).toLocaleString()} />
+          <Stat className="mx-2" value={timeAgo(filters.generated)} label="Updated" title={new Date(filters.generated).toLocaleString()} />
         )}
+        <ThemeToggle />
       </nav>
     </motion.header>
+  )
+}
+
+function ThemeToggle() {
+  const { theme, toggle } = useTheme()
+  const dark = theme === "dark"
+  return (
+    <Button
+      variant="round"
+      size="icon-sm"
+      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
+      title={dark ? "Light theme" : "Dark theme"}
+      className="overflow-hidden md:size-11"
+      onClick={(e) => {
+        const r = e.currentTarget.getBoundingClientRect()
+        toggle({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+      }}
+    >
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={theme}
+          initial={{ y: "120%", rotate: -90, opacity: 0 }}
+          animate={{ y: "0%", rotate: 0, opacity: 1 }}
+          exit={{ y: "-120%", rotate: 90, opacity: 0 }}
+          transition={{ duration: 0.5, ease: ease.inkRoll }}
+          className="grid place-items-center"
+        >
+          {dark ? <Moon /> : <Sun />}
+        </motion.span>
+      </AnimatePresence>
+    </Button>
   )
 }

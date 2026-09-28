@@ -32,7 +32,7 @@ export function CoverArt({ src, title, sizes, width, className }: Props) {
     )
   return (
     <div className={cn("stripes grid size-full place-items-center bg-surface", className)}>
-      <span className="font-display text-5xl text-white/30">{initials(title)}</span>
+      <span className="font-display text-5xl text-foreground/30">{initials(title)}</span>
     </div>
   )
 }
