@@ -1,7 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { PLATFORM_FILTERS, type FiltersResponse, type Game, type GamesQuery, type GamesResponse } from "@ugs/shared";
-import type { Db } from "../db/client.ts";
-import { getLibrary } from "../library.ts";
+import type { LibrarySnapshot } from "../library.ts";
 import { libraryFilters, queryGames } from "../query.ts";
 
 // Defaults match what the old page showed first: PlayStation games in stock, cheapest first.
@@ -22,17 +21,17 @@ const gamesQuerySchema = {
   },
 } as const;
 
-export function gamesRoutes(app: FastifyInstance, { db }: { db: Db }) {
+export function gamesRoutes(app: FastifyInstance, { library }: { library: () => LibrarySnapshot }) {
   app.get<{ Querystring: GamesQuery }>("/api/games", { schema: { querystring: gamesQuerySchema } }, async (req): Promise<GamesResponse> =>
-    queryGames(getLibrary(db), req.query),
+    queryGames(library(), req.query),
   );
 
   app.get<{ Params: { id: string } }>("/api/games/:id", async (req, reply): Promise<Game> => {
-    const game = getLibrary(db).byId.get(req.params.id);
+    const game = library().byId.get(req.params.id);
     if (!game) return reply.code(404).send({ error: "Not Found", message: `No game with id "${req.params.id}"` });
     const { searchText, ...rest } = game;
     return rest;
   });
 
-  app.get("/api/filters", async (): Promise<FiltersResponse> => libraryFilters(getLibrary(db)));
+  app.get("/api/filters", async (): Promise<FiltersResponse> => libraryFilters(library()));
 }
