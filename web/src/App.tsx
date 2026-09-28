@@ -20,6 +20,7 @@ import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DEFAULT_FILTERS, useLibraryUrl } from "@/hooks/use-library-url"
 import { api } from "@/lib/api"
+import { thumb } from "@/lib/images"
 import { ease } from "@/lib/motion"
 
 const PAGE_SIZE = 60
@@ -43,7 +44,8 @@ export default function App() {
   })
   const heroCovers = useMemo(() => covers.data?.slice(0, 6) ?? [], [covers.data])
   const wallArt = useMemo(() => covers.data?.map((g) => g.image!), [covers.data])
-  const heroArt = useMemo(() => heroCovers.map((g) => g.image!), [heroCovers])
+  // The same 400px copies the hero shows, so the loading screen's preload is what the hero reuses.
+  const heroArt = useMemo(() => heroCovers.map((g) => thumb(g.image!, 400)), [heroCovers])
   const games = useInfiniteQuery({
     queryKey: ["games", filters],
     queryFn: ({ pageParam }) => api.games({ ...filters, page: pageParam, pageSize: PAGE_SIZE }),

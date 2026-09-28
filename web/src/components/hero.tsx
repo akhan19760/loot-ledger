@@ -204,7 +204,8 @@ function FloatingCover({
         transition={{ duration: 1.1, ease: ease.wg, delay: 0.25 + index * 0.08 }}
         className="pointer-events-auto aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-[0_30px_60px_-20px_rgb(0_0_0/0.8)]"
       >
-        <CoverArt src={game.image} title={game.title} />
+        {/* At most 190px wide; 400px covers 2x screens and is the copy the loading screen preloads */}
+        <CoverArt src={game.image} title={game.title} width={400} />
       </motion.div>
     </motion.div>
   )
