@@ -91,6 +91,31 @@ describe("queryGames", () => {
   });
 });
 
+describe("queryGames with ids (lookup)", () => {
+  const lookup = (ids: string[], over: Partial<GamesQuery> = {}) => queryGames(lib, { ...q(over), ids });
+
+  it("only searches the given games, with the usual filters and sort", () => {
+    const res = lookup(["game:elden-ring", "game:halo-infinite", "game:mario-wonder"], { sort: "az" });
+    expect(res.items.map((g) => g.id)).toEqual(["game:elden-ring", "game:halo-infinite", "game:mario-wonder"]);
+    expect(lookup(["game:elden-ring", "game:halo-infinite"], { platform: "PS" }).items.map((g) => g.id)).toEqual(["game:elden-ring"]);
+  });
+
+  it("reports ids no game has, but not ones hidden by filters", () => {
+    expect(lookup(["game:elden-ring", "game:gone", "game:halo-infinite"], { platform: "PS" }).missing).toEqual(["game:gone"]);
+  });
+
+  it("totals the cheapest in-stock price over every match, not just the page", () => {
+    const res = lookup(["game:elden-ring", "game:god-of-war-ragnarok", "game:mario-wonder"], { pageSize: 1 });
+    expect(res.items).toHaveLength(1);
+    // Elden Ring 7000 (used PS4) + God of War 8000; Mario Wonder is out of stock.
+    expect(res.inStock).toEqual({ games: 2, cheapestSum: 15000 });
+  });
+
+  it("leaves plain queries without lookup fields", () => {
+    expect(queryGames(lib, q())).not.toHaveProperty("missing");
+  });
+});
+
 describe("libraryFilters", () => {
   it("counts genres, lists present platforms and totals", () => {
     const f = libraryFilters(lib);

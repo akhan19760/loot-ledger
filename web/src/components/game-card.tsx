@@ -2,6 +2,7 @@ import { motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring,
 import { ArrowUpRight } from "lucide-react"
 import type { GameSummary } from "@ugs/shared"
 import { CoverArt } from "@/components/cover-art"
+import { ShelfCardButtons } from "@/components/shelf-buttons"
 import { Badge } from "@/components/ui/badge"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { formatPrice } from "@/lib/format"
@@ -68,62 +69,68 @@ export function GameCard({ game, storeName, index, onOpen }: Props) {
       viewport={{ once: true, margin: "0px 0px -6% 0px" }}
       style={{ perspective: 1000 }}
     >
-      <motion.button
-        type="button"
+      {/* The tilting card holds the open button and, beside it, the shelf buttons (buttons can't nest). */}
+      <motion.div
         // The game dialog opens out of (and closes back into) the element with this attribute.
         data-game-card={game.id}
-        onClick={() => {
-          onPointerLeave() // level the tilt so the dialog grows from the card's resting box
-          onOpen()
-        }}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
-        whileTap={{ scale: 0.97 }}
         style={reduced ? undefined : { rotateX, rotateY }}
-        className="dark group/card relative block aspect-[4/5] w-full overflow-hidden rounded-2xl bg-surface text-left text-foreground shadow-[0_0_0_0_rgb(212_251_8/0)] transition-shadow duration-500 outline-none hover:shadow-[0_0_40px_-8px_rgb(212_251_8/0.55)] focus-visible:ring-2 focus-visible:ring-primary"
+        className="dark group/card relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-surface text-foreground shadow-[0_0_0_0_rgb(212_251_8/0)] transition-shadow duration-500 hover:shadow-[0_0_40px_-8px_rgb(212_251_8/0.55)]"
       >
-        {/* INK clip-path reveal, then a slow zoom on hover */}
-        <motion.div className="absolute inset-0" variants={art}>
-          <CoverArt src={game.image} title={game.title} sizes={CARD_SIZES} className="transition-transform duration-[1.2s] ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-110" />
-        </motion.div>
-
-        <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/85 to-transparent transition-[height] duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:h-full sm:h-3/4" />
-        <motion.div aria-hidden style={{ backgroundImage: glare }} className="pointer-events-none absolute inset-0 opacity-0 mix-blend-screen transition-opacity duration-300 group-hover/card:opacity-100" />
-        <span className="pointer-events-none absolute inset-0 rounded-2xl border border-white/5 transition-colors duration-300 group-hover/card:border-primary" />
-
-        {/* WG black circle with the arrow that spins in on hover */}
-        <span className="absolute top-3 right-3 grid size-10 scale-50 place-items-center rounded-full bg-black text-primary opacity-0 transition-[scale,opacity] duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] group-hover/card:scale-100 group-hover/card:opacity-100">
-          <ArrowUpRight className="size-4 -rotate-90 transition-transform duration-700 ease-[cubic-bezier(0.645,0.045,0.355,1)] group-hover/card:rotate-0" />
-        </span>
-
-        <div className="absolute inset-x-0 bottom-0 grid gap-2 p-3 transition-transform duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] [text-shadow:0_1px_14px_rgb(0_0_0/0.85)] group-hover/card:-translate-y-1 sm:p-4">
-          <Eyebrow className="text-muted-foreground transition-colors duration-300 group-hover/card:text-primary">
-            {[best.platform, best.condition].filter(Boolean).join(" · ")}
-          </Eyebrow>
-          <h3 className="line-clamp-3 font-display text-2xl leading-[0.95] uppercase">{game.title}</h3>
-          <div className="flex min-w-0 items-baseline justify-between gap-2">
-            <span className={`text-lg font-semibold whitespace-nowrap tabular-nums sm:text-xl ${best.in_stock ? "text-primary" : "text-muted-foreground"}`}>
-              {formatPrice(best.price)}
-            </span>
-            <span className="min-w-0 truncate text-xs text-muted-foreground">{storeName}</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {!best.in_stock && <Badge variant="destructive">Out of stock</Badge>}
-            <Badge className="hidden sm:inline-flex">
-              {game.storeCount} {game.storeCount === 1 ? "store" : "stores"}
-            </Badge>
-            {game.spread >= 100 && <Badge variant="outline">Save up to {formatPrice(game.spread)}</Badge>}
-          </div>
-          {/* Rises in on hover */}
-          <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:grid-rows-[1fr]">
-            <div className="overflow-hidden">
-              <span className="mt-1 inline-flex text-xs font-semibold tracking-wider text-primary uppercase">
-                View {game.offerCount} {game.offerCount === 1 ? "offer" : "offers"} ↗
+        <motion.button
+          type="button"
+          onClick={() => {
+            onPointerLeave() // level the tilt so the dialog grows from the card's resting box
+            onOpen()
+          }}
+          whileTap={{ scale: 0.97 }}
+          className="absolute inset-0 block rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+        >
+          {/* INK clip-path reveal, then a slow zoom on hover */}
+          <motion.div className="absolute inset-0" variants={art}>
+            <CoverArt src={game.image} title={game.title} sizes={CARD_SIZES} className="transition-transform duration-[1.2s] ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-110" />
+          </motion.div>
+  
+          <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/85 to-transparent transition-[height] duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:h-full sm:h-3/4" />
+          <motion.div aria-hidden style={{ backgroundImage: glare }} className="pointer-events-none absolute inset-0 opacity-0 mix-blend-screen transition-opacity duration-300 group-hover/card:opacity-100" />
+          <span className="pointer-events-none absolute inset-0 rounded-2xl border border-white/5 transition-colors duration-300 group-hover/card:border-primary" />
+  
+          {/* WG black circle with the arrow that spins in on hover */}
+          <span className="absolute top-3 right-3 grid size-10 scale-50 place-items-center rounded-full bg-black text-primary opacity-0 transition-[scale,opacity] duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] group-hover/card:scale-100 group-hover/card:opacity-100">
+            <ArrowUpRight className="size-4 -rotate-90 transition-transform duration-700 ease-[cubic-bezier(0.645,0.045,0.355,1)] group-hover/card:rotate-0" />
+          </span>
+  
+          <div className="absolute inset-x-0 bottom-0 grid gap-2 p-3 transition-transform duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] [text-shadow:0_1px_14px_rgb(0_0_0/0.85)] group-hover/card:-translate-y-1 sm:p-4">
+            <Eyebrow className="text-muted-foreground transition-colors duration-300 group-hover/card:text-primary">
+              {[best.platform, best.condition].filter(Boolean).join(" · ")}
+            </Eyebrow>
+            <h3 className="line-clamp-3 font-display text-2xl leading-[0.95] uppercase">{game.title}</h3>
+            <div className="flex min-w-0 items-baseline justify-between gap-2">
+              <span className={`text-lg font-semibold whitespace-nowrap tabular-nums sm:text-xl ${best.in_stock ? "text-primary" : "text-muted-foreground"}`}>
+                {formatPrice(best.price)}
               </span>
+              <span className="min-w-0 truncate text-xs text-muted-foreground">{storeName}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {!best.in_stock && <Badge variant="destructive">Out of stock</Badge>}
+              <Badge className="hidden sm:inline-flex">
+                {game.storeCount} {game.storeCount === 1 ? "store" : "stores"}
+              </Badge>
+              {game.spread >= 100 && <Badge variant="outline">Save up to {formatPrice(game.spread)}</Badge>}
+            </div>
+            {/* Rises in on hover */}
+            <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:grid-rows-[1fr]">
+              <div className="overflow-hidden">
+                <span className="mt-1 inline-flex text-xs font-semibold tracking-wider text-primary uppercase">
+                  View {game.offerCount} {game.offerCount === 1 ? "offer" : "offers"} ↗
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      </motion.button>
+        </motion.button>
+        <ShelfCardButtons game={game} className="absolute top-3 left-3" />
+      </motion.div>
     </motion.div>
   )
 }

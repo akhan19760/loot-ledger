@@ -7,6 +7,7 @@ import {
   PLATFORM_FILTERS,
   type FiltersResponse,
   type GameSummary,
+  type GamesLookup,
   type GamesQuery,
   type GamesResponse,
   type SortOrder,
@@ -20,10 +21,17 @@ const SORTS: Record<SortOrder, (a: GameSummary, b: GameSummary) => number> = {
   az: (a, b) => a.title.localeCompare(b.title),
 };
 
-export function queryGames(lib: LibrarySnapshot, query: GamesQuery): GamesResponse {
+/** A lookup (with `ids`) only searches those games, and also reports missing ids and in-stock totals. */
+export function queryGames(lib: LibrarySnapshot, query: GamesQuery | GamesLookup): GamesResponse {
   const q = normalizeSearch(query.q);
+  const only = "ids" in query ? new Set(query.ids) : null;
+  const found = new Set<string>();
   const rows: GameSummary[] = [];
   for (const g of lib.games) {
+    if (only) {
+      if (!only.has(g.id)) continue;
+      found.add(g.id);
+    }
     if (query.kind && g.kind !== query.kind) continue;
     if (query.genre && !g.genres.includes(query.genre)) continue;
     if (q && !g.searchText.includes(q)) continue;
@@ -45,11 +53,19 @@ export function queryGames(lib: LibrarySnapshot, query: GamesQuery): GamesRespon
   rows.sort(SORTS[query.sort]);
 
   const start = (query.page - 1) * query.pageSize;
-  return {
+  const page: GamesResponse = {
     total: rows.length,
     page: query.page,
     pageSize: query.pageSize,
     items: rows.slice(start, start + query.pageSize),
+  };
+  if (!only) return page;
+
+  const inStock = rows.filter((r) => r.best.in_stock);
+  return {
+    ...page,
+    missing: [...only].filter((id) => !found.has(id)),
+    inStock: { games: inStock.length, cheapestSum: inStock.reduce((sum, r) => sum + r.best.price, 0) },
   };
 }
 

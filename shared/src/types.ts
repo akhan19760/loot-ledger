@@ -60,6 +60,15 @@ export interface GamesQuery {
   pageSize: number;
 }
 
+/**
+ * Body of POST /api/games/lookup: the usual query, limited to these games (a reader's
+ * wishlist or collection, which lives in their browser). POST because a collection's
+ * ids can outgrow a URL.
+ */
+export interface GamesLookup extends GamesQuery {
+  ids: string[];
+}
+
 /** A game with only what a grid card needs; details come from /api/games/:id. */
 export interface GameSummary {
   id: string;
@@ -81,6 +90,10 @@ export interface GamesResponse {
   page: number;
   pageSize: number;
   items: GameSummary[];
+  /** Lookup only: ids no game has any more (no store lists it now). */
+  missing?: string[];
+  /** Lookup only, over every match rather than this page: matches in stock, and the sum of their cheapest prices. */
+  inStock?: { games: number; cheapestSum: number };
 }
 
 export interface FiltersResponse {

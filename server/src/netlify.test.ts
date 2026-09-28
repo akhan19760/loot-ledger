@@ -46,6 +46,20 @@ describe("Netlify function", () => {
     expect(await (await get("/api/games/game%3Anope", "203.0.113.2")).json()).toMatchObject({ error: "Not Found" });
   });
 
+  it("looks up a reader's games by POST, never cached", async () => {
+    const res = await handler(
+      new Request("https://lootledger.example/api/games/lookup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids: ["game:halo", "game:gone"], platform: "" }),
+      }),
+      { ip: "203.0.113.9" },
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ items: [{ id: "game:halo" }], missing: ["game:gone"], inStock: { games: 1, cheapestSum: 5000 } });
+    expect(cdn(res)).toBe("no-store");
+  });
+
   it("rejects bad queries without caching them", async () => {
     const res = await get("/api/games?pageSize=999", "203.0.113.3");
     expect(res.status).toBe(400);

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { PLATFORM_FILTERS, type FiltersResponse, type Game, type GamesQuery, type GamesResponse } from "@ugs/shared";
+import { PLATFORM_FILTERS, type FiltersResponse, type Game, type GamesLookup, type GamesQuery, type GamesResponse } from "@ugs/shared";
 import type { LibrarySnapshot } from "../library.ts";
 import { libraryFilters, queryGames } from "../query.ts";
 
@@ -21,9 +21,24 @@ const gamesQuerySchema = {
   },
 } as const;
 
+// The same query in a JSON body, limited to a reader's wishlist or collection.
+const lookupBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["ids"],
+  properties: {
+    ...gamesQuerySchema.properties,
+    ids: { type: "array", maxItems: 2000, items: { type: "string", maxLength: 200 } },
+  },
+} as const;
+
 export function gamesRoutes(app: FastifyInstance, { library }: { library: () => LibrarySnapshot }) {
   app.get<{ Querystring: GamesQuery }>("/api/games", { schema: { querystring: gamesQuerySchema } }, async (req): Promise<GamesResponse> =>
     queryGames(library(), req.query),
+  );
+
+  app.post<{ Body: GamesLookup }>("/api/games/lookup", { schema: { body: lookupBodySchema } }, async (req): Promise<GamesResponse> =>
+    queryGames(library(), req.body),
   );
 
   app.get<{ Params: { id: string } }>("/api/games/:id", async (req, reply): Promise<Game> => {

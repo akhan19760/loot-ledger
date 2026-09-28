@@ -1,7 +1,7 @@
-import type { FiltersResponse, Game, GamesQuery, GamesResponse } from "@ugs/shared"
+import type { FiltersResponse, Game, GamesLookup, GamesQuery, GamesResponse } from "@ugs/shared"
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(path, { headers: { Accept: "application/json" } })
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, { ...init, headers: { Accept: "application/json", ...init?.headers } })
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { message?: string } | null
     throw new Error(body?.message ?? `${res.status} ${res.statusText}`)
@@ -16,7 +16,10 @@ function gamesUrl(query: GamesQuery) {
 }
 
 export const api = {
-  filters: () => get<FiltersResponse>("/api/filters"),
-  games: (query: GamesQuery) => get<GamesResponse>(gamesUrl(query)),
-  game: (id: string) => get<Game>(`/api/games/${encodeURIComponent(id)}`),
+  filters: () => request<FiltersResponse>("/api/filters"),
+  games: (query: GamesQuery) => request<GamesResponse>(gamesUrl(query)),
+  /** The same query, limited to the reader's wishlist or collection. */
+  lookup: (query: GamesLookup) =>
+    request<GamesResponse>("/api/games/lookup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(query) }),
+  game: (id: string) => request<Game>(`/api/games/${encodeURIComponent(id)}`),
 }

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { DEFAULT_FILTERS, type Filters } from "@/hooks/use-library-url"
+import { DEFAULT_FILTERS, type Filters, type LibraryList } from "@/hooks/use-library-url"
 import { ease } from "@/lib/motion"
 
 // Radix toggle/select items can't have an empty value, so "any" is spelled ALL here.
@@ -33,15 +33,31 @@ interface Props {
   total: number | undefined
   onChange: (patch: Partial<Filters>) => void
   onReset: () => void
+  list: LibraryList
+  /** Games on the reader's wishlist and in their collection. */
+  counts: { wishlist: number; collection: number }
+  onListChange: (list: LibraryList) => void
 }
 
-export function FilterBar({ filters, meta, total, onChange, onReset }: Props) {
+export function FilterBar({ filters, meta, total, onChange, onReset, list, counts, onListChange }: Props) {
   const changed = (Object.keys(DEFAULT_FILTERS) as (keyof Filters)[]).some((k) => filters[k] !== DEFAULT_FILTERS[k])
   // Keep a platform that came in by link (e.g. PC) visible as a chip.
   const platforms = PLATFORMS.some(([v]) => v === filters.platform) ? PLATFORMS : [...PLATFORMS, [filters.platform, filters.platform] as const]
 
   return (
     <section aria-label="Filters" className="grid grid-cols-1 gap-6 rounded-2xl border border-border/50 bg-surface p-5 md:gap-8 md:p-8">
+      <ChipGroup
+        label="Show"
+        value={list}
+        options={[
+          ["all", "All games"],
+          ["wishlist", `Wishlist · ${counts.wishlist}`],
+          ["collection", `Collection · ${counts.collection}`],
+        ]}
+        // ChipGroup spells "any" as ALL ("all"), so the all-games chip comes back as "".
+        onChange={(v) => onListChange((v || "all") as LibraryList)}
+      />
+
       <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[auto_auto_minmax(0,1fr)]">

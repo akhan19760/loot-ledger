@@ -8,6 +8,7 @@ import { CoverArt } from "@/components/cover-art"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollLock } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
+import { ShelfActions } from "@/components/shelf-buttons"
 import { Badge } from "@/components/ui/badge"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -252,6 +253,7 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
           <DialogDescription>
             {offers.length} {offers.length === 1 ? "offer" : "offers"} across {storeCount} {storeCount === 1 ? "store" : "stores"}
           </DialogDescription>
+          <ShelfActions game={game.data} />
         </div>
       </DialogHeader>
 
