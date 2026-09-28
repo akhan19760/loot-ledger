@@ -22,6 +22,9 @@ const Env = z.object({
   // genre list if missing); "always" also refreshes every store; "never" waits
   // for the schedule.
   REFRESH_ON_START: z.enum(["if-empty", "always", "never"]).default("if-empty"),
+  // API requests allowed per client IP per window.
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(300),
+  RATE_LIMIT_WINDOW: z.string().default("1 minute"),
 });
 
 const env = Env.parse(process.env);
