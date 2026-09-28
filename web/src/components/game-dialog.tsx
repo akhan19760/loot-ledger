@@ -58,7 +58,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose }: Props) {
                 transition={{ duration: 1, ease: ease.wg, delay: 0.1 }}
                 className="aspect-[4/5] w-20 shrink-0 overflow-hidden rounded-sm bg-surface shadow-[0_20px_40px_-12px_rgb(0_0_0/0.8)] sm:w-28"
               >
-                <CoverArt src={game.data.image} title={game.data.title} />
+                <CoverArt src={game.data.image} title={game.data.title} sizes="(min-width: 640px) 112px, 80px" />
               </motion.div>
               <div className="grid min-w-0 gap-3">
                 <Eyebrow className="text-primary">{game.data.genres.join(" · ") || "Genre unknown"}</Eyebrow>

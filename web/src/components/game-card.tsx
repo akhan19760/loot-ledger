@@ -7,6 +7,9 @@ import { Eyebrow } from "@/components/ui/eyebrow"
 import { formatPrice } from "@/lib/format"
 import { ease, pointerSpring } from "@/lib/motion"
 
+// Card width per grid breakpoint in App.tsx: 2 columns, then 3 / 4 / 5 / 6 / 7.
+const CARD_SIZES = "(min-width: 2200px) 14vw, (min-width: 1536px) 17vw, (min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+
 interface Props {
   game: GameSummary
   storeName: string
@@ -76,7 +79,7 @@ export function GameCard({ game, storeName, index, onOpen }: Props) {
       >
         {/* INK clip-path reveal, then a slow zoom on hover */}
         <motion.div className="absolute inset-0" variants={art}>
-          <CoverArt src={game.image} title={game.title} className="transition-transform duration-[1.2s] ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-110" />
+          <CoverArt src={game.image} title={game.title} sizes={CARD_SIZES} className="transition-transform duration-[1.2s] ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-110" />
         </motion.div>
 
         <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/85 to-transparent transition-[height] duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:h-full sm:h-3/4" />
