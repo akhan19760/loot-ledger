@@ -3,18 +3,18 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/urbanist";
 @import "@fontsource/anton";
-@import "@fontsource-variable/jetbrains-mono";
 @import "lenis/dist/lenis.css";
 
 /* Tokens and their sources: see DESIGN.md. Dark theme only. */
 
 @custom-variant dark (&:is(.dark *));
+/* Stacked (below lg) on a short screen, e.g. an iPhone SE: the loading screen tightens up. */
+@custom-variant compact (@media (max-width: 1023.98px) and (max-height: 760px));
 
 @theme inline {
   --font-sans: "Urbanist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-display);
   --font-display: "Anton", "Arial Narrow", sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -157,13 +157,14 @@
   50% { box-shadow: 0 0 0 1px var(--primary), 0 0 22px rgb(212 251 8 / 0.45); }
 }
 
-/* Loading shimmer: a soft light band sweeping across a surface. */
-@utility shimmer {
+/* Loading sweep: a soft light band crossing a surface. (Not `shimmer`: shadcn's utility of
+   that name is a text effect that makes an element's text transparent.) */
+@utility sweep {
   background-image: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.06) 50%, transparent 80%);
   background-size: 200% 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
+  animation: sweep 1.6s ease-in-out infinite;
 }
-@keyframes shimmer {
+@keyframes sweep {
   from { background-position: 150% 0; }
   to { background-position: -50% 0; }
 }
@@ -173,12 +174,26 @@
   transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
+/* Loading screen cover wall: a column of two identical loops drifting by one loop. */
+@utility wall-drift {
+  animation: wall-drift 50s linear infinite;
+}
+@keyframes wall-drift {
+  to { transform: translateY(-50%); }
+}
+
+/* Loading screen: cut a bar into 40 blocks with 3px gaps, like a game HP bar. */
+@utility segments {
+  mask-image: repeating-linear-gradient(90deg, #000 0 calc(2.5% - 3px), transparent calc(2.5% - 3px) 2.5%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .grain,
   .hazard-band,
   .equalizer-bar,
   .glow-pulse,
-  .shimmer {
+  .sweep,
+  .wall-drift {
     animation: none !important;
   }
 }

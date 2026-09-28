@@ -2,12 +2,13 @@ import { useCallback, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { ArrowDown } from "lucide-react"
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
+import type { GamesResponse } from "@ugs/shared"
 import { FilterBar } from "@/components/filter-bar"
 import { GameCard } from "@/components/game-card"
 import { GameDialog } from "@/components/game-dialog"
 import { Hero } from "@/components/hero"
+import { LoadingScreen } from "@/components/loading-screen"
 import { Grain } from "@/components/motion/grain"
-import { IntroLoader } from "@/components/motion/intro-loader"
 import { Reveal } from "@/components/motion/reveal"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
@@ -23,6 +24,8 @@ import { ease } from "@/lib/motion"
 
 const PAGE_SIZE = 60
 
+const withArt = (r: GamesResponse) => r.items.filter((g) => g.image)
+
 export default function App() {
   const { filters, gameId, setFilters, resetFilters, setGameId } = useLibraryUrl()
   const scrollTo = useScrollTo()
@@ -30,13 +33,17 @@ export default function App() {
   const onIntroDone = useCallback(() => setIntroDone(true), [])
 
   const meta = useQuery({ queryKey: ["filters"], queryFn: api.filters, refetchInterval: 5 * 60_000 })
-  // Art for the hero: games sold by the most stores tend to have the best covers.
+  // Art for the hero and the loading screen's wall: games sold by the most stores
+  // tend to have the best covers.
   const covers = useQuery({
     queryKey: ["hero-covers"],
     queryFn: () => api.games({ ...DEFAULT_FILTERS, platform: "", sort: "stores", page: 1, pageSize: 24 }),
-    select: (r) => r.items.filter((g) => g.image).slice(0, 6),
+    select: withArt,
     staleTime: Infinity,
   })
+  const heroCovers = useMemo(() => covers.data?.slice(0, 6) ?? [], [covers.data])
+  const wallArt = useMemo(() => covers.data?.map((g) => g.image!), [covers.data])
+  const heroArt = useMemo(() => heroCovers.map((g) => g.image!), [heroCovers])
   const games = useInfiniteQuery({
     queryKey: ["games", filters],
     queryFn: ({ pageParam }) => api.games({ ...filters, page: pageParam, pageSize: PAGE_SIZE }),
@@ -51,13 +58,23 @@ export default function App() {
 
   return (
     <>
-      <IntroLoader ready={!meta.isPending} onDone={onIntroDone} />
+      <LoadingScreen
+        meta={meta.data}
+        metaFailed={meta.isError}
+        matches={games.data?.pages[0]?.total}
+        matchesFailed={games.isError}
+        covers={wallArt}
+        coversFailed={covers.isError}
+        warm={heroArt}
+        onDone={onIntroDone}
+      />
       <Grain />
       <SiteHeader filters={meta.data} online={!meta.isError} introDone={introDone} />
 
       {/* Full width: only the 8px edge padding, matching the header's inset (WG --gap) */}
-      <main className="grid grid-cols-1 gap-2 px-2 pt-[calc(var(--height-bar-mobile)+1rem)] pb-2 md:pt-[calc(var(--height-bar)+1rem)]">
-        <Hero meta={meta.data} covers={covers.data ?? []} play={introDone} onBrowse={() => scrollTo("library")} onStores={() => scrollTo("stores")} />
+      {/* inert until the loading screen has gone, so focus can't wander behind it */}
+      <main inert={!introDone} className="grid grid-cols-1 gap-2 px-2 pt-[calc(var(--height-bar-mobile)+1rem)] pb-2 md:pt-[calc(var(--height-bar)+1rem)]">
+        <Hero meta={meta.data} covers={heroCovers} play={introDone} onBrowse={() => scrollTo("library")} onStores={() => scrollTo("stores")} />
 
         <section id="library" className="grid scroll-mt-24 grid-cols-1 gap-2">
           <Reveal className="grid gap-4 px-2 pt-16 pb-8 md:px-6 md:pt-28 md:pb-12">
