@@ -5,11 +5,27 @@ export type Kind = "game" | "hardware" | "giftcard" | "other";
 export type Condition = "new" | "used";
 export type Format = "disc" | "digital";
 
+/**
+ * What a store charges to deliver an order of games, read from its own checkout
+ * (server/scripts/check-delivery.ts). `fees[i]` is the fee for i+1 games; the last
+ * one applies to bigger orders.
+ */
+export interface Delivery {
+  karachi: number[];
+  /** Anywhere else in Pakistan (checked with a Lahore address). */
+  elsewhere: number[];
+  /** When the fees were read (YYYY-MM-DD). */
+  checked: string;
+  note?: string;
+}
+
 export interface Store {
   id: string;
   name: string;
   base: string;
   fetched_at: string | null;
+  /** Missing when the store's fees haven't been checked. */
+  delivery?: Delivery | null;
 }
 
 /** One store variant: a single price for a single product option. */

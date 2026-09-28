@@ -1,5 +1,5 @@
 import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import type { Condition, Format, Kind } from "@ugs/shared";
+import type { Condition, Delivery, Format, Kind } from "@ugs/shared";
 
 // Timestamps are ISO-8601 UTC strings.
 
@@ -14,6 +14,8 @@ export const stores = sqliteTable("stores", {
   lastFetchedAt: text("last_fetched_at"),
   lastStatus: text("last_status", { enum: ["ok", "failed"] }),
   lastError: text("last_error"),
+  // Delivery fees from stores.json (read from the store's checkout by scripts/check-delivery.ts).
+  delivery: text("delivery", { mode: "json" }).$type<Delivery>(),
 });
 
 /**

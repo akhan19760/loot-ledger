@@ -8,6 +8,7 @@ Compare new and used PlayStation game prices across Pakistani game stores in one
 - Cheapest offer first, with new/used, PS4/PS5 and disc/digital shown for every offer
 - A Compare view per game: prices by version (platform, condition, format) and store side by side, with how much you save by shopping around, buying used or buying the older console's copy
 - A wishlist and a collection: mark games from any card or game page, see what your wishlist costs today, and back the lists up to a file. They are saved in your browser, so no account is needed
+- A cart optimizer: add the games you want to buy together and it finds the cheapest mix of stores with each store's delivery fee included, next to the cheapest single store and buying each game where it's cheapest
 - Filter by genre, platform, condition, store and stock
 - "Buy" links open the exact product page on the store's site
 
@@ -65,10 +66,22 @@ If the store runs Shopify (`https://<store>/products.json` returns JSON) or WooC
 
 Then run `fetch.py` and `build.py`.
 
+## Delivery fees
+
+The cart optimizer uses each store's delivery fees from `stores.json`: a `delivery` entry with the fee by number of games, for Karachi and for the rest of Pakistan (`fees[i]` is for i+1 games; the last applies to bigger orders). They were read from each store's own checkout, and stores change them, so re-check now and then:
+
+```bash
+pnpm --filter @ugs/server check:delivery              # every store
+pnpm --filter @ugs/server check:delivery games4u      # just one
+```
+
+It fills anonymous carts with 1 to 6 games (nothing is ordered), asks for delivery to a Karachi and a Lahore address, and prints a `delivery` entry per store to paste into `stores.json`. A store without one is planned as free delivery, and the cart says so.
+
 ## Limitations
 
 - Games are matched across stores by title, so titles spelled very differently between stores may show up as separate entries.
 - About 80% of games have a genre.
+- Delivery fees are as checked on the date in `stores.json`, with Lahore standing in for everywhere outside Karachi. The store's checkout has the final word.
 - The wishlist and collection live in one browser. Use Export backup / Import backup to move them to another browser or device.
 - Prices are only as fresh as your last fetch. The store's own page is the final word.
 

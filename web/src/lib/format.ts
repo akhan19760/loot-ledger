@@ -27,3 +27,9 @@ export const initials = (title: string) =>
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join("")
+
+const capitalize = (s: string) => s[0]!.toUpperCase() + s.slice(1)
+
+/** "PS5 · New · Disc" */
+export const versionLabel = (v: { platform: string | null; condition: string; format: string }) =>
+  [v.platform ?? "Platform unknown", capitalize(v.condition), capitalize(v.format)].join(" · ")

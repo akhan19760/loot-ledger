@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { useQuery, type UseQueryResult } from "@tanstack/react-query"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { cn } from "cn"
@@ -8,13 +8,14 @@ import { CoverArt } from "@/components/cover-art"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollLock } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
+import { AddToCartButton } from "@/components/cart-dialog"
 import { ShelfActions } from "@/components/shelf-buttons"
 import { Badge } from "@/components/ui/badge"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { PillToggle } from "@/components/ui/pill-toggle"
 import type { Filters } from "@/hooks/use-library-url"
 import { api } from "@/lib/api"
 import { formatPrice } from "@/lib/format"
@@ -25,6 +26,7 @@ interface Props {
   filters: Filters
   storeNames: Map<string, string>
   onClose: () => void
+  onOpenCart: () => void
 }
 
 // A type, not an interface, so motion accepts it as animation values.
@@ -84,7 +86,7 @@ function findCard(id: string) {
   return visible ? { card, image: el.querySelector("img")?.currentSrc || null } : null
 }
 
-export function GameDialog({ gameId, filters, storeNames, onClose }: Props) {
+export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }: Props) {
   const game = useQuery({ queryKey: ["game", gameId], queryFn: () => api.game(gameId!), enabled: !!gameId })
   useScrollLock(!!gameId)
   const reduced = useReducedMotion()
@@ -168,6 +170,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose }: Props) {
               insights={insights}
               stores={stores}
               filters={filters}
+              onOpenCart={onOpenCart}
             />
           </div>
         </DialogContent>
@@ -216,9 +219,10 @@ interface BodyProps {
   insights: Insights
   stores: { id: string; name: string }[]
   filters: Filters
+  onOpenCart: () => void
 }
 
-function DialogBody({ game, offers, matching, others, cheapest, storeCount, storeNames, view, onViewChange, versions, insights, stores, filters }: BodyProps) {
+function DialogBody({ game, offers, matching, others, cheapest, storeCount, storeNames, view, onViewChange, versions, insights, stores, filters, onOpenCart }: BodyProps) {
   // "Cheapest" marks the best offer of each version (a used PS4 disc isn't competing with a
   // new PS5 one) when it beat another offer, and always the cheapest overall.
   const badged = new Set(versions.flatMap((v) => (v.best && (v.inStock > 1 || v.best.price === cheapest) ? [v.best] : [])))
@@ -253,11 +257,18 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
           <DialogDescription>
             {offers.length} {offers.length === 1 ? "offer" : "offers"} across {storeCount} {storeCount === 1 ? "store" : "stores"}
           </DialogDescription>
-          <ShelfActions game={game.data} />
+          <div className="flex flex-wrap gap-2">
+            <ShelfActions game={game.data} />
+            <AddToCartButton
+              game={game.data}
+              want={{ platform: filters.platform || null, condition: filters.condition || null, format: null }}
+              onOpenCart={onOpenCart}
+            />
+          </div>
         </div>
       </DialogHeader>
 
-      {offers.length > 1 && <ViewToggle view={view} onChange={onViewChange} />}
+      {offers.length > 1 && <PillToggle label="Offers view" value={view} options={VIEWS} onChange={onViewChange} />}
 
       {view === "compare" && offers.length > 1 ? (
         <CompareView versions={versions} insights={insights} stores={stores} filters={filters} />
@@ -281,38 +292,6 @@ const VIEWS: [View, string][] = [
   ["list", "All offers"],
   ["compare", "Compare"],
 ]
-
-/** WG chips with one neon pill gliding between them, like the filter bar's. */
-function ViewToggle({ view, onChange }: { view: View; onChange: (view: View) => void }) {
-  const layoutId = useId()
-  return (
-    <ToggleGroup
-      type="single"
-      size="sm"
-      aria-label="Offers view"
-      value={view}
-      // Radix reports "" when the pressed chip is clicked again: keep the current view.
-      onValueChange={(v) => v && onChange(v as View)}
-    >
-      {VIEWS.map(([v, text]) => (
-        <ToggleGroupItem
-          key={v}
-          value={v}
-          className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
-        >
-          {view === v && (
-            <motion.span
-              layoutId={layoutId}
-              transition={{ type: "spring", bounce: 0.22, duration: 0.55 }}
-              className="absolute inset-0 -z-10 rounded-2xl bg-primary shadow-[0_0_22px_-4px_rgb(212_251_8/0.6)]"
-            />
-          )}
-          <RollText>{text}</RollText>
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
-  )
-}
 
 function OfferList({
   offers,

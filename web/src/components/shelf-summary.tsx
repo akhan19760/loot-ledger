@@ -1,6 +1,6 @@
 import { useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Download, Upload } from "lucide-react"
+import { Download, ShoppingBag, Upload } from "lucide-react"
 import type { GamesResponse } from "@ugs/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
@@ -24,6 +24,8 @@ interface Props {
   /** The first page of the lookup; its totals cover every match. */
   data: GamesResponse | undefined
   onShowAll: () => void
+  /** Wishlist only: put every game on it in the cart optimizer. */
+  onPlan?: () => void
 }
 
 /**
@@ -31,7 +33,7 @@ interface Props {
  * and what buying them costs today (within the filters), plus what the filters hide and
  * which games no store lists any more. Backups live here too, since the lists are per browser.
  */
-export function ShelfSummary({ list, shelf, ids, data, onShowAll }: Props) {
+export function ShelfSummary({ list, shelf, ids, data, onShowAll, onPlan }: Props) {
   const missing = data?.missing ?? []
   const hidden = data ? ids.length - missing.length - data.total : 0
 
@@ -48,7 +50,15 @@ export function ShelfSummary({ list, shelf, ids, data, onShowAll }: Props) {
             className="col-span-2"
           />
         </dl>
-        <BackupButtons />
+        <div className="grid justify-items-start gap-3 sm:justify-items-end">
+          {onPlan && (
+            <Button size="sm" onClick={onPlan}>
+              <ShoppingBag />
+              <RollText>Find the cheapest way to buy them</RollText>
+            </Button>
+          )}
+          <BackupButtons />
+        </div>
       </div>
 
       {(hidden > 0 || missing.length > 0) && (

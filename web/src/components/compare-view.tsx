@@ -3,7 +3,7 @@ import { cn } from "cn"
 import { listingMatches, type Insights, type Listing, type Version } from "@ugs/shared"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import type { Filters } from "@/hooks/use-library-url"
-import { formatPrice } from "@/lib/format"
+import { formatPrice, versionLabel } from "@/lib/format"
 import { ease } from "@/lib/motion"
 
 interface Props {
@@ -18,9 +18,6 @@ const capitalize = (s: string) => s[0]!.toUpperCase() + s.slice(1)
 
 const platformLabel = (p: string | null) => p ?? "Platform unknown"
 
-/** "PS5 · New · Disc" */
-const versionLabel = (v: Pick<Version, "platform" | "condition" | "format">) =>
-  [platformLabel(v.platform), capitalize(v.condition), capitalize(v.format)].join(" · ")
 
 /**
  * The offers as a grid: one panel per version (platform × condition × format), one cell per

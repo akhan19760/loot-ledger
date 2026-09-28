@@ -113,7 +113,7 @@ export function readLibrary(db: Db): LibraryData {
     .map((g) => ({ id: g.id, title: g.title, kind: g.kind, genres: g.genres, image: g.image, listings: byGame.get(g.id) ?? [], searchText: g.searchText }));
 
   const storeList: Store[] = db
-    .select({ id: stores.id, name: stores.name, base: stores.base, fetched_at: stores.lastFetchedAt })
+    .select({ id: stores.id, name: stores.name, base: stores.base, fetched_at: stores.lastFetchedAt, delivery: stores.delivery })
     .from(stores)
     .where(isNotNull(stores.lastFetchedAt))
     .orderBy(sql`rowid`)
