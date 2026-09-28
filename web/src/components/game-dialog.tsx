@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef, useState } from "react"
+import { useId, useLayoutEffect, useRef, useState } from "react"
 import { useQuery, type UseQueryResult } from "@tanstack/react-query"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { cn } from "cn"
-import { byStockThenPrice, listingMatches, type Game, type Listing } from "@ugs/shared"
+import { byStockThenPrice, groupVersions, listingMatches, versionInsights, type Game, type Insights, type Listing, type Version } from "@ugs/shared"
+import { CompareView } from "@/components/compare-view"
 import { CoverArt } from "@/components/cover-art"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollLock } from "@/components/motion/smooth-scroll"
@@ -12,6 +13,7 @@ import { Button, ButtonCircle } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { Filters } from "@/hooks/use-library-url"
 import { api } from "@/lib/api"
 import { formatPrice } from "@/lib/format"
@@ -41,6 +43,32 @@ interface Flight {
   dialog?: Box
 }
 
+type View = "list" | "compare"
+
+const VIEW_KEY = "lootledger-offer-view"
+
+function storedView(): View {
+  try {
+    return localStorage.getItem(VIEW_KEY) === "compare" ? "compare" : "list"
+  } catch {
+    return "list"
+  }
+}
+
+/** The offers view the reader picked last time (a list by default). */
+function useOfferView() {
+  const [view, setView] = useState<View>(storedView)
+  const choose = (next: View) => {
+    setView(next)
+    try {
+      localStorage.setItem(VIEW_KEY, next)
+    } catch {
+      // Storage blocked: the choice lasts until reload.
+    }
+  }
+  return [view, choose] as const
+}
+
 const boxOf = (el: Element): Box => {
   const { top, left, width, height } = el.getBoundingClientRect()
   return { top, left, width, height }
@@ -59,6 +87,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose }: Props) {
   const game = useQuery({ queryKey: ["game", gameId], queryFn: () => api.game(gameId!), enabled: !!gameId })
   useScrollLock(!!gameId)
   const reduced = useReducedMotion()
+  const [view, setView] = useOfferView()
 
   // Container transform: opening, a panel carrying the card's cover grows from the card
   // to the dialog's box while the cover fades out, then hands over to the dialog; closing
@@ -103,6 +132,11 @@ export function GameDialog({ gameId, filters, storeNames, onClose }: Props) {
   const inStock = offers.filter((l) => l.in_stock).map((l) => l.price)
   const cheapest = inStock.length ? Math.min(...inStock) : null
   const storeCount = new Set(offers.map((l) => l.store)).size
+  const versions = groupVersions(offers)
+  const insights = versionInsights(versions)
+  const stores = [...storeNames]
+    .filter(([id]) => offers.some((l) => l.store === id))
+    .map(([id, name]) => ({ id, name }))
 
   return (
     <>
@@ -119,7 +153,21 @@ export function GameDialog({ gameId, filters, storeNames, onClose }: Props) {
         >
           {/* Mounted afresh when the panel lands, so the entrance plays where it can be seen */}
           <div key={inFlight ? "measuring" : "shown"} className="contents">
-            <DialogBody game={game} offers={offers} matching={matching} others={others} cheapest={cheapest} storeCount={storeCount} storeNames={storeNames} />
+            <DialogBody
+              game={game}
+              offers={offers}
+              matching={matching}
+              others={others}
+              cheapest={cheapest}
+              storeCount={storeCount}
+              storeNames={storeNames}
+              view={view}
+              onViewChange={setView}
+              versions={versions}
+              insights={insights}
+              stores={stores}
+              filters={filters}
+            />
           </div>
         </DialogContent>
       </Dialog>
@@ -161,9 +209,18 @@ interface BodyProps {
   cheapest: number | null
   storeCount: number
   storeNames: Map<string, string>
+  view: View
+  onViewChange: (view: View) => void
+  versions: Version[]
+  insights: Insights
+  stores: { id: string; name: string }[]
+  filters: Filters
 }
 
-function DialogBody({ game, offers, matching, others, cheapest, storeCount, storeNames }: BodyProps) {
+function DialogBody({ game, offers, matching, others, cheapest, storeCount, storeNames, view, onViewChange, versions, insights, stores, filters }: BodyProps) {
+  // "Cheapest" marks the best offer of each version (a used PS4 disc isn't competing with a
+  // new PS5 one) when it beat another offer, and always the cheapest overall.
+  const badged = new Set(versions.flatMap((v) => (v.best && (v.inStock > 1 || v.best.price === cheapest) ? [v.best] : [])))
   return game.isPending ? (
     <div className="grid gap-4" aria-busy>
       <Skeleton className="h-28" />
@@ -198,19 +255,76 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
         </div>
       </DialogHeader>
 
-      <OfferList offers={matching} storeNames={storeNames} cheapest={cheapest} startDelay={0.3} />
+      {offers.length > 1 && <ViewToggle view={view} onChange={onViewChange} />}
 
-      {others.length > 0 && (
-        <section className="grid gap-3">
-          <Eyebrow className="text-muted-foreground">Other offers, outside your filters</Eyebrow>
-          <OfferList offers={others} storeNames={storeNames} cheapest={cheapest} startDelay={0.3 + matching.length * 0.05} />
-        </section>
+      {view === "compare" && offers.length > 1 ? (
+        <CompareView versions={versions} insights={insights} stores={stores} filters={filters} />
+      ) : (
+        <>
+          <OfferList offers={matching} storeNames={storeNames} cheapest={cheapest} badged={badged} startDelay={0.3} />
+
+          {others.length > 0 && (
+            <section className="grid gap-3">
+              <Eyebrow className="text-muted-foreground">Other offers, outside your filters</Eyebrow>
+              <OfferList offers={others} storeNames={storeNames} cheapest={cheapest} badged={badged} startDelay={0.3 + matching.length * 0.05} />
+            </section>
+          )}
+        </>
       )}
     </>
   )
 }
 
-function OfferList({ offers, storeNames, cheapest, startDelay }: { offers: Listing[]; storeNames: Map<string, string>; cheapest: number | null; startDelay: number }) {
+const VIEWS: [View, string][] = [
+  ["list", "All offers"],
+  ["compare", "Compare"],
+]
+
+/** WG chips with one neon pill gliding between them, like the filter bar's. */
+function ViewToggle({ view, onChange }: { view: View; onChange: (view: View) => void }) {
+  const layoutId = useId()
+  return (
+    <ToggleGroup
+      type="single"
+      size="sm"
+      aria-label="Offers view"
+      value={view}
+      // Radix reports "" when the pressed chip is clicked again: keep the current view.
+      onValueChange={(v) => v && onChange(v as View)}
+    >
+      {VIEWS.map(([v, text]) => (
+        <ToggleGroupItem
+          key={v}
+          value={v}
+          className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
+        >
+          {view === v && (
+            <motion.span
+              layoutId={layoutId}
+              transition={{ type: "spring", bounce: 0.22, duration: 0.55 }}
+              className="absolute inset-0 -z-10 rounded-2xl bg-primary shadow-[0_0_22px_-4px_rgb(212_251_8/0.6)]"
+            />
+          )}
+          <RollText>{text}</RollText>
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  )
+}
+
+function OfferList({
+  offers,
+  storeNames,
+  cheapest,
+  badged,
+  startDelay,
+}: {
+  offers: Listing[]
+  storeNames: Map<string, string>
+  cheapest: number | null
+  badged: Set<Listing>
+  startDelay: number
+}) {
   const reduced = useReducedMotion()
   return (
     <ul className="grid gap-2">
@@ -221,14 +335,14 @@ function OfferList({ offers, storeNames, cheapest, startDelay }: { offers: Listi
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: ease.wg, delay: Math.min(startDelay + i * 0.05, 1.2) }}
         >
-          <OfferRow listing={l} storeName={storeNames.get(l.store) ?? l.store} cheapest={l.in_stock && l.price === cheapest} />
+          <OfferRow listing={l} storeName={storeNames.get(l.store) ?? l.store} cheapest={l.in_stock && l.price === cheapest} badge={badged.has(l)} />
         </motion.li>
       ))}
     </ul>
   )
 }
 
-function OfferRow({ listing: l, storeName, cheapest }: { listing: Listing; storeName: string; cheapest: boolean }) {
+function OfferRow({ listing: l, storeName, cheapest, badge }: { listing: Listing; storeName: string; cheapest: boolean; badge: boolean }) {
   return (
     <div
       className={cn(
@@ -240,7 +354,7 @@ function OfferRow({ listing: l, storeName, cheapest }: { listing: Listing; store
       <div className="grid min-w-0 gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="mr-1 font-semibold">{storeName}</span>
-          {cheapest && <Badge variant="default">Cheapest</Badge>}
+          {badge && <Badge variant="default">Cheapest</Badge>}
           {l.platform && <Badge>{l.platform}</Badge>}
           <Badge variant={l.condition === "new" ? "outline" : "secondary"}>{l.condition}</Badge>
           {l.format === "digital" && <Badge>digital</Badge>}
