@@ -3,7 +3,7 @@
 Every token, component style and animation below comes from one of two references:
 
 - **WG** = [wondermakers.games](https://wondermakers.games/) (screenshots + its CSS/markup). This is the **base**: surfaces, buttons, fields, chips, the header bar.
-- **INK** = [inkgames.com](https://inkgames.com/) (screenshots + its CSS). **Accents** only: the headline type, mono "■ LABEL" eyebrows, and image cards with the title over the art.
+- **INK** = [inkgames.com](https://inkgames.com/) (screenshots + its CSS). **Accents** only: the headline type, "■ LABEL" eyebrows, and image cards with the title over the art.
 
 Dark theme only; both references are dark. The one light WG section was not used.
 
@@ -15,7 +15,9 @@ The references use commercial fonts, so the app uses the closest free Google Fon
 |---|---|---|
 | Body, UI (`font-sans`) | Codec Pro (WG) | Urbanist |
 | Headlines (`font-display`), uppercase | Ruder Plakat LL (INK) | Anton |
-| Eyebrow labels (`font-mono`), uppercase | PP Neue Montreal Mono (INK) | JetBrains Mono |
+| Eyebrow and small labels, uppercase | Codec Pro (WG header labels) | Urbanist, semibold, wider tracking |
+
+No monospace font: INK's mono eyebrows were tried with JetBrains Mono and dropped because they looked generic. Labels use the body font, like WG's header labels ("● ONLINE", "61 FPS").
 
 ## Colors
 
@@ -62,13 +64,13 @@ The references use commercial fonts, so the app uses the closest free Google Fon
 | Select | transparent, `white/20` border, 16px radius; white border on focus; neon border + text when a value is chosen | WG contact form selects |
 | Panel | white 5% fill (or neutral-700 20% + blur on overlays), 16px radius | WG content blocks |
 | Status stat | small neon value over an uppercase grey label, optional dot | WG header "● ONLINE", "61 FPS" |
-| Eyebrow | `■ LABEL`: small square + uppercase mono | INK "■ INKGAMES", "■ PLAY" |
+| Eyebrow | `■ LABEL`: small square + uppercase semibold body font | INK "■ INKGAMES", "■ PLAY" (square), WG header labels (type) |
 | Headline | uppercase condensed display | INK "PLAY. WIN. EARN." |
 | Image card | art fills the card, eyebrow + uppercase title over the bottom | INK "BUILD YOUR KINGDOM" cards |
 
 ## Motion
 
-Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkroom.engineering/) smooth scrolling. Everything honours the OS "reduce motion" setting: motion goes instant, Lenis, the grain, stripes, equalizer and shimmer stop, and the intro is skipped.
+Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkroom.engineering/) smooth scrolling. Everything honours the OS "reduce motion" setting: motion goes instant, Lenis, the grain, stripes, equalizer and loading sweep stop, and the loading screen is skipped.
 
 ### Easing (`src/lib/motion.ts`)
 
@@ -85,10 +87,9 @@ Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkro
 
 | Where | Effect | Source |
 |---|---|---|
-| First visit | Neon full-screen intro: wordmark letters slide up, loading bar fills to 90 % while data loads, then the panel wipes up | WG `#loader` (translateY wipe, loading bar 0 → 90 %) + INK split-text |
 | Whole page | Film grain, jittering | WG `#noise` overlay |
 | Whole page | Inertial smooth scrolling | Lenis (the one addition not taken from the references) |
-| Header | Slides in after the intro, hides on scroll down, returns on scroll up, turns more opaque once scrolled; stats count up | WG floating header + WG live FPS counter |
+| Header | Slides in after the loading screen, hides on scroll down, returns on scroll up, turns more opaque once scrolled; stats count up | WG floating header + WG live FPS counter |
 | Header | Round black badge with bouncing neon bars (API live) | WG audio control |
 | Hero | Wordmark letters slide up from a mask; "Ledger" in the neon gradient | INK split-text + WG gradient words |
 | Hero | Real game covers, tilted, around the headline; clip-path reveal; drift with scroll and pointer; straighten on hover | INK tilted art around its headline + INK clip-path |
@@ -106,4 +107,19 @@ Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkro
 | Grid | When filters change, cards that stay glide to their new place | — (layout animation) |
 | Dialog | Rises and scales in with `ease.wg`; title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
 | Footer | Neon hazard stripes slide endlessly; giant white wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |
-| Loading | Skeletons with a sweeping shimmer | — |
+| Loading | Skeletons with a sweeping light band (`sweep`) | — |
+
+### Loading screen (`src/components/loading-screen.tsx`)
+
+A video-game loading screen on every page load (skipped with reduced motion). Nothing on it is faked: each boot-log step resolves only when that part of the page has loaded. Steps are paced about 0.3 s apart so a fast load still reads as a sequence, and the screen never holds the page for more than 8 s. The loading-screen idea came from the brief ("like a video game loading screen"); the parts marked *new* have no counterpart in the references.
+
+| Part | Effect | Source |
+|---|---|---|
+| Backdrop | Real covers on a tilted wall, columns drifting opposite ways, leaning away from the pointer. Each cover wipes in once its image has loaded, and the wall gains colour as loading progresses | INK tilted art + clip-path; WG sliding word rows, turned upright |
+| Top bar | Same bar as the header: live equalizer, "● Online" / "Connecting", live FPS, last update | WG header stats and FPS counter |
+| Percentage | Huge odometer: each wheel clicks over digit by digit, leading zeros dim, neon glow at 100 | INK headline type; odometer *new* |
+| Boot log | Fonts, ledger, stores, library, cover art with their real results. The running step pulses; stores check in as chips turning neon | WG panel, chips and live dot; boot log *new* |
+| Bar | 40 blocks light one at a time with a glow at the edge; the whole bar glows when done; real load time beside it | WG loading bar; blocks *new* |
+| Tips | A random tip, then the next every 3.6 s or on "Next tip", sliding up | INK slide |
+| Prompt | The favicon's LL tile flips like a coin inside a spinning ring. Then "Press any key" (or "Tap to continue"), with the ring counting down 1.4 s before it continues by itself. Esc skips at any time | WG spin; prompt *new* |
+| Exit | Wipes up over 1.2 s with the hazard stripes trailing; the HUD sinks as it goes and the page's entrance starts underneath | WG `#loader` wipe + WG hazard band |

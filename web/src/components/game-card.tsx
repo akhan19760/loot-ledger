@@ -109,7 +109,7 @@ export function GameCard({ game, storeName, index, onOpen }: Props) {
           {/* Rises in on hover */}
           <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:grid-rows-[1fr]">
             <div className="overflow-hidden">
-              <span className="mt-1 inline-flex font-mono text-xs tracking-wide text-primary uppercase">
+              <span className="mt-1 inline-flex text-xs font-semibold tracking-wider text-primary uppercase">
                 View {game.offerCount} {game.offerCount === 1 ? "offer" : "offers"} ↗
               </span>
             </div>

@@ -63,7 +63,7 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
             Prices are copied from each store's website and may have changed. The store's own page is the final word. Not affiliated with any of the
             listed stores; product data and images belong to their owners.
           </p>
-          <p className="font-mono text-xs tracking-wide uppercase">LootLedger · for personal use</p>
+          <p className="text-xs font-semibold tracking-wider uppercase">LootLedger · for personal use</p>
         </div>
       </div>
     </footer>
