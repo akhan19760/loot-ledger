@@ -1,0 +1,12 @@
+# LootLedger is built and deployed by GitHub Actions (.github/workflows/deploy.yml),
+# not by Netlify's own builds.
+[build]
+  publish = "web/dist"
+  # Written by `pnpm --filter @ugs/server build:netlify`: the API as one function.
+  functions = "netlify/functions"
+
+# Vite fingerprints every file in /assets, so browsers can keep them for good.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

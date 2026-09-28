@@ -8,3 +8,6 @@ dist/
 *.tsbuildinfo
 .env
 server/data/
+# Netlify: the generated API function, and the CLI's local state
+netlify/functions/
+.netlify/

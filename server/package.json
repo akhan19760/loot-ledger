@@ -10,6 +10,8 @@
     "build:library": "tsx --env-file-if-exists=.env scripts/rebuild.ts",
     "refresh:prices": "tsx --env-file-if-exists=.env scripts/refresh.ts prices",
     "refresh:genres": "tsx --env-file-if-exists=.env scripts/refresh.ts genres",
+    "refresh:ci": "tsx --env-file-if-exists=.env scripts/ci-refresh.ts",
+    "build:netlify": "tsx --env-file-if-exists=.env scripts/build-netlify.ts",
     "parity": "tsx --env-file-if-exists=.env scripts/parity.ts",
     "test": "vitest run"
   },
@@ -27,6 +29,7 @@
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^22.18.0",
     "drizzle-kit": "^0.31.11",
+    "esbuild": "^0.28.2",
     "tsx": "^4.20.0",
     "typescript": "~6.0.2",
     "vitest": "^5.0.2"

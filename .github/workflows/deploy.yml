@@ -1,0 +1,99 @@
+# Deploys LootLedger to Netlify: the site (web/dist) plus the API as one Netlify
+# Function that serves a snapshot of the library (server/src/netlify.ts).
+#
+# Netlify can't run the Node server's scheduler or keep its SQLite file, so this
+# workflow does the scheduling: it fetches the stores, rebuilds the library and
+# deploys. The SQLite file is carried from one run to the next in the Actions
+# cache; if GitHub evicts it, the next run fetches everything again.
+#
+# Setup, once:
+#   1. On Netlify, create a site that is not linked to Git (Add new project →
+#      Deploy manually), or stop builds on an existing one (Project configuration →
+#      Build & deploy → Stop builds). This workflow builds; Netlify must not.
+#   2. Add repository secrets (GitHub: Settings → Secrets and variables → Actions):
+#        NETLIFY_AUTH_TOKEN  a personal access token (Netlify: User settings → Applications)
+#        NETLIFY_SITE_ID     the Project ID (Netlify: Project configuration → General)
+#   3. Run it: Actions → Deploy → Run workflow, with refresh "all" the first time.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # In UTC. GitHub may start a scheduled run a few minutes late, and pauses
+    # schedules in a public repo after 60 days without commits.
+    # Keep these in sync with CRON_PRICES / CRON_GENRES below (/api/status shows them).
+    - cron: "0 */6 * * *" # prices: every 6 hours
+    - cron: "0 4 1 * *" # genres: 04:00 on the 1st of each month
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: What to fetch before deploying
+        type: choice
+        options: [none, prices, genres, all]
+        default: none
+
+# One run at a time, like the server's refresh lock: a run that starts while
+# another is going waits for it.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CRON_PRICES: "0 */6 * * *"
+      CRON_GENRES: "0 4 1 * *"
+      CRON_TIMEZONE: UTC
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v6 # pnpm version from "packageManager" in package.json
+        with:
+          cache: true
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck and test
+        run: pnpm typecheck && pnpm test
+
+      - name: Restore the database
+        uses: actions/cache/restore@v6
+        with:
+          path: server/data
+          key: ugs-db-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ugs-db-
+
+      - name: Refresh data
+        run: pnpm --filter @ugs/server refresh:ci "$REFRESH"
+        env:
+          # A schedule runs its job, a push only rebuilds, a manual run does what was picked.
+          REFRESH: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 4 1 * *' && 'genres' || 'prices') || inputs.refresh || 'none' }}
+
+      - name: Save the database
+        uses: actions/cache/save@v6
+        with:
+          path: server/data
+          key: ugs-db-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Build
+        run: |
+          pnpm --filter @ugs/web build
+          pnpm --filter @ugs/server build:netlify
+
+      - name: Deploy
+        # The CLI's own build is skipped: everything is built above.
+        run: >-
+          pnpm dlx --allow-build=esbuild --allow-build=sharp --allow-build=unix-dgram --package=netlify-cli@27
+          netlify deploy --prod --no-build --dir web/dist --functions netlify/functions --message "$MESSAGE"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          MESSAGE: ${{ github.event_name }} ${{ github.sha }}

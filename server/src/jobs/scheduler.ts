@@ -53,8 +53,8 @@ export function startScheduler(ctx: RefreshContext, options: ScheduleOptions): S
 export async function refreshOnStart(ctx: RefreshContext, mode: "if-empty" | "always" | "never") {
   if (mode === "never") return;
   const { db, log } = ctx;
-  const neverFetched = db.select({ id: stores.id }).from(stores).where(isNull(stores.lastFetchedAt)).all().map((s) => s.id);
-  const hasGenres = db.select({ n: count() }).from(rawFeeds).where(eq(rawFeeds.sourceId, "wikidata")).get()!.n > 0;
+  const neverFetched = neverFetchedStores(db);
+  const hasGenres = hasGenreList(db);
 
   let rebuilt = false;
   if (mode === "always" || neverFetched.length) {
@@ -72,6 +72,11 @@ export async function refreshOnStart(ctx: RefreshContext, mode: "if-empty" | "al
     for (const line of rebuildLibrary(db, ctx.storeOrder).stats) log.info(line);
   }
 }
+
+/** Stores in stores.json that have never been fetched. */
+export const neverFetchedStores = (db: Db) =>
+  db.select({ id: stores.id }).from(stores).where(isNull(stores.lastFetchedAt)).all().map((s) => s.id);
+export const hasGenreList = (db: Db) => db.select({ n: count() }).from(rawFeeds).where(eq(rawFeeds.sourceId, "wikidata")).get()!.n > 0;
 
 const libraryIsEmpty = (db: Db) => db.select({ n: count() }).from(games).get()!.n === 0;
 const hasAnyStoreFeed = (db: Db) => db.select({ n: count() }).from(rawFeeds).where(ne(rawFeeds.sourceId, "wikidata")).get()!.n > 0;
