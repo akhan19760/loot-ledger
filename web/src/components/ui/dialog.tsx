@@ -38,7 +38,7 @@ function DialogOverlay({
       data-slot="dialog-overlay"
       className={cn(
         // WG: black 50% + 8px blur
-        "fixed inset-0 isolate z-50 bg-black/50 duration-100 supports-backdrop-filter:backdrop-blur-[8px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-black/50 duration-500 supports-backdrop-filter:backdrop-blur-[8px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-200",
         className
       )}
       {...props}
@@ -59,9 +59,11 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-lenis-prevent
         className={cn(
           // WG content block: 16px radius, neutral-700/20 + 37.5px blur
-          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 gap-6 overflow-y-auto rounded-2xl border border-border bg-neutral-700/20 p-5 text-foreground duration-100 outline-none supports-backdrop-filter:backdrop-blur-[37.5px] sm:max-w-lg sm:p-8 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // Opens with WG's ease: rises 2rem while scaling up; closes quicker.
+          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 gap-6 overflow-y-auto overscroll-contain rounded-2xl border border-border bg-neutral-700/20 p-5 text-foreground outline-none supports-backdrop-filter:backdrop-blur-[37.5px] sm:max-w-lg sm:p-8 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-90 data-open:slide-in-from-bottom-8 data-open:duration-700 data-open:ease-[cubic-bezier(0.3,0,0.04,1)] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:duration-200",
           className
         )}
         {...props}
@@ -71,7 +73,8 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="round"
-              className="absolute top-3 right-3 sm:top-4 sm:right-4"
+              // WG spinToClose: the close icon turns as you reach for it
+              className="absolute top-3 right-3 duration-500 hover:rotate-180 sm:top-4 sm:right-4"
               size="icon-sm"
             >
               <XIcon
