@@ -90,9 +90,11 @@ jobs:
 
       - name: Deploy
         # The CLI's own build is skipped: everything is built above.
+        # --filter picks @ugs/web out of the pnpm workspace so the CLI doesn't
+        # error on "multiple projects" (it also sees @ugs/server, @ugs/shared).
         run: >-
           pnpm dlx --allow-build=esbuild --allow-build=sharp --allow-build=unix-dgram --package=netlify-cli@27
-          netlify deploy --prod --no-build --dir web/dist --functions netlify/functions --message "$MESSAGE"
+          netlify deploy --filter @ugs/web --prod --no-build --dir web/dist --functions netlify/functions --message "$MESSAGE"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
