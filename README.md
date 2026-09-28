@@ -6,6 +6,7 @@ Compare new and used PlayStation game prices across Pakistani game stores in one
 
 - One library built from 7 stores' catalogs, with the same game grouped across stores
 - Cheapest offer first, with new/used, PS4/PS5 and disc/digital shown for every offer
+- A Compare view per game: prices by version (platform, condition, format) and store side by side, with how much you save by shopping around, buying used or buying the older console's copy
 - Filter by genre, platform, condition, store and stock
 - "Buy" links open the exact product page on the store's site
 

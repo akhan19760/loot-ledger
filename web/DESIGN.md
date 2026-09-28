@@ -88,6 +88,7 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 | Eyebrow | `■ LABEL`: small square + uppercase semibold body font | INK "■ INKGAMES", "■ PLAY" (square), WG header labels (type) |
 | Headline | uppercase condensed display | INK "PLAY. WIN. EARN." |
 | Image card | art fills the card, eyebrow + uppercase title over the bottom | INK "BUILD YOUR KINGDOM" cards |
+| Compare grid (dialog) | "All offers / Compare" chips. Compare: highlight panels (neon value over a grey detail), then one panel per version (platform · condition · format) with a range bar on a scale shared by every version (neon dot = cheapest, hollow = out of stock) and one cell per store in the same order in every panel, so stores line up in columns and wrap on a phone. Cheapest cell has a neon edge; missing stores are dashed "Not listed" cells. The chosen view is remembered per browser | WG chips, WG panels, WG field underline (dashed variant) |
 
 ## Motion
 
