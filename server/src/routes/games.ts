@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { PLATFORM_FILTERS, type FiltersResponse, type Game, type GamesLookup, type GamesQuery, type GamesResponse } from "@ugs/shared";
+import { PLATFORM_FILTERS, type DealsQuery, type DealsResponse, type FiltersResponse, type Game, type GamesLookup, type GamesQuery, type GamesResponse } from "@ugs/shared";
+import { queryDeals } from "../deals.ts";
 import type { LibrarySnapshot } from "../library.ts";
 import { libraryFilters, queryGames } from "../query.ts";
 
@@ -32,6 +33,16 @@ const lookupBodySchema = {
   },
 } as const;
 
+const dealsQuerySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    platform: gamesQuerySchema.properties.platform,
+    condition: gamesQuerySchema.properties.condition,
+    limit: { type: "integer", minimum: 1, maximum: 60, default: 36 },
+  },
+} as const;
+
 export function gamesRoutes(app: FastifyInstance, { library }: { library: () => LibrarySnapshot }) {
   app.get<{ Querystring: GamesQuery }>("/api/games", { schema: { querystring: gamesQuerySchema } }, async (req): Promise<GamesResponse> =>
     queryGames(library(), req.query),
@@ -44,9 +55,13 @@ export function gamesRoutes(app: FastifyInstance, { library }: { library: () => 
   app.get<{ Params: { id: string } }>("/api/games/:id", async (req, reply): Promise<Game> => {
     const game = library().byId.get(req.params.id);
     if (!game) return reply.code(404).send({ error: "Not Found", message: `No game with id "${req.params.id}"` });
-    const { searchText, ...rest } = game;
+    const { searchText, inStockSince, ...rest } = game;
     return rest;
   });
+
+  app.get<{ Querystring: DealsQuery }>("/api/deals", { schema: { querystring: dealsQuerySchema } }, async (req): Promise<DealsResponse> =>
+    queryDeals(library(), req.query),
+  );
 
   app.get("/api/filters", async (): Promise<FiltersResponse> => libraryFilters(library()));
 }

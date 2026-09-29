@@ -15,16 +15,17 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
 const HEADER_OFFSET = -96
 
-/** Scroll to an element id (or the top), below the fixed header. */
+/** Scroll to an element id (or the top), below the fixed header. `instant` jumps there, say after a page change. */
 export function useScrollTo() {
   const lenis = useLenis()
   return useCallback(
-    (target: string | 0) => {
+    (target: string | 0, { instant = false } = {}) => {
       const el = target === 0 ? null : document.getElementById(target)
       if (target !== 0 && !el) return
-      if (lenis) lenis.scrollTo(el ?? 0, { offset: HEADER_OFFSET, duration: 1.4 })
-      else if (el) el.scrollIntoView({ behavior: "smooth" })
-      else window.scrollTo({ top: 0, behavior: "smooth" })
+      const behavior = instant ? "instant" : "smooth"
+      if (lenis) lenis.scrollTo(el ?? 0, { offset: HEADER_OFFSET, duration: 1.4, immediate: instant, force: instant })
+      else if (el) el.scrollIntoView({ behavior })
+      else window.scrollTo({ top: 0, behavior })
     },
     [lenis],
   )

@@ -7,12 +7,13 @@ const offer = (store: string, platform: string, price: number): Listing => ({
   store, raw_title: "", variant: "", platform, condition: "new", format: "disc", price, was: null, in_stock: true, url: "",
 });
 const game = (id: string, title: string, listings: Listing[]): IndexedGame => ({
-  id, title, kind: "game", genres: [], image: null, listings, searchText: normalizeSearch(title),
+  id, title, kind: "game", genres: [], image: null, listings, searchText: normalizeSearch(title), inStockSince: null,
 });
 
 const snapshot: Snapshot = {
   library: {
     builtAt: "2026-09-28T06:00:00.000Z",
+    pricesAt: "2026-09-28T06:00:00.000Z",
     stores: [{ id: "a", name: "Store A", base: "https://a", fetched_at: "2026-09-28T06:00:00.000Z" }],
     games: [game("game:elden-ring", "Elden Ring", [offer("a", "PS5", 9000)]), game("game:halo", "Halo", [offer("a", "Xbox One", 5000)])],
   },

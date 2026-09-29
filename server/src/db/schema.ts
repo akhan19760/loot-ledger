@@ -37,6 +37,9 @@ export const games = sqliteTable("games", {
   genres: text("genres", { mode: "json" }).$type<string[]>().notNull(),
   image: text("image"),
   searchText: text("search_text").notNull(),
+  // The price refresh (meta.library_prices_at) at which a store last put the game back
+  // in stock; null while no store has it, or when it was in stock before this was tracked.
+  inStockSince: text("in_stock_since"),
 });
 
 /** One store variant: a single price for a single product option. */

@@ -2,7 +2,7 @@ import { asc, eq, isNotNull, sql } from "drizzle-orm";
 import { normalizeSearch, type Listing, type Store } from "@ugs/shared";
 import type { BuildInput, Library } from "../catalog/build.ts";
 import type { WikidataGames } from "../catalog/genres.ts";
-import { indexLibrary, type IndexedGame, type LibraryData, type LibrarySnapshot } from "../library.ts";
+import { indexLibrary, latestFetch, stockSince, type IndexedGame, type LibraryData, type LibrarySnapshot, type PreviousStock } from "../library.ts";
 import type { Db } from "./client.ts";
 import { games, listings, meta, rawFeeds, stores } from "./schema.ts";
 
@@ -29,9 +29,20 @@ const CHUNK = 500; // rows per INSERT, well under SQLite's bound-parameter limit
 /**
  * Replace the games and listings tables with a freshly built library. `builtAt`
  * defaults to now; pass the previous time when only the rules changed, not the data.
+ * Each game's in-stock-since time is carried over from the library being replaced.
  */
 export function saveLibrary(db: Db, lib: Library, builtAt = new Date().toISOString()) {
   db.transaction((tx) => {
+    const wasInStock = new Set(tx.selectDistinct({ id: listings.gameId }).from(listings).where(eq(listings.inStock, true)).all().map((l) => l.id));
+    const previous = new Map<string, PreviousStock>(
+      tx
+        .select({ id: games.id, since: games.inStockSince })
+        .from(games)
+        .all()
+        .map((g) => [g.id, { inStock: wasInStock.has(g.id), since: g.since }]),
+    );
+    const prices = { now: latestFetch(lib.stores), before: readMeta(tx, "library_prices_at") };
+
     tx.delete(listings).run();
     tx.delete(games).run();
     const gameRows = lib.games.map((g) => ({
@@ -41,6 +52,7 @@ export function saveLibrary(db: Db, lib: Library, builtAt = new Date().toISOStri
       genres: g.genres,
       image: g.image,
       searchText: normalizeSearch([g.title, ...g.listings.map((l) => l.raw_title)].join(" ")),
+      inStockSince: stockSince(g, previous.get(g.id), prices),
     }));
     const listingRows = lib.games.flatMap((g) =>
       g.listings.map((l) => ({
@@ -59,14 +71,18 @@ export function saveLibrary(db: Db, lib: Library, builtAt = new Date().toISOStri
     );
     for (let i = 0; i < gameRows.length; i += CHUNK) tx.insert(games).values(gameRows.slice(i, i + CHUNK)).run();
     for (let i = 0; i < listingRows.length; i += CHUNK) tx.insert(listings).values(listingRows.slice(i, i + CHUNK)).run();
-    const row = { key: "library_built_at", value: builtAt };
-    tx.insert(meta).values(row).onConflictDoUpdate({ target: meta.key, set: row }).run();
+    writeMeta(tx, "library_built_at", builtAt);
+    if (prices.now) writeMeta(tx, "library_prices_at", prices.now);
   });
 }
 
-export function libraryBuiltAt(db: Db): string | null {
-  return db.select().from(meta).where(eq(meta.key, "library_built_at")).get()?.value ?? null;
+const readMeta = (db: Pick<Db, "select">, key: string): string | null => db.select().from(meta).where(eq(meta.key, key)).get()?.value ?? null;
+
+function writeMeta(db: Pick<Db, "insert">, key: string, value: string) {
+  db.insert(meta).values({ key, value }).onConflictDoUpdate({ target: meta.key, set: { value } }).run();
 }
+
+export const libraryBuiltAt = (db: Db): string | null => readMeta(db, "library_built_at");
 
 // ---------------------------------------------------------------- reading the built library
 
@@ -110,7 +126,16 @@ export function readLibrary(db: Db): LibraryData {
     .from(games)
     .orderBy(sql`rowid`)
     .all()
-    .map((g) => ({ id: g.id, title: g.title, kind: g.kind, genres: g.genres, image: g.image, listings: byGame.get(g.id) ?? [], searchText: g.searchText }));
+    .map((g) => ({
+      id: g.id,
+      title: g.title,
+      kind: g.kind,
+      genres: g.genres,
+      image: g.image,
+      listings: byGame.get(g.id) ?? [],
+      searchText: g.searchText,
+      inStockSince: g.inStockSince,
+    }));
 
   const storeList: Store[] = db
     .select({ id: stores.id, name: stores.name, base: stores.base, fetched_at: stores.lastFetchedAt, delivery: stores.delivery })
@@ -119,5 +144,5 @@ export function readLibrary(db: Db): LibraryData {
     .orderBy(sql`rowid`)
     .all();
 
-  return { builtAt: libraryBuiltAt(db), stores: storeList, games: gameList };
+  return { builtAt: libraryBuiltAt(db), pricesAt: readMeta(db, "library_prices_at"), stores: storeList, games: gameList };
 }

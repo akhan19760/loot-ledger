@@ -3,7 +3,7 @@ import { PLATFORM_FILTERS, type GamesQuery, type SortOrder } from "@ugs/shared"
 import type { ShelfList } from "@/hooks/use-shelf"
 
 /**
- * Library state lives in the URL (?platform=PS5&q=elden&list=wishlist&game=game:elden-ring),
+ * Library state lives in the URL (/deals?platform=PS5&q=elden&list=wishlist&game=game:elden-ring),
  * so any view is a shareable link and Back closes an open game. The last filters are also
  * remembered per browser, like the old page did.
  */
@@ -11,6 +11,13 @@ export type Filters = Omit<GamesQuery, "page" | "pageSize">
 
 /** Which games the library shows: all of them, or the reader's wishlist or collection. */
 export type LibraryList = "all" | ShelfList
+
+/** The page showing: the library (home) or the deals, at /deals. */
+export type Page = "library" | "deals"
+
+const PATHS: Record<Page, string> = { library: "/", deals: "/deals" }
+
+const pageOf = (pathname: string): Page => (pathname.replace(/\/+$/, "") === PATHS.deals ? "deals" : "library")
 
 export const DEFAULT_FILTERS: Filters = {
   q: "",
@@ -30,15 +37,17 @@ const oneOf = <T extends string>(allowed: readonly T[], v: string | null): T | u
   v !== null && (allowed as readonly string[]).includes(v) ? (v as T) : undefined
 
 interface UrlState {
+  page: Page
   filters: Filters
   list: LibraryList
   gameId: string | null
 }
 
-function parse(search: string): UrlState {
+function parse(pathname: string, search: string): UrlState {
   const p = new URLSearchParams(search)
   const text = (key: string) => p.get(key) ?? undefined
   return {
+    page: pageOf(pathname),
     filters: {
       q: text("q") ?? DEFAULT_FILTERS.q,
       genre: text("genre") ?? DEFAULT_FILTERS.genre,
@@ -54,20 +63,20 @@ function parse(search: string): UrlState {
   }
 }
 
-/** Only values that differ from the defaults, to keep links short. */
-function serialize({ filters, list, gameId }: UrlState): string {
+/** The page's path and only the values that differ from the defaults, to keep links short. */
+function serialize({ page, filters, list, gameId }: UrlState): string {
   const p = new URLSearchParams()
   for (const key of Object.keys(DEFAULT_FILTERS) as (keyof Filters)[])
     if (filters[key] !== DEFAULT_FILTERS[key]) p.set(key, String(filters[key]))
   if (list !== "all") p.set("list", list)
   if (gameId) p.set("game", gameId)
   const s = p.toString()
-  return s ? `?${s}` : location.pathname
+  return s ? `${PATHS[page]}?${s}` : PATHS[page]
 }
 
-function write(search: string, mode: "push" | "replace") {
-  if (search === location.search || (search === location.pathname && !location.search)) return
-  history[mode === "push" ? "pushState" : "replaceState"](null, "", search)
+function write(url: string, mode: "push" | "replace") {
+  if (url === serialize(snapshot())) return
+  history[mode === "push" ? "pushState" : "replaceState"](null, "", url)
   window.dispatchEvent(new Event(URL_EVENT))
 }
 
@@ -84,8 +93,9 @@ if (typeof window !== "undefined" && ![...new URLSearchParams(location.search).k
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as Partial<Filters> | null
     if (saved) {
-      const current = parse(location.search)
-      const merged = parse(serialize({ ...current, filters: { ...current.filters, ...saved } })).filters // re-validated
+      const current = parse(location.pathname, location.search)
+      const url = new URL(serialize({ ...current, filters: { ...current.filters, ...saved } }), location.origin)
+      const merged = parse(url.pathname, url.search).filters // re-validated
       history.replaceState(null, "", serialize({ ...current, filters: merged }))
     }
   } catch {
@@ -102,15 +112,16 @@ const subscribe = (onChange: () => void) => {
   }
 }
 
-let lastSearch: string | null = null
+let lastUrl: string | null = null
 let lastParsed: UrlState
-const snapshot = () => {
-  if (location.search !== lastSearch) [lastSearch, lastParsed] = [location.search, parse(location.search)]
+function snapshot() {
+  const url = location.pathname + location.search
+  if (url !== lastUrl) [lastUrl, lastParsed] = [url, parse(location.pathname, location.search)]
   return lastParsed
 }
 
 export function useLibraryUrl() {
-  const { filters, list, gameId } = useSyncExternalStore(subscribe, snapshot)
+  const { page, filters, list, gameId } = useSyncExternalStore(subscribe, snapshot)
 
   const setFilters = useCallback((patch: Partial<Filters>) => {
     const current = snapshot()
@@ -139,5 +150,8 @@ export function useLibraryUrl() {
     window.dispatchEvent(new Event(URL_EVENT))
   }, [])
 
-  return { filters, list, gameId, setFilters, resetFilters, setList, setGameId }
+  /** Go to another page (adds a history entry), keeping the filters. */
+  const setPage = useCallback((next: Page) => write(serialize({ ...snapshot(), page: next, gameId: null }), "push"), [])
+
+  return { page, filters, list, gameId, setFilters, resetFilters, setList, setGameId, setPage }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `games` ADD `in_stock_since` text;

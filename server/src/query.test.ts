@@ -7,11 +7,12 @@ const offer = (store: string, platform: string | null, price: number, extra: Par
   store, raw_title: "", variant: "", platform, condition: "new", format: "disc", price, was: null, in_stock: true, url: "", ...extra,
 });
 const game = (id: string, title: string, listings: Listing[], extra: Partial<IndexedGame> = {}): IndexedGame => ({
-  id, title, kind: "game", genres: [], image: null, listings, searchText: normalizeSearch(title), ...extra,
+  id, title, kind: "game", genres: [], image: null, listings, searchText: normalizeSearch(title), inStockSince: null, ...extra,
 });
 
 const lib: LibrarySnapshot = {
   builtAt: "2026-09-27T12:00:00.000Z",
+  pricesAt: "2026-09-27T12:00:00.000Z",
   stores: [
     { id: "a", name: "Store A", base: "https://a", fetched_at: null },
     { id: "b", name: "Store B", base: "https://b", fetched_at: null },

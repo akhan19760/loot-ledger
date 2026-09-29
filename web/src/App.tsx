@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import { ArrowDown } from "lucide-react"
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
@@ -6,6 +6,7 @@ import type { GamesResponse } from "@ugs/shared"
 import { FilterBar } from "@/components/filter-bar"
 import { GameCard } from "@/components/game-card"
 import { GameDialog } from "@/components/game-dialog"
+import { GameGrid } from "@/components/game-grid"
 import { Hero } from "@/components/hero"
 import { LoadingScreen } from "@/components/loading-screen"
 import { Grain } from "@/components/motion/grain"
@@ -15,12 +16,13 @@ import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
 import { SiteFooter } from "@/components/site-footer"
 import { CartDialog } from "@/components/cart-dialog"
+import { DealsPage } from "@/components/deals-page"
 import { BackupButtons, ShelfSummary } from "@/components/shelf-summary"
 import { SiteHeader } from "@/components/site-header"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DEFAULT_FILTERS, useLibraryUrl, type Filters, type LibraryList } from "@/hooks/use-library-url"
+import { DEFAULT_FILTERS, useLibraryUrl, type Filters, type LibraryList, type Page } from "@/hooks/use-library-url"
 import { addToCart, useCart } from "@/hooks/use-cart"
 import { idsOn, useShelf } from "@/hooks/use-shelf"
 import { api } from "@/lib/api"
@@ -46,7 +48,7 @@ const EMPTY_LIST = {
 const SHOW_ALL: Partial<Filters> = { q: "", genre: "", store: "", platform: "", condition: "", kind: "", inStock: false }
 
 export default function App() {
-  const { filters, list, gameId, setFilters, resetFilters, setList, setGameId } = useLibraryUrl()
+  const { page, filters, list, gameId, setFilters, resetFilters, setList, setGameId, setPage } = useLibraryUrl()
   const shelf = useShelf()
   const shelfIds = useMemo(() => (list === "all" ? null : idsOn(shelf, list)), [shelf, list])
   const counts = useMemo(() => ({ wishlist: idsOn(shelf, "wishlist").length, collection: idsOn(shelf, "collection").length }), [shelf])
@@ -61,6 +63,22 @@ export default function App() {
     setCartOpen(true)
   }
   const scrollTo = useScrollTo()
+  // A new page starts at its top, or at the section asked for.
+  const landing = useRef<string | 0>(0)
+  const navigate = useCallback(
+    (next: Page, section?: string) => {
+      landing.current = section ?? 0
+      setPage(next)
+    },
+    [setPage],
+  )
+  const shownPage = useRef(page)
+  useEffect(() => {
+    if (shownPage.current === page) return
+    shownPage.current = page
+    scrollTo(landing.current, { instant: true })
+    landing.current = 0
+  }, [page, scrollTo])
   const [introDone, setIntroDone] = useState(false)
   const onIntroDone = useCallback(() => setIntroDone(true), [])
 
@@ -106,116 +124,137 @@ export default function App() {
         onDone={onIntroDone}
       />
       <Grain />
-      <SiteHeader filters={meta.data} online={!meta.isError} introDone={introDone} cartCount={cart.items.length} onOpenCart={openCart} />
+      <SiteHeader
+        filters={meta.data}
+        online={!meta.isError}
+        introDone={introDone}
+        cartCount={cart.items.length}
+        onOpenCart={openCart}
+        page={page}
+        onNavigate={navigate}
+      />
 
       {/* Full width: only the 8px edge padding, matching the header's inset (WG --gap) */}
       {/* inert until the loading screen has gone, so focus can't wander behind it */}
       <main inert={!introDone} className="grid grid-cols-1 gap-2 px-2 pt-[calc(var(--height-bar-mobile)+1rem)] pb-2 md:pt-[calc(var(--height-bar)+1rem)]">
-        <Hero meta={meta.data} covers={heroCovers} play={introDone} onBrowse={() => scrollTo("library")} onStores={() => scrollTo("stores")} />
-
-        <section id="library" className="grid scroll-mt-24 grid-cols-1 gap-2">
-          <Reveal className="grid gap-4 px-2 pt-16 pb-8 md:px-6 md:pt-28 md:pb-12">
-            <Eyebrow className="text-primary-ink">The library</Eyebrow>
-            <h2 className="font-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85] uppercase">
-              <SplitText
-                key={list}
-                text={HEADINGS[list].text}
-                stagger={0.08}
-                partClassName={(w) => (w === HEADINGS[list].neon ? "text-neon" : undefined)}
-              />
-            </h2>
-          </Reveal>
-
-          <Reveal>
-            <FilterBar
-              filters={filters}
+        {page === "deals" ? (
+          <DealsPage filters={filters} onFiltersChange={setFilters} storeNames={storeNames} onOpenGame={setGameId} onBack={() => navigate("library", "library")} />
+        ) : (
+          <>
+            <Hero
               meta={meta.data}
-              total={listEmpty ? 0 : total}
-              onChange={setFilters}
-              onReset={resetFilters}
-              list={list}
-              counts={counts}
-              onListChange={setList}
+              covers={heroCovers}
+              play={introDone}
+              onBrowse={() => scrollTo("library")}
+              onStores={() => scrollTo("stores")}
+              onDeals={() => navigate("deals")}
             />
-          </Reveal>
 
-          {list !== "all" && shelfIds && !listEmpty && (
-            <ShelfSummary
-              list={list}
-              shelf={shelf}
-              ids={shelfIds}
-              data={games.data?.pages[0]}
-              onShowAll={() => setFilters(SHOW_ALL)}
-              onPlan={
-                list === "wishlist"
-                  ? () => {
-                      addToCart(wishlist, cartWant)
-                      openCart()
-                    }
-                  : undefined
-              }
-            />
-          )}
+            <section id="library" className="grid scroll-mt-24 grid-cols-1 gap-2">
+              <Reveal className="grid gap-4 px-2 pt-16 pb-8 md:px-6 md:pt-28 md:pb-12">
+                <Eyebrow className="text-primary-ink">The library</Eyebrow>
+                <h2 className="font-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85] uppercase">
+                  <SplitText
+                    key={list}
+                    text={HEADINGS[list].text}
+                    stagger={0.08}
+                    partClassName={(w) => (w === HEADINGS[list].neon ? "text-neon" : undefined)}
+                  />
+                </h2>
+              </Reveal>
 
-          {list !== "all" && listEmpty ? (
-            <Message
-              title={EMPTY_LIST[list].title}
-              body={EMPTY_LIST[list].body}
-              action={
-                <div className="grid justify-items-center gap-4">
-                  <Button onClick={() => setList("all")}>
-                    <RollText>Browse all games</RollText>
-                  </Button>
-                  <BackupButtons />
-                </div>
-              }
-            />
-          ) : games.isError ? (
-            <Message title="Couldn't load games" body={games.error.message} action={<Button onClick={() => games.refetch()}><RollText>Try again</RollText></Button>} />
-          ) : games.isPending ? (
-            <Grid>
-              {Array.from({ length: 12 }, (_, i) => (
-                <Skeleton key={i} className="aspect-[4/5]" style={{ animationDelay: `${i * 80}ms` }} />
-              ))}
-            </Grid>
-          ) : items.length === 0 ? (
-            <Message
-              title="No games match these filters"
-              body="Try another search, or widen the platform, condition or stock filters."
-              action={
-                <Button variant="secondary" onClick={list === "all" ? resetFilters : () => setFilters(SHOW_ALL)}>
-                  <RollText>{list === "all" ? "Reset filters" : "Show all"}</RollText>
-                </Button>
-              }
-            />
-          ) : (
-            <>
-              <Grid className={games.isPlaceholderData ? "opacity-50 blur-[2px] transition-[opacity,filter] duration-300" : "transition-[opacity,filter] duration-300"}>
-                {/* Cards that stay glide to their new place; the rest fade out and in. */}
-                <AnimatePresence mode="popLayout">
-                  {items.map((g, i) => (
-                    <motion.div
-                      key={g.id}
-                      layout="position"
-                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.25 } }}
-                      transition={{ layout: { duration: 0.7, ease: ease.wg } }}
-                    >
-                      <GameCard game={g} index={i} storeName={storeNames.get(g.best.store) ?? g.best.store} onOpen={() => setGameId(g.id)} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </Grid>
-              {games.hasNextPage && (
-                <div className="flex justify-center py-10">
-                  <Button size="lg" onClick={() => games.fetchNextPage()} disabled={games.isFetchingNextPage}>
-                    <RollText>{games.isFetchingNextPage ? "Loading…" : `Show more · ${(total ?? 0) - items.length} left`}</RollText>
-                    <ButtonCircle icon={ArrowDown} />
-                  </Button>
-                </div>
+              <Reveal>
+                <FilterBar
+                  filters={filters}
+                  meta={meta.data}
+                  total={listEmpty ? 0 : total}
+                  onChange={setFilters}
+                  onReset={resetFilters}
+                  list={list}
+                  counts={counts}
+                  onListChange={setList}
+                />
+              </Reveal>
+
+              {list !== "all" && shelfIds && !listEmpty && (
+                <ShelfSummary
+                  list={list}
+                  shelf={shelf}
+                  ids={shelfIds}
+                  data={games.data?.pages[0]}
+                  onShowAll={() => setFilters(SHOW_ALL)}
+                  onPlan={
+                    list === "wishlist"
+                      ? () => {
+                          addToCart(wishlist, cartWant)
+                          openCart()
+                        }
+                      : undefined
+                  }
+                />
               )}
-            </>
-          )}
-        </section>
+
+              {list !== "all" && listEmpty ? (
+                <Message
+                  title={EMPTY_LIST[list].title}
+                  body={EMPTY_LIST[list].body}
+                  action={
+                    <div className="grid justify-items-center gap-4">
+                      <Button onClick={() => setList("all")}>
+                        <RollText>Browse all games</RollText>
+                      </Button>
+                      <BackupButtons />
+                    </div>
+                  }
+                />
+              ) : games.isError ? (
+                <Message title="Couldn't load games" body={games.error.message} action={<Button onClick={() => games.refetch()}><RollText>Try again</RollText></Button>} />
+              ) : games.isPending ? (
+                <GameGrid>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <Skeleton key={i} className="aspect-[4/5]" style={{ animationDelay: `${i * 80}ms` }} />
+                  ))}
+                </GameGrid>
+              ) : items.length === 0 ? (
+                <Message
+                  title="No games match these filters"
+                  body="Try another search, or widen the platform, condition or stock filters."
+                  action={
+                    <Button variant="secondary" onClick={list === "all" ? resetFilters : () => setFilters(SHOW_ALL)}>
+                      <RollText>{list === "all" ? "Reset filters" : "Show all"}</RollText>
+                    </Button>
+                  }
+                />
+              ) : (
+                <>
+                  <GameGrid className={games.isPlaceholderData ? "opacity-50 blur-[2px] transition-[opacity,filter] duration-300" : "transition-[opacity,filter] duration-300"}>
+                    {/* Cards that stay glide to their new place; the rest fade out and in. */}
+                    <AnimatePresence mode="popLayout">
+                      {items.map((g, i) => (
+                        <motion.div
+                          key={g.id}
+                          layout="position"
+                          exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.25 } }}
+                          transition={{ layout: { duration: 0.7, ease: ease.wg } }}
+                        >
+                          <GameCard game={g} index={i} storeName={storeNames.get(g.best.store) ?? g.best.store} onOpen={() => setGameId(g.id)} />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </GameGrid>
+                  {games.hasNextPage && (
+                    <div className="flex justify-center py-10">
+                      <Button size="lg" onClick={() => games.fetchNextPage()} disabled={games.isFetchingNextPage}>
+                        <RollText>{games.isFetchingNextPage ? "Loading…" : `Show more · ${(total ?? 0) - items.length} left`}</RollText>
+                        <ButtonCircle icon={ArrowDown} />
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+          </>
+        )}
 
         {meta.data && <SiteFooter stores={meta.data.stores} />}
       </main>
@@ -224,10 +263,6 @@ export default function App() {
       <CartDialog open={cartOpen} onOpenChange={setCartOpen} stores={meta.data?.stores} wishlist={wishlist} defaultWant={cartWant} />
     </>
   )
-}
-
-function Grid({ className = "", children }: { className?: string; children: React.ReactNode }) {
-  return <div className={`grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 ${className}`}>{children}</div>
 }
 
 function Message({ title, body, action }: { title: string; body: string; action: React.ReactNode }) {

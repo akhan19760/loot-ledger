@@ -17,7 +17,7 @@ export interface ApiOptions {
   rateLimit: { max: number; timeWindow: string };
 }
 
-/** The HTTP API: /api/health, /api/status, /api/games, POST /api/games/lookup, /api/games/:id, /api/filters. */
+/** The HTTP API: /api/health, /api/status, /api/games, POST /api/games/lookup, /api/games/:id, /api/filters, /api/deals. */
 export async function buildApp(sources: ApiSources, options: ApiOptions) {
   const app = Fastify({ logger: options.logger });
   // Per client IP. Responses carry x-ratelimit-* headers; over the limit gets a 429.

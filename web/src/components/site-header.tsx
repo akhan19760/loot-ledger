@@ -9,6 +9,7 @@ import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { Button } from "@/components/ui/button"
 import { Stat } from "@/components/ui/stat"
+import type { Page } from "@/hooks/use-library-url"
 import { useTheme } from "@/hooks/use-theme"
 import { timeAgo } from "@/lib/format"
 import { ease } from "@/lib/motion"
@@ -23,12 +24,17 @@ export function SiteHeader({
   introDone,
   cartCount,
   onOpenCart,
+  page,
+  onNavigate,
 }: {
   filters: FiltersResponse | undefined
   online: boolean
   introDone: boolean
   cartCount: number
   onOpenCart: () => void
+  page: Page
+  /** Go to a page, then to a section of it (or its top). */
+  onNavigate: (page: Page, section?: string) => void
 }) {
   const scrollTo = useScrollTo()
   const { scrollY } = useScroll()
@@ -65,8 +71,8 @@ export function SiteHeader({
 
       <button
         type="button"
-        onClick={() => scrollTo(0)}
-        aria-label="LootLedger, back to top"
+        onClick={() => (page === "library" ? scrollTo(0) : onNavigate("library"))}
+        aria-label={page === "library" ? "LootLedger, back to top" : "LootLedger, home"}
         className="group/roll absolute left-1/2 -translate-x-1/2 font-display text-2xl leading-none uppercase outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-4xl"
       >
         <RollText>
@@ -76,8 +82,20 @@ export function SiteHeader({
       </button>
 
       <nav className="flex items-center gap-1 md:gap-2">
-        <Button variant="ghost" className="hidden px-3 lg:inline-flex" onClick={() => scrollTo("library")}>
+        <Button
+          variant="ghost"
+          className="hidden px-3 lg:inline-flex"
+          onClick={() => (page === "library" ? scrollTo("library") : onNavigate("library", "library"))}
+        >
           <RollText>Library</RollText>
+        </Button>
+        <Button
+          variant="ghost"
+          className={cn("hidden px-3 lg:inline-flex", page === "deals" && "text-primary-ink")}
+          aria-current={page === "deals" ? "page" : undefined}
+          onClick={() => (page === "deals" ? scrollTo(0) : onNavigate("deals"))}
+        >
+          <RollText>Deals</RollText>
         </Button>
         <Button variant="ghost" className="hidden px-3 lg:inline-flex" onClick={() => scrollTo("stores")}>
           <RollText>Stores</RollText>

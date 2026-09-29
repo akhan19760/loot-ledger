@@ -40,9 +40,10 @@ interface Props {
   play: boolean
   onBrowse: () => void
   onStores: () => void
+  onDeals: () => void
 }
 
-export function Hero({ meta, covers, play, onBrowse, onStores }: Props) {
+export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props) {
   const ref = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] })
@@ -136,6 +137,9 @@ export function Hero({ meta, covers, play, onBrowse, onStores }: Props) {
           <Button size="lg" onClick={onBrowse}>
             <RollText>Start browsing</RollText>
             <ButtonCircle icon={ArrowDown} />
+          </Button>
+          <Button variant="secondary" size="lg" className="pr-7" onClick={onDeals}>
+            <RollText>Today's deals</RollText>
           </Button>
           <Button variant="secondary" size="lg" className="pr-7" onClick={onStores}>
             <RollText>See the stores</RollText>

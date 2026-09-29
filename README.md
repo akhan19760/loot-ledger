@@ -9,6 +9,7 @@ Compare new and used PlayStation game prices across Pakistani game stores in one
 - A Compare view per game: prices by version (platform, condition, format) and store side by side, with how much you save by shopping around, buying used or buying the older console's copy
 - A wishlist and a collection: mark games from any card or game page, see what your wishlist costs today, and back the lists up to a file. They are saved in your browser, so no account is needed
 - A cart optimizer: add the games you want to buy together and it finds the cheapest mix of stores with each store's delivery fee included, next to the cheapest single store and buying each game where it's cheapest
+- A Deals page (`/deals`): the biggest discounts against each store's own earlier price, the biggest price gaps between stores for the same version of a game, and games newly in stock since the previous price check
 - Filter by genre, platform, condition, store and stock
 - "Buy" links open the exact product page on the store's site
 
