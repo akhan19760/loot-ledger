@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DIGITAL, detectCondition, detectKind, detectPlatform } from "./detect.ts";
+import { buildLibrary } from "./build.ts";
 import { broadGenres, buildGenreIndex, lookupGenres, type WikidataGames } from "./genres.ts";
 import { pyRegex, stripChars } from "./pyregex.ts";
 import { cleanTitle, gameKey } from "./titles.ts";
@@ -80,5 +81,37 @@ describe("Python regex compatibility", () => {
   it("strips a character set from both ends like str.strip", () => {
     expect(stripChars(" -|Title: -", " -–—|/,:")).toBe("Title");
     expect(stripChars("---", "-")).toBe("");
+  });
+});
+
+describe("Payload CMS adapter", () => {
+  const store = { id: "ocean", name: "Ocean", platform: "payload" as const, base: "https://ocean.pk", linkStyle: null };
+  const listings = (...products: object[]) =>
+    buildLibrary({ stores: [store], feeds: new Map([[store.id, { fetchedAt: "", products }]]), wikidata: null }).games.flatMap((g) => g.listings);
+  const game = { title: "Cuphead (PS5)", slug: "cuphead-ps5", platform: { name: "PlayStation" }, category: [{ name: "PS5 GAMES" }], compareAtPrice: null, stock: 3 };
+
+  it("splits a new-and-used product into two offers", () => {
+    const ls = listings({ ...game, condition: "both", price: 9500, usedPrice: 6500, usedCompareAtPrice: 7000 });
+    expect(ls.map((l) => [l.condition, l.price, l.was, l.platform])).toEqual([
+      ["used", 6500, 7000, "PS5"],
+      ["new", 9500, null, "PS5"],
+    ]);
+    expect(ls[0]!.url).toBe("https://ocean.pk/products/cuphead-ps5");
+  });
+
+  it("uses price, not the stale usedPrice, on a used-only product", () => {
+    expect(listings({ ...game, condition: "used", price: 5000, usedPrice: 4500 }).map((l) => [l.condition, l.price])).toEqual([["used", 5000]]);
+  });
+
+  it("gives each variant its own condition, falling back to the product's", () => {
+    const variants = [
+      { label: "Black", condition: "used", price: 13999, stock: 1 },
+      { label: "White", condition: null, price: 22000, stock: 0 },
+    ];
+    const ls = listings({ ...game, title: "DualSense", condition: "both", price: 22000, variants });
+    expect(ls.map((l) => [l.variant, l.condition, l.in_stock])).toEqual([
+      ["Black / Used", "used", true],
+      ["White", "new", false],
+    ]);
   });
 });

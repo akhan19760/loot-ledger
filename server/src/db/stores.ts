@@ -8,7 +8,7 @@ const StoresFile = z.array(
   z.object({
     id: z.string().regex(/^[a-z0-9-]+$/),
     name: z.string().min(1),
-    platform: z.enum(["shopify", "woocommerce"]),
+    platform: z.enum(["shopify", "woocommerce", "payload"]),
     base: z.url().transform((u) => u.replace(/\/+$/, "")),
     link_style: z.enum(["query"]).optional(),
     delivery: z

@@ -81,6 +81,9 @@ def main():
         if only and s["id"] not in only:
             continue
         print(f"{s['name']} ({s['base']})")
+        if s["platform"] not in FETCHERS:
+            print(f"  skipped: {s['platform']} stores are only fetched by the server")
+            continue
         try:
             products = FETCHERS[s["platform"]](s["base"])
         except Exception as e:

@@ -8,6 +8,8 @@
  *
  * Shopify: /cart/add.js then /cart/shipping_rates.json (the cart's own rate lookup).
  * WooCommerce: the Store API cart (/wc/store/v1/cart/...), the same one its checkout uses.
+ * Payload CMS: skipped. The cart lives in the browser and the fee is a constant in the
+ * site's checkout script, so read it there by hand.
  */
 import fs from "node:fs";
 import type { Delivery } from "@ugs/shared";
@@ -20,7 +22,7 @@ const UA = "Mozilla/5.0 (compatible; LootLedger delivery check)";
 interface StoreEntry {
   id: string;
   name: string;
-  platform: "shopify" | "woocommerce";
+  platform: "shopify" | "woocommerce" | "payload";
   base: string;
 }
 
@@ -149,6 +151,7 @@ async function wooRates(store: StoreEntry, ids: string[], city: City): Promise<R
 }
 
 async function check(store: StoreEntry): Promise<Delivery> {
+  if (store.platform === "payload") throw new Error("no server-side cart to ask; read the fee from its checkout script");
   const games = store.platform === "shopify" ? await shopifyGames(store) : await wooGames(store);
   if (games.length < MAX_GAMES) throw new Error(`only ${games.length} games in stock to try`);
   const delivery: Delivery = { karachi: [], elsewhere: [], checked: new Date().toLocaleDateString("en-CA") }; // YYYY-MM-DD, local

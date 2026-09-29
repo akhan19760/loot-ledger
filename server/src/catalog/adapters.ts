@@ -5,7 +5,7 @@ import { unescape } from "./titles.ts";
 export interface StoreConfig {
   id: string;
   name: string;
-  platform: "shopify" | "woocommerce";
+  platform: "shopify" | "woocommerce" | "payload";
   base: string;
   linkStyle: "query" | null;
 }
@@ -120,7 +120,67 @@ export function* wooListings(store: StoreConfig, p: WooProduct): Generator<RawLi
   }
 }
 
+// ---------------------------------------------------------------- Payload CMS (/api/products)
+
+type PayloadCondition = "new" | "used" | "both";
+interface PayloadMedia { url?: string | null }
+interface PayloadVariant {
+  label: string;
+  /** Unset: the product's condition. */
+  condition?: PayloadCondition | null;
+  price: number | null;
+  compareAtPrice?: number | null;
+  stock?: number | null;
+  image?: PayloadMedia | null;
+}
+/** Fetched with depth=1, so platform, categories and images are objects, not ids. */
+export interface PayloadProduct {
+  title: string;
+  slug: string;
+  condition?: PayloadCondition | null;
+  platform?: { name: string } | null;
+  category?: { name: string }[] | null;
+  price: number | null;
+  compareAtPrice?: number | null;
+  usedPrice?: number | null;
+  usedCompareAtPrice?: number | null;
+  stock?: number | null;
+  images?: { image?: PayloadMedia | null }[] | null;
+  variants?: PayloadVariant[] | null;
+}
+
+export function* payloadListings(store: StoreConfig, p: PayloadProduct): Generator<RawListing> {
+  const title = unescape(p.title.trim());
+  const meta = [p.platform?.name ?? "", ...(p.category ?? []).map((c) => c.name)];
+  const media = (m: PayloadMedia | null | undefined) => (m?.url ? new URL(m.url, store.base).href : null);
+  const image = media(p.images?.[0]?.image);
+  const url = `${store.base}/products/${p.slug}`;
+  const condition = p.condition ?? "new";
+  // Condition is a field here, not text in the title, so it goes into the variant for build's
+  // detectCondition. A plain "new" product needs no label: build assumes new.
+  const tag = (c: PayloadCondition) => (c === "used" ? "Used" : c === "new" && condition !== "new" ? "New" : "");
+  // A "both" product sells new at price and used at usedPrice. On a "used" product, price is
+  // the used price and usedPrice is a leftover the storefront ignores.
+  const offer =(variant: string, price: number | null, compareAt: number | null | undefined, stock: number | null | undefined, img = image): RawListing => {
+    const compare = Number(compareAt || 0);
+    return { raw_title: title, variant, meta, price: Number(price || 0), was: compare > Number(price || 0) ? compare : null, in_stock: Number(stock || 0) > 0, url, image: img };
+  };
+
+  if (p.variants?.length) {
+    for (const v of p.variants) {
+      const label = [v.label.trim(), tag(v.condition ?? condition)].filter(Boolean).join(" / ");
+      yield offer(label, v.price, v.compareAtPrice, v.stock, media(v.image) || image);
+    }
+  } else if (condition === "both" && p.usedPrice) {
+    yield offer("New", p.price, p.compareAtPrice, p.stock);
+    yield offer("Used", p.usedPrice, p.usedCompareAtPrice, p.stock);
+  } else {
+    yield offer(tag(condition), p.price, p.compareAtPrice, p.stock);
+  }
+}
+
 export const ADAPTERS = {
   shopify: (store: StoreConfig, p: unknown) => shopifyListings(store, p as ShopifyProduct),
   woocommerce: (store: StoreConfig, p: unknown) => wooListings(store, p as WooProduct),
+  payload: (store: StoreConfig, p: unknown) => payloadListings(store, p as PayloadProduct),
 };
