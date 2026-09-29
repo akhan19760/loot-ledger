@@ -10,7 +10,10 @@ export default defineConfig({
     alias: { '@': path.resolve(import.meta.dirname, './src') },
   },
   server: {
-    // The API runs separately in dev (server/, port 3001).
-    proxy: { '/api': 'http://127.0.0.1:3001' },
+    // The API runs separately in dev (server/, port 3001). It also serves share links, /g/<game>.
+    proxy: {
+      '/api': 'http://127.0.0.1:3001',
+      '^/g/': { target: 'http://127.0.0.1:3001', xfwd: true },
+    },
   },
 })

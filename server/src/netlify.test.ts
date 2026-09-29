@@ -76,6 +76,23 @@ describe("Netlify function", () => {
     expect(cdn(res)).toBe("public, durable, max-age=60");
   });
 
+  it("serves a share link as link-preview tags that send people on to the game", async () => {
+    const res = await get("/g/elden-ring", "203.0.113.10");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    const html = await res.text();
+    expect(html).toContain('<meta property="og:title" content="Elden Ring: Rs 9,000 at Store A">');
+    expect(html).toContain('<meta property="og:url" content="https://lootledger.example/g/elden-ring">');
+    expect(html).toContain('<meta http-equiv="refresh" content="0; url=/?game=game%3Aelden-ring">');
+    expect(cdn(res)).toBe("public, durable, max-age=31536000");
+  });
+
+  it("sends a share link to a game that's gone to the home page", async () => {
+    const res = await get("/g/nope", "203.0.113.11");
+    expect(res.status).toBe(404);
+    expect(await res.text()).toContain('content="0; url=/"');
+  });
+
   it("never caches health", async () => {
     expect(cdn(await get("/api/health", "203.0.113.5"))).toBe("no-store");
   });
