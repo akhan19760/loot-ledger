@@ -14,12 +14,14 @@ import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
 import { SiteFooter } from "@/components/site-footer"
+import { CartDialog } from "@/components/cart-dialog"
 import { BackupButtons, ShelfSummary } from "@/components/shelf-summary"
 import { SiteHeader } from "@/components/site-header"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DEFAULT_FILTERS, useLibraryUrl, type Filters, type LibraryList } from "@/hooks/use-library-url"
+import { addToCart, useCart } from "@/hooks/use-cart"
 import { idsOn, useShelf } from "@/hooks/use-shelf"
 import { api } from "@/lib/api"
 import { thumb } from "@/lib/images"
@@ -49,6 +51,15 @@ export default function App() {
   const shelfIds = useMemo(() => (list === "all" ? null : idsOn(shelf, list)), [shelf, list])
   const counts = useMemo(() => ({ wishlist: idsOn(shelf, "wishlist").length, collection: idsOn(shelf, "collection").length }), [shelf])
   const listEmpty = shelfIds?.length === 0
+  const cart = useCart()
+  const [cartOpen, setCartOpen] = useState(false)
+  const wishlist = useMemo(() => idsOn(shelf, "wishlist").map((id) => ({ id, title: shelf[id]!.title, image: shelf[id]!.image })), [shelf])
+  // Games added to the cart accept what the library is filtered to (platform, condition).
+  const cartWant = { platform: filters.platform || null, condition: filters.condition || null, format: null }
+  const openCart = () => {
+    if (gameId) setGameId(null)
+    setCartOpen(true)
+  }
   const scrollTo = useScrollTo()
   const [introDone, setIntroDone] = useState(false)
   const onIntroDone = useCallback(() => setIntroDone(true), [])
@@ -95,7 +106,7 @@ export default function App() {
         onDone={onIntroDone}
       />
       <Grain />
-      <SiteHeader filters={meta.data} online={!meta.isError} introDone={introDone} />
+      <SiteHeader filters={meta.data} online={!meta.isError} introDone={introDone} cartCount={cart.items.length} onOpenCart={openCart} />
 
       {/* Full width: only the 8px edge padding, matching the header's inset (WG --gap) */}
       {/* inert until the loading screen has gone, so focus can't wander behind it */}
@@ -129,7 +140,21 @@ export default function App() {
           </Reveal>
 
           {list !== "all" && shelfIds && !listEmpty && (
-            <ShelfSummary list={list} shelf={shelf} ids={shelfIds} data={games.data?.pages[0]} onShowAll={() => setFilters(SHOW_ALL)} />
+            <ShelfSummary
+              list={list}
+              shelf={shelf}
+              ids={shelfIds}
+              data={games.data?.pages[0]}
+              onShowAll={() => setFilters(SHOW_ALL)}
+              onPlan={
+                list === "wishlist"
+                  ? () => {
+                      addToCart(wishlist, cartWant)
+                      openCart()
+                    }
+                  : undefined
+              }
+            />
           )}
 
           {list !== "all" && listEmpty ? (
@@ -195,7 +220,8 @@ export default function App() {
         {meta.data && <SiteFooter stores={meta.data.stores} />}
       </main>
 
-      <GameDialog gameId={gameId} filters={filters} storeNames={storeNames} onClose={() => setGameId(null)} />
+      <GameDialog gameId={gameId} filters={filters} storeNames={storeNames} onClose={() => setGameId(null)} onOpenCart={openCart} />
+      <CartDialog open={cartOpen} onOpenChange={setCartOpen} stores={meta.data?.stores} wishlist={wishlist} defaultWant={cartWant} />
     </>
   )
 }

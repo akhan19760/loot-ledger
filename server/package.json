@@ -13,6 +13,7 @@
     "refresh:ci": "tsx --env-file-if-exists=.env scripts/ci-refresh.ts",
     "build:netlify": "tsx --env-file-if-exists=.env scripts/build-netlify.ts",
     "parity": "tsx --env-file-if-exists=.env scripts/parity.ts",
+    "check:delivery": "tsx --env-file-if-exists=.env scripts/check-delivery.ts",
     "test": "vitest run"
   },
   "dependencies": {

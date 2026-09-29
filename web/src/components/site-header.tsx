@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react"
-import { Moon, Sun } from "lucide-react"
+import { Moon, ShoppingBag, Sun } from "lucide-react"
 import { useState } from "react"
 import { cn } from "cn"
 import type { FiltersResponse } from "@ugs/shared"
@@ -17,7 +17,19 @@ import { ease } from "@/lib/motion"
  * WG header bar: floating 8px from the edges, blurred, status stats on the left.
  * Slides in after the intro, tucks away while scrolling down and returns on the way up.
  */
-export function SiteHeader({ filters, online, introDone }: { filters: FiltersResponse | undefined; online: boolean; introDone: boolean }) {
+export function SiteHeader({
+  filters,
+  online,
+  introDone,
+  cartCount,
+  onOpenCart,
+}: {
+  filters: FiltersResponse | undefined
+  online: boolean
+  introDone: boolean
+  cartCount: number
+  onOpenCart: () => void
+}) {
   const scrollTo = useScrollTo()
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
@@ -73,9 +85,33 @@ export function SiteHeader({ filters, online, introDone }: { filters: FiltersRes
         {filters?.generated && (
           <Stat className="mx-2" value={timeAgo(filters.generated)} label="Updated" title={new Date(filters.generated).toLocaleString()} />
         )}
+        <CartButton count={cartCount} onClick={onOpenCart} />
         <ThemeToggle />
       </nav>
     </motion.header>
+  )
+}
+
+/** WG black circle with the cart's count on a neon chip. */
+function CartButton({ count, onClick }: { count: number; onClick: () => void }) {
+  return (
+    <Button variant="round" size="icon-sm" aria-label={`Cart optimizer, ${count} ${count === 1 ? "game" : "games"}`} title="Cart optimizer" className="relative md:size-11" onClick={onClick}>
+      <ShoppingBag />
+      <AnimatePresence>
+        {count > 0 && (
+          <motion.span
+            key={count}
+            initial={{ scale: 0.4 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ duration: 0.4, ease: ease.inkRoll }}
+            className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-semibold text-black tabular-nums"
+          >
+            {count}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </Button>
   )
 }
 
