@@ -9,6 +9,7 @@ import { RollText } from "@/components/motion/roll-text"
 import { useScrollLock } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
 import { AddToCartButton } from "@/components/cart-dialog"
+import { ShareButton } from "@/components/share-button"
 import { ShelfActions } from "@/components/shelf-buttons"
 import { Badge } from "@/components/ui/badge"
 import { Button, ButtonCircle } from "@/components/ui/button"
@@ -264,6 +265,7 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
               want={{ platform: filters.platform || null, condition: filters.condition || null, format: null }}
               onOpenCart={onOpenCart}
             />
+            <ShareButton game={game.data} storeNames={storeNames} />
           </div>
         </div>
       </DialogHeader>

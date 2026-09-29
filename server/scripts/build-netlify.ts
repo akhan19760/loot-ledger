@@ -37,8 +37,8 @@ await build({
       'import { createHandler } from "./netlify.ts";',
       "declare const SNAPSHOT: string;",
       `export default createHandler(JSON.parse(SNAPSHOT), ${JSON.stringify(rateLimit)});`,
-      // Netlify reads this to route every /api/* request to the function.
-      'export const config = { path: "/api/*" };',
+      // Netlify reads this to route every /api/* request, and share links, to the function.
+      'export const config = { path: ["/api/*", "/g/*"] };',
     ].join("\n"),
     resolveDir: path.join(SERVER_ROOT, "src"),
     sourcefile: "api.ts",

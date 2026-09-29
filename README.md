@@ -11,6 +11,7 @@ Compare new and used PlayStation game prices across Pakistani game stores in one
 - A cart optimizer: add the games you want to buy together and it finds the cheapest mix of stores with each store's delivery fee included, next to the cheapest single store and buying each game where it's cheapest
 - Filter by genre, platform, condition, store and stock
 - "Buy" links open the exact product page on the store's site
+- Share any game: its link (`/g/<game>`) previews in WhatsApp and other apps with the cover and today's cheapest price, then opens the game. On a phone, Share opens the share sheet; on a computer, it offers WhatsApp and Copy link
 
 ## Stores
 

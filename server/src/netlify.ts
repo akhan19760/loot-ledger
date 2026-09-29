@@ -57,7 +57,8 @@ export function createHandler(snapshot: Snapshot, rateLimit: { max: number; time
     const res = await (await app).inject({
       method: req.method as InjectOptions["method"],
       url: url.pathname + url.search,
-      headers: Object.fromEntries(req.headers),
+      // Share pages link back to the site by its public address.
+      headers: { "x-forwarded-proto": url.protocol.slice(0, -1), "x-forwarded-host": url.host, ...Object.fromEntries(req.headers) },
       remoteAddress: context.ip, // rate limits are per visitor, not per function instance
       ...(req.body && { payload: Buffer.from(await req.arrayBuffer()) }),
     });

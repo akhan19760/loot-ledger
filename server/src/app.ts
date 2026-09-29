@@ -4,6 +4,7 @@ import type { StatusResponse } from "@ugs/shared";
 import type { LibrarySnapshot } from "./library.ts";
 import { gamesRoutes } from "./routes/games.ts";
 import { metaRoutes } from "./routes/meta.ts";
+import { shareRoutes } from "./routes/share.ts";
 
 /** Where the API's data comes from: the DB (Node server) or a deploy snapshot (Netlify). */
 export interface ApiSources {
@@ -24,5 +25,6 @@ export async function buildApp(sources: ApiSources, options: ApiOptions) {
   await app.register(rateLimit, options.rateLimit);
   metaRoutes(app, sources);
   gamesRoutes(app, sources);
+  shareRoutes(app, sources); // /g/:slug, a game's share link (a page, not JSON)
   return app;
 }
