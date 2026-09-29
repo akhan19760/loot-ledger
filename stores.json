@@ -5,5 +5,7 @@
   {"id": "khanani", "name": "Khanani Store", "platform": "shopify", "base": "https://khananistore.com", "delivery": {"karachi": [400], "elsewhere": [650, 650, 650, 650, 650, 1300], "checked": "2026-09-29"}},
   {"id": "gamepark", "name": "GamePark", "platform": "woocommerce", "base": "https://gamepark.pk", "link_style": "query", "delivery": {"karachi": [500], "elsewhere": [500], "checked": "2026-09-29"}},
   {"id": "gamesource", "name": "GameSource", "platform": "woocommerce", "base": "https://gamesource.pk", "delivery": {"karachi": [500], "elsewhere": [500], "checked": "2026-09-29"}},
-  {"id": "skygames", "name": "Sky Games", "platform": "woocommerce", "base": "https://www.skygames.com.pk", "delivery": {"karachi": [500], "elsewhere": [500], "checked": "2026-09-29", "note": "Daewoo courier, the cheapest of its three options."}}
+  {"id": "skygames", "name": "Sky Games", "platform": "woocommerce", "base": "https://www.skygames.com.pk", "delivery": {"karachi": [500], "elsewhere": [500], "checked": "2026-09-29", "note": "Daewoo courier, the cheapest of its three options."}},
+  {"id": "pakgameshop", "name": "Pak Game Shop", "platform": "woocommerce", "base": "https://pakgameshop.com", "delivery": {"karachi": [350], "elsewhere": [350], "checked": "2026-09-29"}},
+  {"id": "thegamesocean", "name": "The Games Ocean", "platform": "payload", "base": "https://thegamesocean.com", "delivery": {"karachi": [350], "elsewhere": [350], "checked": "2026-09-29", "note": "Free on orders of Rs. 15,000 or more. Cash on delivery adds 4% tax (store policy)."}}
 ]

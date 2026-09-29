@@ -4,7 +4,7 @@ Compare new and used PlayStation game prices across Pakistani game stores in one
 
 ## Features
 
-- One library built from 7 stores' catalogs, with the same game grouped across stores
+- One library built from 9 stores' catalogs, with the same game grouped across stores
 - Cheapest offer first, with new/used, PS4/PS5 and disc/digital shown for every offer
 - A Compare view per game: prices by version (platform, condition, format) and store side by side, with how much you save by shopping around, buying used or buying the older console's copy
 - A wishlist and a collection: mark games from any card or game page, see what your wishlist costs today, and back the lists up to a file. They are saved in your browser, so no account is needed
@@ -25,6 +25,8 @@ Compare new and used PlayStation game prices across Pakistani game stores in one
 | [GamePark](https://gamepark.pk) | WooCommerce |
 | [GameSource](https://gamesource.pk) | WooCommerce |
 | [Sky Games](https://www.skygames.com.pk) | WooCommerce |
+| [Pak Game Shop](https://pakgameshop.com) | WooCommerce |
+| [The Games Ocean](https://thegamesocean.com) | Payload CMS |
 
 ## Quick start
 
@@ -60,7 +62,7 @@ The data comes from each store's public product feed. The scripts don't scrape a
 
 ## Adding a store
 
-If the store runs Shopify (`https://<store>/products.json` returns JSON) or WooCommerce, add one line to `stores.json`:
+If the store runs Shopify (`https://<store>/products.json` returns JSON), WooCommerce, or Payload CMS (`https://<store>/api/products` returns JSON; platform `"payload"`, fetched by the server only), add one line to `stores.json`:
 
 ```json
 {"id": "mystore", "name": "My Store", "platform": "shopify", "base": "https://mystore.pk"}

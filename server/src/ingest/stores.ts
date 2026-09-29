@@ -2,8 +2,8 @@
  * Download a store's whole catalog from its public product feed.
  *
  * Shopify stores expose /products.json; WooCommerce stores expose the Store API
- * (wc/store/v1/products). Both are public, read-only feeds the stores' own themes
- * use, so no HTML scraping is needed.
+ * (wc/store/v1/products); Payload CMS stores expose /api/products. All are public,
+ * read-only feeds the stores' own sites use, so no HTML scraping is needed.
  */
 import type { StoreConfig } from "../catalog/adapters.ts";
 import { getJson, sleep, type Log } from "./http.ts";
@@ -51,6 +51,24 @@ async function fetchWooCommerce(base: string, { delayMs, log }: FetchOptions): P
   return products.map((p) => ({ ...p, _variations: byParent.get(p.id) ?? [] }));
 }
 
+// Only the fields payloadListings reads; the rest (rich-text descriptions) is most of the weight.
+const PAYLOAD_FIELDS = ["title", "slug", "condition", "platform", "category", "price", "compareAtPrice", "usedPrice", "usedCompareAtPrice", "stock", "images", "variants"];
+
+async function fetchPayload(base: string, { delayMs, log }: FetchOptions): Promise<unknown[]> {
+  // depth=1 resolves platform, category and image ids to their names and URLs.
+  const query = `limit=100&depth=1&where[status][equals]=active&${PAYLOAD_FIELDS.map((f) => `select[${f}]=true`).join("&")}`;
+  const items: unknown[] = [];
+  for (let page = 1; ; page++) {
+    const { docs, hasNextPage } = await getJson<{ docs: unknown[]; hasNextPage: boolean }>(`${base}/api/products?${query}&page=${page}`, { userAgent: UA, log });
+    items.push(...docs);
+    log.info(`    page ${page}: ${items.length} products`);
+    if (!hasNextPage) return items;
+    await sleep(delayMs);
+  }
+}
+
+const FETCHERS = { shopify: fetchShopify, woocommerce: fetchWooCommerce, payload: fetchPayload };
+
 export function fetchStore(store: StoreConfig, options: FetchOptions): Promise<unknown[]> {
-  return store.platform === "shopify" ? fetchShopify(store.base, options) : fetchWooCommerce(store.base, options);
+  return FETCHERS[store.platform](store.base, options);
 }
