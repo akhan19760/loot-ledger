@@ -17,6 +17,8 @@ interface Props {
   /** Position in the grid, for the stagger when cards scroll in. */
   index: number
   onOpen: () => void
+  /** On the deals page: a neon sticker ("−60%") and a note that replaces the usual badges. */
+  deal?: { sticker: string; note?: string }
 }
 
 /**
@@ -24,7 +26,7 @@ interface Props {
  * bottom. Tilts toward the pointer in 3D (INK tilted cards) with a neon glare, glows
  * neon on hover (WG drop-shadow), and wipes in with INK's clip-path reveal.
  */
-export function GameCard({ game, storeName, index, onOpen }: Props) {
+export function GameCard({ game, storeName, index, onOpen, deal }: Props) {
   const { best } = game
   const reduced = useReducedMotion()
 
@@ -102,23 +104,33 @@ export function GameCard({ game, storeName, index, onOpen }: Props) {
           </span>
   
           <div className="absolute inset-x-0 bottom-0 grid gap-2 p-3 transition-transform duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] [text-shadow:0_1px_14px_rgb(0_0_0/0.85)] group-hover/card:-translate-y-1 sm:p-4">
+            {deal && (
+              <span className="w-fit -rotate-2 rounded-sm bg-primary px-2 pt-1 pb-0.5 font-display text-2xl leading-none text-black uppercase [text-shadow:none] sm:text-3xl">
+                {deal.sticker}
+              </span>
+            )}
             <Eyebrow className="text-muted-foreground transition-colors duration-300 group-hover/card:text-primary">
               {[best.platform, best.condition].filter(Boolean).join(" · ")}
             </Eyebrow>
             <h3 className="line-clamp-3 font-display text-2xl leading-[0.95] uppercase">{game.title}</h3>
             <div className="flex min-w-0 items-baseline justify-between gap-2">
               <span className={`text-lg font-semibold whitespace-nowrap tabular-nums sm:text-xl ${best.in_stock ? "text-primary" : "text-muted-foreground"}`}>
+                {deal && best.was && <s className="mr-1.5 text-sm font-normal text-muted-foreground">{formatPrice(best.was)}</s>}
                 {formatPrice(best.price)}
               </span>
               <span className="min-w-0 truncate text-xs text-muted-foreground">{storeName}</span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {!best.in_stock && <Badge variant="destructive">Out of stock</Badge>}
-              <Badge className="hidden sm:inline-flex">
-                {game.storeCount} {game.storeCount === 1 ? "store" : "stores"}
-              </Badge>
-              {game.spread >= 100 && <Badge variant="outline">Save up to {formatPrice(game.spread)}</Badge>}
-            </div>
+            {deal ? (
+              deal.note && <p className="text-xs text-muted-foreground">{deal.note}</p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {!best.in_stock && <Badge variant="destructive">Out of stock</Badge>}
+                <Badge className="hidden sm:inline-flex">
+                  {game.storeCount} {game.storeCount === 1 ? "store" : "stores"}
+                </Badge>
+                {game.spread >= 100 && <Badge variant="outline">Save up to {formatPrice(game.spread)}</Badge>}
+              </div>
+            )}
             {/* Rises in on hover */}
             <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:grid-rows-[1fr]">
               <div className="overflow-hidden">

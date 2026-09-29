@@ -6,10 +6,12 @@ import {
   normalizeSearch,
   PLATFORM_FILTERS,
   type FiltersResponse,
+  type Game,
   type GameSummary,
   type GamesLookup,
   type GamesQuery,
   type GamesResponse,
+  type Listing,
   type SortOrder,
 } from "@ugs/shared";
 import type { LibrarySnapshot } from "./library.ts";
@@ -20,6 +22,22 @@ const SORTS: Record<SortOrder, (a: GameSummary, b: GameSummary) => number> = {
   stores: (a, b) => b.storeCount - a.storeCount || a.best.price - b.best.price,
   az: (a, b) => a.title.localeCompare(b.title),
 };
+
+/** What a grid card shows of a game, from the offers that match the filters (at least one). */
+export function summarize(g: Game, offers: Listing[], best = offers.toSorted(byStockThenPrice)[0]!): GameSummary {
+  const inStock = offers.filter((o) => o.in_stock).map((o) => o.price);
+  return {
+    id: g.id,
+    title: g.title,
+    kind: g.kind,
+    genres: g.genres,
+    image: g.image,
+    best,
+    offerCount: offers.length,
+    storeCount: new Set(offers.map((o) => o.store)).size,
+    spread: inStock.length > 1 ? Math.max(...inStock) - Math.min(...inStock) : 0,
+  };
+}
 
 /** A lookup (with `ids`) only searches those games, and also reports missing ids and in-stock totals. */
 export function queryGames(lib: LibrarySnapshot, query: GamesQuery | GamesLookup): GamesResponse {
@@ -36,19 +54,7 @@ export function queryGames(lib: LibrarySnapshot, query: GamesQuery | GamesLookup
     if (query.genre && !g.genres.includes(query.genre)) continue;
     if (q && !g.searchText.includes(q)) continue;
     const offers = g.listings.filter((l) => listingMatches(l, query));
-    if (!offers.length) continue;
-    const inStock = offers.filter((o) => o.in_stock).map((o) => o.price);
-    rows.push({
-      id: g.id,
-      title: g.title,
-      kind: g.kind,
-      genres: g.genres,
-      image: g.image,
-      best: offers.toSorted(byStockThenPrice)[0]!,
-      offerCount: offers.length,
-      storeCount: new Set(offers.map((o) => o.store)).size,
-      spread: inStock.length > 1 ? Math.max(...inStock) - Math.min(...inStock) : 0,
-    });
+    if (offers.length) rows.push(summarize(g, offers));
   }
   rows.sort(SORTS[query.sort]);
 

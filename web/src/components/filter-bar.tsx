@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { DEFAULT_FILTERS, type Filters, type LibraryList } from "@/hooks/use-library-url"
+import { CONDITIONS, PLATFORMS } from "@/lib/filter-options"
 import { ease } from "@/lib/motion"
 
 // Radix toggle/select items can't have an empty value, so "any" is spelled ALL here.
@@ -18,8 +19,6 @@ const ALL = "all"
 const toUi = (v: string) => v || ALL
 const fromUi = (v: string) => (v === ALL ? "" : v)
 
-const PLATFORMS = [["PS", "PlayStation"], ["PS5", "PS5"], ["PS4", "PS4"], ["Switch", "Switch"], ["Xbox", "Xbox"], ["", "All"]] as const
-const CONDITIONS = [["", "New + used"], ["new", "New"], ["used", "Used"]] as const
 const KINDS = [["game", "Games"], ["hardware", "Hardware"], ["giftcard", "Gift cards"], ["", "Everything"]] as const
 const SORTS: [SortOrder, string][] = [["price", "Lowest price"], ["spread", "Biggest price difference"], ["stores", "Most stores"], ["az", "A–Z"]]
 const EXAMPLES = ["spider-man", "fc 26", "elden ring", "god of war", "gran turismo 7"]
@@ -178,7 +177,8 @@ function SearchField({ committed, onCommit }: { committed: string; onCommit: (va
   )
 }
 
-function ChipGroup({
+/** WG chips with one neon pill gliding between them, under an eyebrow label. "" is a value like any other. */
+export function ChipGroup({
   label,
   value,
   options,

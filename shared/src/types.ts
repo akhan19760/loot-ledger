@@ -122,6 +122,46 @@ export interface FiltersResponse {
   totals: { games: number; offers: number };
 }
 
+// ---------------------------------------------------------------- /api/deals
+
+/** Query for /api/deals: games only, in stock only, narrowed like the library. */
+export interface DealsQuery {
+  platform: string;
+  condition: Condition | "";
+  /** Most deals per list. */
+  limit: number;
+}
+
+/** A store selling below the price it says it used to charge. `game.best` is that offer. */
+export interface DiscountDeal {
+  game: GameSummary;
+  /** Rupees off the store's "was" price. */
+  off: number;
+  /** Percent off, rounded. */
+  pct: number;
+}
+
+/**
+ * The same version (platform, condition, format) at very different prices in two
+ * stores. `game.best` is the cheap one, `high` the dearest other store's.
+ */
+export interface GapDeal {
+  game: GameSummary;
+  high: Listing;
+  gap: number;
+}
+
+export interface DealsResponse {
+  /** When the prices were last fetched, null before the first refresh. */
+  pricesAt: string | null;
+  /** Biggest percent off first. */
+  discounts: DiscountDeal[];
+  /** Biggest gap in rupees first. */
+  gaps: GapDeal[];
+  /** Games no store had in stock before the last refresh, and some store has now. Cheapest first. */
+  restocked: GameSummary[];
+}
+
 // ---------------------------------------------------------------- /api/status
 
 export type RunType = "prices" | "genres";
