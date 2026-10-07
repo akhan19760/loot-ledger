@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Stat } from "@/components/ui/stat"
 import type { Page } from "@/hooks/use-library-url"
 import { useTheme } from "@/hooks/use-theme"
+import { useSound } from "@/lib/sfx"
 import { timeAgo } from "@/lib/format"
 import { ease } from "@/lib/motion"
 
@@ -37,6 +38,7 @@ export function SiteHeader({
   onNavigate: (page: Page, section?: string) => void
 }) {
   const scrollTo = useScrollTo()
+  const sound = useSound()
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -58,7 +60,19 @@ export function SiteHeader({
       )}
     >
       <div className="flex items-center gap-4 md:gap-5">
-        <Equalizer live={online} />
+        {/* WG's audio control: the equalizer turns sound effects on and off, its bars
+            bouncing while they're on (and neon while the API is live) */}
+        <button
+          type="button"
+          aria-pressed={sound.on}
+          aria-label="Sound effects"
+          title={sound.on ? "Sound on" : "Sound off"}
+          onClick={sound.toggle}
+          className="group/sound rounded-full transition-transform outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+        >
+          <Equalizer live={online} playing={sound.on} className="transition-colors duration-300 group-hover/sound:border-primary" />
+        </button>
+        <Stat className="hidden xl:flex" dot={sound.on ? "live" : "idle"} label={sound.on ? "Sound" : "Muted"} />
         <Stat className="hidden lg:flex" dot={online ? "live" : "idle"} label={online ? "Online" : "Offline"} />
         {filters && (
           <>

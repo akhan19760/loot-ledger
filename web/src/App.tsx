@@ -21,6 +21,7 @@ import { VirtualGameGrid } from "@/components/virtual-game-grid"
 import { DEFAULT_FILTERS, useLibraryUrl, type Filters, type LibraryList, type Page } from "@/hooks/use-library-url"
 import { addToCart, useCart } from "@/hooks/use-cart"
 import { idsOn, useShelf } from "@/hooks/use-shelf"
+import { useSoundEffects } from "@/hooks/use-sound-effects"
 import { api } from "@/lib/api"
 import { thumb } from "@/lib/images"
 
@@ -69,6 +70,7 @@ export default function App() {
   const listEmpty = shelfIds?.length === 0
   const cart = useCart()
   const [cartOpen, setCartOpen] = useState(false)
+  useSoundEffects(gameId !== null || cartOpen)
   const wishlist = useMemo(() => idsOn(shelf, "wishlist").map((id) => ({ id, title: shelf[id]!.title, image: shelf[id]!.image })), [shelf])
   // Games added to the cart accept what the library is filtered to (platform, condition).
   const cartWant = { platform: filters.platform || null, condition: filters.condition || null, format: null }
