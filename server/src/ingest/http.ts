@@ -15,7 +15,7 @@ export function describeError(err: unknown): string {
   return detail && !err.message.includes(detail) ? `${err.message} (${detail})` : err.message;
 }
 
-interface GetJsonOptions {
+interface GetOptions {
   userAgent: string;
   timeoutMs?: number;
   tries?: number;
@@ -23,15 +23,24 @@ interface GetJsonOptions {
 }
 
 /** GET a JSON document, retrying with a growing pause (5 s, 10 s, ...) on errors. */
-export async function getJson<T = unknown>(url: string, { userAgent, timeoutMs = 60_000, tries = 3, log }: GetJsonOptions): Promise<T> {
+export function getJson<T = unknown>(url: string, options: GetOptions): Promise<T> {
+  return get(url, "application/json", (res) => res.json() as Promise<T>, options);
+}
+
+/** GET a page's text (HTML), retrying like getJson. */
+export function getText(url: string, options: GetOptions): Promise<string> {
+  return get(url, "text/html", (res) => res.text(), options);
+}
+
+async function get<T>(url: string, accept: string, read: (res: Response) => Promise<T>, { userAgent, timeoutMs = 60_000, tries = 3, log }: GetOptions): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try {
       const res = await fetch(url, {
-        headers: { "User-Agent": userAgent, Accept: "application/json" },
+        headers: { "User-Agent": userAgent, Accept: accept },
         signal: AbortSignal.timeout(timeoutMs),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      return (await res.json()) as T;
+      return await read(res);
     } catch (err) {
       if (attempt === tries - 1) throw new Error(describeError(err), { cause: err });
       log?.warn(`    retry after error: ${describeError(err)}`);

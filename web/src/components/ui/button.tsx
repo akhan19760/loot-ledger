@@ -4,9 +4,10 @@ import { cn } from "cn"
 import { Slot } from "radix-ui"
 import { ArrowUpRight } from "lucide-react"
 
-// Styles from DESIGN.md: primary = WG neon "Learn more", secondary = WG "Contact",
-// ghost = WG nav links, round = WG black icon circle. Every button is a `group/roll`,
-// so a <RollText> label inside rolls on hover (INK).
+// Styles from DESIGN.md: primary = WG neon "Learn more" (black with neon text on a light
+// page, where a neon fill strains the eye), secondary = WG "Contact", ghost = WG nav links,
+// round = WG black icon circle. Every button is a `group/roll`, so a <RollText> label
+// inside rolls on hover (INK).
 const buttonVariants = cva(
   "group/button group/roll relative inline-flex shrink-0 items-center justify-center gap-2 border border-transparent text-base leading-none font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow,transform,translate,scale] duration-200 ease-[cubic-bezier(0.3,0,0.04,1)] outline-none select-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
@@ -14,7 +15,7 @@ const buttonVariants = cva(
       variant: {
         // WG neon button + WG neon drop-shadow on hover
         default:
-          "rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover hover:shadow-[0_0_25px_rgb(212_251_8/0.45)]",
+          "rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover hover:shadow-[0_0_25px_rgb(212_251_8/0.45)] light:bg-black light:text-primary light:hover:bg-neutral-800 light:hover:shadow-none",
         secondary:
           "rounded-sm border-white/10 bg-gradient-to-br from-black/30 to-neutral-700/30 text-foreground hover:-translate-y-px hover:border-white/25 hover:to-neutral-800/50 active:translate-y-0 light:border-black/10 light:from-white/70 light:to-neutral-200/70 light:hover:border-black/25 light:hover:to-neutral-300/70",
         ghost: "rounded-sm text-foreground hover:text-primary-ink",
@@ -62,11 +63,17 @@ function Button({
 
 /**
  * WG "Play demo" icon: a black circle at the end of a big button; its icon spins
- * (WG fastSpin, to 330°) when the button is hovered.
+ * (WG fastSpin, to 330°) when the button is hovered. Neon with a black icon on a
+ * primary button in the light theme, which is black itself.
  */
 function ButtonCircle({ icon: Icon = ArrowUpRight, className }: { icon?: React.ComponentType<{ className?: string }>; className?: string }) {
   return (
-    <span className={cn("grid size-10 place-items-center rounded-full bg-black text-primary", className)}>
+    <span
+      className={cn(
+        "grid size-10 place-items-center rounded-full bg-black text-primary light:group-data-[variant=default]/button:bg-primary light:group-data-[variant=default]/button:text-black",
+        className,
+      )}
+    >
       <Icon className="spin-on-hover size-4 group-hover/button:rotate-[330deg]" />
     </span>
   )

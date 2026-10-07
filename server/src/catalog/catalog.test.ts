@@ -4,6 +4,7 @@ import { buildLibrary } from "./build.ts";
 import { broadGenres, buildGenreIndex, lookupGenres, type WikidataGames } from "./genres.ts";
 import { pyRegex, stripChars } from "./pyregex.ts";
 import { cleanTitle, gameKey } from "./titles.ts";
+import { ventureCards } from "../ingest/stores.ts";
 import cases from "./__fixtures__/python-cases.json" with { type: "json" };
 
 // python-cases.json holds outputs of build.py's own functions for tricky inputs,
@@ -113,5 +114,44 @@ describe("Payload CMS adapter", () => {
       ["Black / Used", "used", true],
       ["White", "new", false],
     ]);
+  });
+});
+
+describe("Venture Games adapter", () => {
+  const store = { id: "venture", name: "Venture", platform: "venture" as const, base: "https://venture.pk", linkStyle: null };
+  // A product card from a category page, trimmed to what the fetcher reads.
+  const card = (id: number, name: string, price: number, mrp: number, category: string) => `
+    <div class="product-cart" data-url="/product/${id}?cat=slug-${id}">
+      <p class="productName">${name}</p><p class="price"><strong>Rs. ${price}</strong></p>
+      <input type="hidden" class="addToCardHiddenId" value="${id}">
+      <input type="hidden" class="addToCardName" value="${name}">
+      <input type="hidden" class="addToCardPrice" value="${price}">
+      <input type="hidden" class="addToCardMRP" value="${mrp}">
+      <input type="hidden" class="addToCardImage" value="uploads/${id}.jpeg">
+      <input type="hidden" class="addToCardStock" value="2">
+      <input type="hidden" class="addToCardCategory" value="${category}">
+    </div>`;
+  const page = card(1251, "The Blood Of Dawnwalker - PS5 New ", 16500, 16500, "PS5 Games - New")
+    + card(1258, "Ratchet & Clank : Rift A Part - PS5 Used", 6000, 7500, "PS5 Games - Used ")
+    + card(481, "Dust Cover For Xbox Series X ", 800, 0, "Accessories");
+
+  it("reads each card's hidden cart fields", () => {
+    expect(ventureCards(page)[0]).toEqual({
+      id: 1251, name: "The Blood Of Dawnwalker - PS5 New ", price: 16500, mrp: 16500, stock: 2,
+      category: "PS5 Games - New", url: "/product/1251?cat=slug-1251", image: "uploads/1251.jpeg",
+    });
+  });
+
+  it("turns cards into listings with platform, condition and sale price", () => {
+    const products = ventureCards(page);
+    const ls = buildLibrary({ stores: [store], feeds: new Map([[store.id, { fetchedAt: "", products }]]), wikidata: null })
+      .games.flatMap((g) => g.listings);
+    const byPrice = new Map(ls.map((l) => [l.price, l]));
+    expect([16500, 6000, 800].map((p) => [byPrice.get(p)?.platform, byPrice.get(p)?.condition, byPrice.get(p)?.was])).toEqual([
+      ["PS5", "new", null],
+      ["PS5", "used", 7500],
+      [expect.anything(), "new", null],
+    ]);
+    expect(byPrice.get(6000)!.url).toBe("https://venture.pk/product/1258?cat=slug-1258");
   });
 });

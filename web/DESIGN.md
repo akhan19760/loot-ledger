@@ -36,11 +36,16 @@ No monospace font: INK's mono eyebrows were tried with JetBrains Mono and droppe
 | `destructive` | `#ff2e00` | WG `text-invalid` / `border-invalid` |
 | `popover` | `#252525` | WG gradient stop `#252525` |
 | `neon-from` → `neon-to` | `#abf62c` → `#f6fd02` | WG gradient hero words, sampled from the screenshot; used as `text-neon` / `text-neon-reverse` |
-| `primary-ink` | `#d4fb08` | Neon used as a text or line colour (prices, eyebrows, outline chips, chosen selects). Same as `primary` in dark; see below |
+| `primary-ink` | `#d4fb08` | Neon used as a text or line colour (prices, eyebrows, outline chips, chosen selects). Same as `primary` in dark; black in light, see below |
 
 ### Light theme
 
-White-alpha tokens become black-alpha, and neon stays the fill for buttons, chips and the footer. Neon text is unreadable on a light background, so anything that is neon *text* uses `primary-ink` instead of `primary`.
+White-alpha tokens become black-alpha. Neon is hard on the eye on a light background, both as text and as a glowing fill, so on the page (not the always-dark panels):
+
+- Neon *text* (`primary-ink`, and the `text-neon` gradient) is plain black.
+- Primary buttons and chosen chips are black with neon text and no glow; the round icon on a primary button turns neon with a black icon.
+- Glows become thicker edges: a chosen select has a 2px border, and the cheapest offer's edge pulses between 1px and 2px.
+- The footer stays neon, with a black wordmark (as in dark).
 
 | Token | Light value |
 |---|---|
@@ -50,9 +55,9 @@ White-alpha tokens become black-alpha, and neon stays the fill for buttons, chip
 | `secondary` / `muted` / `accent` | black 6% |
 | `muted-foreground` | black 60% |
 | `border` / `input` | black 10% / black 20% |
-| `primary-ink` | `#4a6400` (dark olive, 5.7:1 on the background) |
+| `primary-ink` | `#0b0b0b` (same as `foreground`) |
 | `destructive` | `#d42600` |
-| `neon-from` → `neon-to` | `#2f7a12` → `#7a6b00` |
+| `neon-from` → `neon-to` | `#0b0b0b` → `#0b0b0b` (the gradient reads as plain black) |
 
 For the few effects that can't be a token (the secondary button's gradient, the dialog's glass), the `light:` variant targets the page in light theme but not the always-dark panels.
 
@@ -75,14 +80,14 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 
 | Component | Look | Source |
 |---|---|---|
-| Button, primary | neon fill, `#253300` text, 42px high, 24px side padding, 16px radius, darker neon on hover | WG "Learn more" / "Play demo" |
+| Button, primary | neon fill, `#253300` text, 42px high, 24px side padding, 16px radius, darker neon on hover. Light theme: black fill, neon text, no glow | WG "Learn more" / "Play demo" |
 | Button, secondary | black→neutral-700 30% gradient, white text, 10px radius, lifts 1px on hover | WG "Contact" |
 | Button, ghost | plain white text | WG nav links "Our work", "Services" |
 | Round icon button | 48px black circle | WG play-icon circle, close control |
 | Arrow on outbound links `↗` | after the label | INK "SIGN UP ↗", "EXPLORE ↗" |
-| Chip / toggle | white 10% fill, white text, 16px radius, `text-sm leading-none`; selected = neon fill, dark text | WG tag chips (both variants) |
+| Chip / toggle | white 10% fill, white text, 16px radius, `text-sm leading-none`; selected = neon fill, dark text (light theme: black fill, neon text, no glow) | WG tag chips (both variants) |
 | Text field | transparent, underline `white/10`, large text with -1px tracking, white/70 placeholder turning white on focus | WG contact form inputs |
-| Select | transparent, `white/20` border, 16px radius; white border on focus; neon border + text when a value is chosen | WG contact form selects |
+| Select | transparent, `white/20` border, 16px radius; white border on focus; 2px `primary-ink` border + text when a value is chosen (an inset ring doubles the 1px border, so the label doesn't move) | WG contact form selects |
 | Panel | white 5% fill (or neutral-700 20% + blur on overlays), 16px radius | WG content blocks |
 | Status stat | small neon value over an uppercase grey label, optional dot | WG header "● ONLINE", "61 FPS" |
 | Eyebrow | `■ LABEL`: small square + uppercase semibold body font | INK "■ INKGAMES", "■ PLAY" (square), WG header labels (type) |
@@ -136,12 +141,12 @@ Keeping it smooth while scrolling:
 | Big buttons | Black circle icon spins to 330° on hover | WG `#big-button #icon` fastSpin |
 | Chips | One neon pill glides between options (spring); labels roll | WG neon chip + INK roll |
 | Search | Neon underline draws in from the left on focus; example text rolls to the next every 2.6 s; clear button spins in | WG field + INK slide |
-| Selects | Chevron flips, chosen select glows, options cascade in | WG select states + INK stagger |
+| Selects | Chevron flips, chosen select's border thickens, options cascade in | WG select states + INK stagger |
 | Cards | Scroll-in stagger; cover wipes in (clip-path) and zooms; 3D tilt toward the pointer with a neon glare; neon glow + border; arrow circle spins in; "View N offers" rises | INK cards, clip-path, tilt; WG glow |
 | Grid | Virtualized; when filters change, cards that stay glide to their new place | — (CSS transition on each card's position) |
 | Dialog | Grows out of the clicked card: a panel carrying the card's cover flies to the dialog's box while the cover fades, then hands over to the dialog; closing flies back into the card. Opened from a link (no card on screen), it rises and scales in with `ease.wg`. Then the title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | Material container transform, WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
 | Header | Theme toggle: black circle, sun/moon roll through it; the new theme spreads in a circle from the button (View Transitions) | WG round icon + INK roll |
-| Footer | Neon hazard stripes slide endlessly; giant white wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |
+| Footer | Neon hazard stripes slide endlessly; giant black wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |
 | Loading | Skeletons with a sweeping light band (`sweep`) | — |
 
 ### Loading screen (`src/components/loading-screen.tsx`)

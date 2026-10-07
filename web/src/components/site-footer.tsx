@@ -11,7 +11,7 @@ import { Eyebrow } from "@/components/ui/eyebrow"
 
 /**
  * WG closing section: the sliding hazard band, then a full-width neon panel with a
- * giant white wordmark that rises into place as you reach the bottom of the page.
+ * giant black wordmark that rises into place as you reach the bottom of the page.
  */
 export function SiteFooter({ stores }: { stores: Store[] }) {
   const ref = useRef<HTMLDivElement>(null)

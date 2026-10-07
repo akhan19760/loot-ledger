@@ -7,7 +7,7 @@ import type { Condition, Delivery, Format, Kind } from "@ugs/shared";
 export const stores = sqliteTable("stores", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  platform: text("platform", { enum: ["shopify", "woocommerce", "payload"] }).notNull(),
+  platform: text("platform", { enum: ["shopify", "woocommerce", "payload", "venture"] }).notNull(),
   base: text("base").notNull(),
   // "query": link products as ?product=<slug> because the store's pretty URLs 404.
   linkStyle: text("link_style", { enum: ["query"] }),
