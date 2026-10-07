@@ -34,10 +34,17 @@ const neonSlice = (k: number, n: number): React.CSSProperties => ({
 const ROW_A = ["PS5", "PS4", "Switch", "Xbox", "PC", "PS5", "PS4", "Switch", "Xbox", "PC"]
 const ROW_B = ["New", "Used", "Disc", "Digital", "Deals", "New", "Used", "Disc", "Digital", "Deals"]
 
+/**
+ * How the title arrives: sliding up letter by letter, or flown in by the loading screen
+ * (`flying` keeps it hidden in place while the letters travel; `landed` shows it).
+ */
+export type TitleEntrance = "slide" | "flying" | "landed"
+
 interface Props {
   meta: FiltersResponse | undefined
   covers: GameSummary[]
   play: boolean
+  title: TitleEntrance
   onBrowse: () => void
   onStores: () => void
   onDeals: () => void
@@ -45,7 +52,7 @@ interface Props {
 
 // Everything here that scroll or the pointer moves has `will-change`: a transform set
 // from JS on an ordinary element makes the browser repaint it every frame.
-export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props) {
+export function Hero({ meta, covers, play, title, onBrowse, onStores, onDeals }: Props) {
   const ref = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] })
@@ -111,12 +118,17 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
           </Eyebrow>
         </m.div>
 
-        <h1 id="hero-title" className="font-display text-[clamp(4.5rem,18vw,18rem)] leading-[0.82] tracking-tight uppercase">
+        <h1
+          id="hero-title"
+          className="font-display text-[clamp(4.5rem,18vw,18rem)] leading-[0.82] tracking-tight uppercase"
+          style={title === "flying" ? { opacity: 0 } : undefined}
+        >
           {play ? (
             <SplitText
               text={BRAND}
               by="letter"
               onMount
+              still={title !== "slide"}
               stagger={0.05}
               delay={0.15}
               partClassName={(_, i) => (i >= NEON_FROM ? "text-neon" : undefined)}

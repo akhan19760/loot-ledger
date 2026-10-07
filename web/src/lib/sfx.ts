@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react"
 // is a few oscillators or a burst of filtered noise. Browsers only allow audio after the
 // reader has interacted with the page, so nothing plays before the first click or key.
 
-export type Sound = "hover" | "click" | "on" | "off" | "open" | "close" | "tick"
+export type Sound = "hover" | "click" | "on" | "off" | "open" | "close" | "tick" | "start"
 
 const KEY = "lootledger-sound" // "off" when muted; on by default
 const VOLUME = 0.6
@@ -116,12 +116,28 @@ const SOUNDS: Record<Sound, (ac: AudioContext, strength: number) => void> = {
   },
   // A notch of a scroll wheel; `strength` (0–1) follows the scroll speed.
   tick: (ac, strength) => hiss(ac, 1800 + strength * 1400, { dur: 0.014, gain: 0.015 + strength * 0.035, q: 4 }),
+  // The loading screen's START: an arcade arpeggio up an octave over a rising whoosh.
+  start: (ac) => {
+    hiss(ac, 400, { dur: 0.5, gain: 0.06, to: 4000, q: 0.7 })
+    ;[523, 659, 784, 1047].forEach((f, i) => tone(ac, f, { at: i * 0.06, dur: i === 3 ? 0.35 : 0.1, gain: 0.09, type: "square" }))
+  },
 }
 
 /** Play a sound, if sound is on and the page has been interacted with. */
 export function play(sound: Sound, strength = 1) {
   if (!enabled || !ctx || ctx.state !== "running" || document.hidden) return
   SOUNDS[sound](ctx, Math.min(1, Math.max(0, strength)))
+}
+
+/**
+ * Play a sound in answer to a click, tap or key, even the page's first: audio started by
+ * that gesture may still be starting up, so the sound waits for it.
+ */
+export function playOnGesture(sound: Sound) {
+  unlockAudio()
+  if (!enabled || !ctx) return
+  if (ctx.state === "running") return play(sound)
+  void ctx.resume().then(() => play(sound))
 }
 
 function setEnabled(next: boolean) {

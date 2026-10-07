@@ -153,17 +153,18 @@ Keeping it smooth while scrolling:
 
 ### Loading screen (`src/components/loading-screen.tsx`)
 
-A video-game loading screen on a first visit to the home page: shown at most once a week per browser, never on a link to something in particular (a shared game, /deals, a wishlist), and skipped with reduced motion. Nothing on it is faked: each loading step (fonts, ledger, stores, library, cover art) resolves only when that part of the page has loaded, and the percentage and bar follow them. Steps are paced about 0.15 s apart so a fast load still reads as a sequence, the screen never holds the page for more than 3.5 s, and a tap, click or Esc skips it at any time. The loading-screen idea came from the brief ("like a video game loading screen"); the parts marked *new* have no counterpart in the references.
+WG's loader, on a first visit to the home page: shown at most once a week per browser, never on a link to something in particular (a shared game, /deals, a wishlist), and skipped with reduced motion. Nothing on it is faked: each loading step (fonts, ledger, stores, library, cover art) resolves only when that part of the page has loaded, and the letters and bar follow them. Steps are paced about 0.15 s apart so a fast load still reads as a sequence, and the screen never waits on loading for more than 3.5 s. Once loaded it waits for START (or any key, tap or click); a tap, click or Esc skips it before then. The parts marked *new* have no counterpart in the references.
 
 | Part | Effect | Source |
 |---|---|---|
-| Backdrop | Real covers on a tilted wall, columns drifting opposite ways, leaning away from the pointer. Each cover wipes in once its image has loaded, and the wall gains colour as loading progresses | INK tilted art + clip-path; WG sliding word rows, turned upright |
-| Top bar | Same bar as the header: live equalizer, "● Online" / "Connecting", live FPS, last update | WG header stats and FPS counter |
-| Percentage | Huge odometer: each wheel clicks over digit by digit, leading zeros dim, neon glow at 100 | INK headline type; odometer *new* |
-| Bar | 40 blocks light one at a time with a glow at the edge; the whole bar glows when done; real load time beside it | WG loading bar; blocks *new* |
-| Tips | A random tip, then the next every 3.6 s or on "Next tip", sliding up | INK slide |
-| Prompt | The favicon's LL tile flips like a coin inside a spinning ring. Then "Press any key" (or "Tap to continue"), with the ring counting down 0.7 s before it continues by itself. Esc, a tap or a click skips at any time | WG spin; prompt *new* |
-| Exit | Wipes up over 1.2 s with the hazard stripes trailing; the HUD sinks as it goes and the page's entrance starts underneath | WG `#loader` wipe + WG hazard band |
+| Backdrop | Plain black with the film grain | WG loader |
+| Wordmark | The header's LootLedger wordmark, where the header's will land | WG loader logo |
+| Live count | "Tracking" over the real game and store counts, counting up once the ledger is in ("Connecting…", or "Offline") | WG "Login / Player 1"; counts *new* |
+| Letters | "LootLedger", one underline per letter. Each letter sharpens from a dim neon blur to neon as the progress passes it, left to right; all glow once ready | WG name entry |
+| Bar | A pill filling with striped neon, the step in progress named above it | WG loading bar |
+| START | The bar turns into a glowing neon START button, which takes the focus; "Or press any key" / "Tap to start" under it | WG START |
+| Exit (START) | The letters fly into the hero's title, one after another, each crossfading from the loader's neon letter into the title's own and landing on it exactly; the title then shows in their place (no slide-up). The black fades as the page's entrance starts behind, and START sinks away | WG exit (letters spreading over the page), flown into the title *new* |
+| Exit (skip) | The letters spread large and blur away as the black fades | WG exit |
 
 ## Sound (`src/lib/sfx.ts`, `src/hooks/use-sound-effects.ts`)
 
@@ -178,3 +179,4 @@ Short effects, synthesized with the Web Audio API (no audio files): a few oscill
 | A dialog opening / closing | Rising / falling whoosh |
 | Scrolling with a mouse or trackpad (not touch) | A wheel-like tick every 140px, brighter and louder the faster the scroll |
 | Turning sound back on | Two notes up, to confirm |
+| START on the loading screen (or the key or tap that continues) | An arcade arpeggio up an octave over a rising whoosh. Often the visit's first gesture: the sound waits for audio to start |

@@ -4,7 +4,7 @@ import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-qu
 import type { GamesResponse } from "@ugs/shared"
 import { FilterBar } from "@/components/filter-bar"
 import { GameGrid } from "@/components/game-grid"
-import { Hero } from "@/components/hero"
+import { Hero, type TitleEntrance } from "@/components/hero"
 import { LoadingScreen } from "@/components/intro"
 import { Grain } from "@/components/motion/grain"
 import { Reveal } from "@/components/motion/reveal"
@@ -97,6 +97,8 @@ export default function App() {
   }, [page, scrollTo])
   const [introDone, setIntroDone] = useState(false)
   const onIntroDone = useCallback(() => setIntroDone(true), [])
+  // The loading screen can fly its letters into the hero's title (loading-screen.tsx).
+  const [titleEntrance, setTitleEntrance] = useState<TitleEntrance>("slide")
   useEffect(() => (introDone ? prefetchWhenIdle() : undefined), [introDone])
   // The dialogs load on first use and then stay mounted, so they can animate closed.
   const [dialogUsed, setDialogUsed] = useState(gameId !== null)
@@ -105,8 +107,7 @@ export default function App() {
   if (cartOpen && !cartUsed) setCartUsed(true)
 
   const meta = useQuery({ queryKey: ["filters"], queryFn: api.filters, refetchInterval: 5 * 60_000 })
-  // Art for the hero and the loading screen's wall: games sold by the most stores
-  // tend to have the best covers.
+  // Art for the hero: games sold by the most stores tend to have the best covers.
   const covers = useQuery({
     queryKey: ["hero-covers"],
     queryFn: () => api.games({ ...DEFAULT_FILTERS, platform: "", sort: "stores", page: 1, pageSize: 24 }),
@@ -114,7 +115,6 @@ export default function App() {
     staleTime: Infinity,
   })
   const heroCovers = useMemo(() => covers.data?.slice(0, 6) ?? [], [covers.data])
-  const wallArt = useMemo(() => covers.data?.map((g) => g.image!), [covers.data])
   // The same 400px copies the hero shows, so the loading screen's preload is what the hero reuses.
   const heroArt = useMemo(() => heroCovers.map((g) => thumb(g.image!, 400)), [heroCovers])
   const games = useInfiniteQuery({
@@ -140,10 +140,10 @@ export default function App() {
         metaFailed={meta.isError}
         matches={listEmpty ? 0 : games.data?.pages[0]?.total}
         matchesFailed={games.isError}
-        covers={wallArt}
-        coversFailed={covers.isError}
-        warm={heroArt}
+        art={covers.data ? heroArt : undefined}
+        artFailed={covers.isError}
         onDone={onIntroDone}
+        onTitle={setTitleEntrance}
       />
       <Grain />
       <SiteHeader
@@ -169,6 +169,7 @@ export default function App() {
               meta={meta.data}
               covers={heroCovers}
               play={introDone}
+              title={titleEntrance}
               onBrowse={() => scrollTo("library")}
               onStores={() => scrollTo("stores")}
               onDeals={() => navigate("deals")}

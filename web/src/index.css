@@ -262,26 +262,12 @@
   transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 
-/* Loading screen cover wall: a column of two identical loops drifting by one loop. */
-@utility wall-drift {
-  animation: wall-drift 50s linear infinite;
-}
-@keyframes wall-drift {
-  to { transform: translateY(-50%); }
-}
-
-/* Loading screen: cut a bar into 40 blocks with 3px gaps, like a game HP bar. */
-@utility segments {
-  mask-image: repeating-linear-gradient(90deg, #000 0 calc(2.5% - 3px), transparent calc(2.5% - 3px) 2.5%);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .grain,
   .hazard-band,
   .equalizer-bar,
   .glow-pulse,
-  .sweep,
-  .wall-drift {
+  .sweep {
     animation: none !important;
   }
 }
