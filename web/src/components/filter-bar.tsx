@@ -1,5 +1,5 @@
 import { AnimatePresence, m } from "motion/react"
-import { SlidersHorizontal, X } from "lucide-react"
+import { Search, SlidersHorizontal, X } from "lucide-react"
 import { useEffect, useEffectEvent, useId, useState } from "react"
 import type { FiltersResponse, SortOrder } from "@ugs/shared"
 import { CountUp } from "@/components/motion/count-up"
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { DrawerContent } from "@/components/ui/drawer"
 import { Eyebrow } from "@/components/ui/eyebrow"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -49,10 +48,8 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
     <>
       {/* Phones: just the search, with the filters a tap away in a drawer, so the games
           aren't a long scroll down */}
-      <section aria-label="Search and filters" className="flex items-end gap-3 rounded-2xl border border-border/50 bg-surface px-4 pb-4 md:hidden">
-        <div className="min-w-0 flex-1">
-          <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} lead="Search, e.g." />
-        </div>
+      <section aria-label="Search and filters" className="flex items-center gap-2 rounded-2xl border border-border/50 bg-surface p-2 md:hidden">
+        <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} lead="Search, e.g." className="min-w-0 flex-1" />
         <FilterDrawer filters={filters} meta={meta} list={list} counts={counts} onChange={onChange} onListChange={onListChange} />
       </section>
 
@@ -133,7 +130,7 @@ function FilterDrawer({
   return (
     <Dialog open={open} onOpenChange={toggle}>
       <DialogTrigger asChild>
-        <Button variant="round" size="icon" aria-label={active ? `Filters, ${active} in use` : "Filters"} className="relative mb-1">
+        <Button variant="round" size="icon" aria-label={active ? `Filters, ${active} in use` : "Filters"} className="relative">
           <SlidersHorizontal className="size-5" />
           <AnimatePresence>
             {active > 0 && (
@@ -245,55 +242,67 @@ function SelectFilters({ filters, meta, onChange, fill = false }: { filters: Fil
 }
 
 /**
- * WG underline field. A neon line draws in from the left on focus; while empty,
- * the example after "Search games, e.g." rolls to the next one (INK slide).
+ * Rounded search field: a magnifier, the text, and a clear button that spins in. The
+ * border lights neon on focus; while empty, the example after "Search games, e.g."
+ * rolls to the next one (INK slide).
  */
-function SearchField({ committed, onCommit, lead = "Search games, e.g." }: { committed: string; onCommit: (value: string) => void; lead?: string }) {
+function SearchField({
+  committed,
+  onCommit,
+  lead = "Search games, e.g.",
+  className,
+}: {
+  committed: string
+  onCommit: (value: string) => void
+  lead?: string
+  className?: string
+}) {
   const q = useDebouncedSearch(committed, onCommit)
   const [focused, setFocused] = useState(false)
   const example = useCycle(EXAMPLES.length, 2600, !q.value)
 
   return (
-    <div className="relative">
-      <Input
-        type="search"
-        aria-label="Search games"
-        autoComplete="off"
-        value={q.value}
-        onChange={(e) => q.set(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        className="pr-14"
-      />
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left bg-primary shadow-[0_0_12px_var(--primary)] transition-transform duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] light:bg-foreground light:shadow-none ${focused ? "scale-x-100" : "scale-x-0"}`}
-      />
-
-      {!q.value && (
-        <span aria-hidden className="pointer-events-none absolute inset-x-0 top-4 flex gap-[0.3em] overflow-hidden text-xl leading-none tracking-[-1px] whitespace-nowrap md:text-2xl">
-          <span className={focused ? "text-foreground transition-colors" : "text-muted-foreground transition-colors"}>{lead}</span>
-          <span className="relative inline-flex h-[1.1em] min-w-0 overflow-hidden">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <m.span
-                key={example}
-                initial={{ y: "105%" }}
-                animate={{ y: "0%" }}
-                exit={{ y: "-105%" }}
-                transition={{ duration: 0.7, ease: ease.wgInOut }}
-                className="text-neon"
-              >
-                {EXAMPLES[example]}
-              </m.span>
-            </AnimatePresence>
+    <div
+      className={`relative flex h-12 items-center gap-3 rounded-2xl border border-border bg-white/5 pr-1.5 pl-4 transition-[border-color,box-shadow] duration-300 focus-within:border-primary focus-within:shadow-[0_0_18px_-6px_var(--primary)] light:bg-black/[0.03] light:focus-within:border-foreground light:focus-within:shadow-none md:h-14 md:pl-5 ${className ?? ""}`}
+    >
+      <Search aria-hidden className={`size-5 shrink-0 transition-colors ${focused ? "text-foreground" : "text-muted-foreground"}`} />
+      <div className="relative min-w-0 flex-1 self-stretch">
+        <input
+          type="search"
+          aria-label="Search games"
+          autoComplete="off"
+          enterKeyHint="search"
+          value={q.value}
+          onChange={(e) => q.set(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className="size-full bg-transparent text-base text-foreground outline-none md:text-lg [&::-webkit-search-cancel-button]:hidden"
+        />
+        {!q.value && (
+          <span aria-hidden className="pointer-events-none absolute inset-0 flex items-center gap-[0.3em] overflow-hidden text-base whitespace-nowrap md:text-lg">
+            <span className={focused ? "text-foreground transition-colors" : "text-muted-foreground transition-colors"}>{lead}</span>
+            <span className="relative inline-flex h-[1.3em] min-w-0 items-center overflow-hidden">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <m.span
+                  key={example}
+                  initial={{ y: "105%" }}
+                  animate={{ y: "0%" }}
+                  exit={{ y: "-105%" }}
+                  transition={{ duration: 0.7, ease: ease.wgInOut }}
+                  className="text-neon"
+                >
+                  {EXAMPLES[example]}
+                </m.span>
+              </AnimatePresence>
+            </span>
           </span>
-        </span>
-      )}
+        )}
+      </div>
 
       <AnimatePresence>
         {q.value && (
           <m.span
-            className="absolute right-0 bottom-2.5"
+            className="shrink-0"
             initial={{ opacity: 0, scale: 0.4, rotate: -90 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.4, rotate: 90 }}
