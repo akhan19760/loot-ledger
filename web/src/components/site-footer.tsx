@@ -11,7 +11,7 @@ import { Eyebrow } from "@/components/ui/eyebrow"
 
 /**
  * WG closing section: the sliding hazard band, then a full-width neon panel with a
- * giant white wordmark that rises into place as you reach the bottom of the page.
+ * giant black wordmark that rises into place as you reach the bottom of the page.
  */
 export function SiteFooter({ stores }: { stores: Store[] }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -53,7 +53,7 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
         <motion.p
           aria-hidden
           style={reduced ? undefined : { y, scale }}
-          className="origin-bottom text-center font-display text-[clamp(4rem,19vw,21rem)] leading-[0.8] text-white uppercase"
+          className="origin-bottom text-center font-display text-[clamp(4rem,19vw,21rem)] leading-[0.8] text-black uppercase"
         >
           <SplitText text="LootLedger" by="letter" stagger={0.04} />
         </motion.p>

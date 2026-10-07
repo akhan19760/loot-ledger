@@ -135,7 +135,7 @@ function SearchField({ committed, onCommit }: { committed: string; onCommit: (va
       />
       <span
         aria-hidden
-        className={`pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left bg-primary shadow-[0_0_12px_var(--primary)] transition-transform duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] ${focused ? "scale-x-100" : "scale-x-0"}`}
+        className={`pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left bg-primary shadow-[0_0_12px_var(--primary)] transition-transform duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] light:bg-foreground light:shadow-none ${focused ? "scale-x-100" : "scale-x-0"}`}
       />
 
       {!q.value && (
@@ -206,13 +206,13 @@ export function ChipGroup({
             <ToggleGroupItem
               key={toUi(v)}
               value={toUi(v)}
-              className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
+              className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
             >
               {on && (
                 <motion.span
                   layoutId={layoutId}
                   transition={pillSpring}
-                  className="absolute inset-0 -z-10 rounded-2xl bg-primary shadow-[0_0_22px_-4px_rgb(212_251_8/0.6)]"
+                  className="absolute inset-0 -z-10 rounded-2xl chip-on"
                 />
               )}
               <RollText>{text}</RollText>
@@ -230,7 +230,7 @@ function StockToggle({ pressed, onChange }: { pressed: boolean; onChange: (press
       pressed={pressed}
       onPressedChange={onChange}
       aria-label="In stock only"
-      className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
+      className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
     >
       <AnimatePresence initial={false}>
         {pressed && (
@@ -240,7 +240,7 @@ function StockToggle({ pressed, onChange }: { pressed: boolean; onChange: (press
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.7 }}
             transition={pillSpring}
-            className="absolute inset-0 -z-10 rounded-2xl bg-primary shadow-[0_0_22px_-4px_rgb(212_251_8/0.6)]"
+            className="absolute inset-0 -z-10 rounded-2xl chip-on"
           />
         )}
       </AnimatePresence>

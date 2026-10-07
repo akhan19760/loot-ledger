@@ -57,8 +57,8 @@
   --height-bar: 80px;
   --height-bar-mobile: 56px;
 
-  /* Light theme. Neon stays the fill colour; text that would be neon uses primary-ink,
-     since neon on a light background is unreadable. */
+  /* Light theme. Neon stays the fill colour; text that would be neon (primary-ink and
+     the neon gradient) is plain black, since neon on a light background is unreadable. */
   --background: #f1f1ec;
   --foreground: #0b0b0b;
   --card: rgb(0 0 0 / 0.04);
@@ -68,7 +68,7 @@
   --primary: #d4fb08;
   --primary-hover: #bae200;
   --primary-foreground: #253300;
-  --primary-ink: #4a6400;
+  --primary-ink: #0b0b0b;
   --secondary: rgb(0 0 0 / 0.06);
   --secondary-foreground: #0b0b0b;
   --muted: rgb(0 0 0 / 0.06);
@@ -80,8 +80,8 @@
   --border: rgb(0 0 0 / 0.1);
   --input: rgb(0 0 0 / 0.2);
   --ring: #0b0b0b;
-  --neon-from: #2f7a12;
-  --neon-to: #7a6b00;
+  --neon-from: #0b0b0b;
+  --neon-to: #0b0b0b;
 
   color-scheme: light;
 }
@@ -170,6 +170,17 @@
   filter: drop-shadow(0 0 15px var(--primary));
 }
 
+/* Chosen chip, light theme: neon fill on a light page strains the eye, so it's a black
+   chip with neon text. The always-dark panels keep the neon chip. */
+@utility chip-on {
+  background-color: var(--primary);
+  box-shadow: 0 0 22px -4px rgb(212 251 8 / 0.6);
+  &:not(.dark *) {
+    background-color: #000;
+    box-shadow: none;
+  }
+}
+
 /* WG gradient words; `-reverse` runs yellow → green like their alternate words. */
 @utility text-neon {
   background-image: linear-gradient(90deg, var(--neon-from), var(--primary-ink) 50%, var(--neon-to));
@@ -220,10 +231,18 @@
 /* WG neon glow pulse (their glow keyframes: 2px → 5px → 2px), scaled up for a panel edge. */
 @utility glow-pulse {
   animation: glow-pulse 2.4s ease-in-out infinite;
+  /* Neon glow strains the eye on a light background: the edge thickens instead. */
+  &:not(.dark *) {
+    animation-name: edge-pulse;
+  }
 }
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 0 1px var(--primary-ink), 0 0 6px rgb(212 251 8 / 0.25); }
   50% { box-shadow: 0 0 0 1px var(--primary-ink), 0 0 22px rgb(212 251 8 / 0.45); }
+}
+@keyframes edge-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px var(--primary-ink); }
+  50% { box-shadow: 0 0 0 2px var(--primary-ink); }
 }
 
 /* Loading sweep: a soft light band crossing a surface. (Not `shimmer`: shadcn's utility of

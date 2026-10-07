@@ -35,13 +35,13 @@ export function PillToggle<T extends string>({
         <ToggleGroupItem
           key={v}
           value={v}
-          className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
+          className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
         >
           {value === v && (
             <motion.span
               layoutId={layoutId}
               transition={pillSpring}
-              className="absolute inset-0 -z-10 rounded-2xl bg-primary shadow-[0_0_22px_-4px_rgb(212_251_8/0.6)]"
+              className="absolute inset-0 -z-10 rounded-2xl chip-on"
             />
           )}
           <RollText>{text}</RollText>
