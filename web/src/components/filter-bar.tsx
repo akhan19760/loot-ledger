@@ -1,10 +1,13 @@
 import { AnimatePresence, m } from "motion/react"
-import { X } from "lucide-react"
+import { SlidersHorizontal, X } from "lucide-react"
 import { useEffect, useEffectEvent, useId, useState } from "react"
 import type { FiltersResponse, SortOrder } from "@ugs/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
+import { useScrollLock } from "@/components/motion/smooth-scroll"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { DrawerContent } from "@/components/ui/drawer"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,6 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { DEFAULT_FILTERS, type Filters, type LibraryList } from "@/hooks/use-library-url"
 import { CONDITIONS, PLATFORMS } from "@/lib/filter-options"
 import { ease } from "@/lib/motion"
+import { play } from "@/lib/sfx"
 
 // Radix toggle/select items can't have an empty value, so "any" is spelled ALL here.
 const ALL = "all"
@@ -40,75 +44,203 @@ interface Props {
 
 export function FilterBar({ filters, meta, total, onChange, onReset, list, counts, onListChange }: Props) {
   const changed = (Object.keys(DEFAULT_FILTERS) as (keyof Filters)[]).some((k) => filters[k] !== DEFAULT_FILTERS[k])
-  // Keep a platform that came in by link (e.g. PC) visible as a chip.
-  const platforms = PLATFORMS.some(([v]) => v === filters.platform) ? PLATFORMS : [...PLATFORMS, [filters.platform, filters.platform] as const]
 
   return (
-    <section aria-label="Filters" className="grid grid-cols-1 gap-6 rounded-2xl border border-border/50 bg-surface p-5 md:gap-8 md:p-8">
-      <ChipGroup
-        label="Show"
-        value={list}
-        options={[
-          ["all", "All games"],
-          ["wishlist", `Wishlist · ${counts.wishlist}`],
-          ["collection", `Collection · ${counts.collection}`],
-        ]}
-        // ChipGroup spells "any" as ALL ("all"), so the all-games chip comes back as "".
-        onChange={(v) => onListChange((v || "all") as LibraryList)}
-      />
+    <>
+      {/* Phones: just the search, with the filters a tap away in a drawer, so the games
+          aren't a long scroll down */}
+      <section aria-label="Search and filters" className="flex items-end gap-3 rounded-2xl border border-border/50 bg-surface px-4 pb-4 md:hidden">
+        <div className="min-w-0 flex-1">
+          <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} lead="Search, e.g." />
+        </div>
+        <FilterDrawer filters={filters} meta={meta} list={list} counts={counts} onChange={onChange} onListChange={onListChange} />
+      </section>
 
-      <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} />
+      <section aria-label="Filters" className="hidden grid-cols-1 gap-8 rounded-2xl border border-border/50 bg-surface p-8 md:grid">
+        <ListChips list={list} counts={counts} onChange={onListChange} />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[auto_auto_minmax(0,1fr)]">
-        <ChipGroup label="Platform" value={filters.platform} options={platforms} onChange={(platform) => onChange({ platform })} />
-        <ChipGroup
-          label="Condition"
-          value={filters.condition}
-          options={CONDITIONS}
-          onChange={(condition) => onChange({ condition: condition as Filters["condition"] })}
-        />
-        <ChipGroup label="Type" value={filters.kind} options={KINDS} onChange={(kind) => onChange({ kind: kind as Filters["kind"] })} />
-      </div>
+        <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <FilterSelect
-          label="Genre"
-          value={filters.genre}
-          onChange={(genre) => onChange({ genre })}
-          options={[["", "All genres"], ...(meta?.genres ?? []).map((g) => [g.name, `${g.name} (${g.count})`] as const)]}
-        />
-        <FilterSelect
-          label="Store"
-          value={filters.store}
-          onChange={(store) => onChange({ store })}
-          options={[["", "All stores"], ...(meta?.stores ?? []).map((s) => [s.id, s.name] as const)]}
-        />
-        <FilterSelect label="Sort" value={filters.sort} defaultValue={DEFAULT_FILTERS.sort} onChange={(sort) => onChange({ sort: sort as SortOrder })} options={SORTS} />
-        <StockToggle pressed={filters.inStock} onChange={(inStock) => onChange({ inStock })} />
+        <ChipFilters filters={filters} onChange={onChange} className="lg:grid-cols-[auto_auto_minmax(0,1fr)]" />
 
-        <div className="ml-auto flex items-center gap-4">
-          {total !== undefined && (
-            <Eyebrow className="text-muted-foreground" aria-live="polite">
-              <CountUp value={total} duration={0.6} /> {total === 1 ? "result" : "results"}
-            </Eyebrow>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
+          <SelectFilters filters={filters} meta={meta} onChange={onChange} />
+
+          <div className="ml-auto flex items-center gap-4">
+            {total !== undefined && (
+              <Eyebrow className="text-muted-foreground" aria-live="polite">
+                <CountUp value={total} duration={0.6} /> {total === 1 ? "result" : "results"}
+              </Eyebrow>
+            )}
+            <AnimatePresence>
+              {changed && (
+                <m.div
+                  initial={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
+                  transition={{ duration: 0.4, ease: ease.inkRoll }}
+                >
+                  <Button variant="secondary" onClick={onReset}>
+                    <RollText>Reset</RollText>
+                  </Button>
+                </m.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
+
+/** Filters set apart from the defaults (search aside: it stays on show), plus a wishlist or collection view. */
+function activeCount(filters: Filters, list: LibraryList) {
+  const keys = (Object.keys(DEFAULT_FILTERS) as (keyof Filters)[]).filter((k) => k !== "q" && filters[k] !== DEFAULT_FILTERS[k])
+  return keys.length + (list === "all" ? 0 : 1)
+}
+
+/**
+ * Phones' filters: a button beside the search (its chip counts the filters in use) that
+ * opens a drawer from the bottom. Choices there are a draft until "Show results" applies
+ * them and closes it; closing it any other way (X, outside, Esc) leaves things as they were.
+ */
+function FilterDrawer({
+  filters,
+  meta,
+  list,
+  counts,
+  onChange,
+  onListChange,
+}: Pick<Props, "filters" | "meta" | "list" | "counts" | "onChange" | "onListChange">) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState({ filters, list })
+  useScrollLock(open)
+  const active = activeCount(filters, list)
+
+  const toggle = (next: boolean) => {
+    if (next) setDraft({ filters, list }) // start from what's showing
+    setOpen(next)
+    play(next ? "open" : "close")
+  }
+  const apply = () => {
+    onChange({ ...draft.filters, q: filters.q })
+    onListChange(draft.list)
+    toggle(false)
+  }
+  const patch = (p: Partial<Filters>) => setDraft((d) => ({ ...d, filters: { ...d.filters, ...p } }))
+  const draftActive = activeCount(draft.filters, draft.list)
+
+  return (
+    <Dialog open={open} onOpenChange={toggle}>
+      <DialogTrigger asChild>
+        <Button variant="round" size="icon" aria-label={active ? `Filters, ${active} in use` : "Filters"} className="relative mb-1">
+          <SlidersHorizontal className="size-5" />
           <AnimatePresence>
-            {changed && (
-              <m.div
-                initial={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
+            {active > 0 && (
+              <m.span
+                key={active}
+                initial={{ scale: 0.4 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
                 transition={{ duration: 0.4, ease: ease.inkRoll }}
+                className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-semibold text-black tabular-nums"
               >
-                <Button variant="secondary" onClick={onReset}>
-                  <RollText>Reset</RollText>
-                </Button>
-              </m.div>
+                {active}
+              </m.span>
             )}
           </AnimatePresence>
+        </Button>
+      </DialogTrigger>
+      <DrawerContent
+        title="Filters"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              disabled={draftActive === 0}
+              onClick={() => setDraft({ filters: { ...DEFAULT_FILTERS, q: filters.q }, list: "all" })}
+            >
+              <RollText>Reset</RollText>
+            </Button>
+            <Button className="flex-1" onClick={apply}>
+              <RollText>Show results</RollText>
+            </Button>
+          </>
+        }
+      >
+        <ListChips list={draft.list} counts={counts} onChange={(l) => setDraft((d) => ({ ...d, list: l }))} />
+        <ChipFilters filters={draft.filters} onChange={patch} />
+        <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
+          <SelectFilters filters={draft.filters} meta={meta} onChange={patch} fill />
         </div>
-      </div>
-    </section>
+      </DrawerContent>
+    </Dialog>
+  )
+}
+
+/** All games, or just the wishlist or collection. */
+function ListChips({ list, counts, onChange }: { list: LibraryList; counts: Props["counts"]; onChange: (list: LibraryList) => void }) {
+  return (
+    <ChipGroup
+      label="Show"
+      value={list}
+      options={[
+        ["all", "All games"],
+        ["wishlist", `Wishlist · ${counts.wishlist}`],
+        ["collection", `Collection · ${counts.collection}`],
+      ]}
+      // ChipGroup spells "any" as ALL ("all"), so the all-games chip comes back as "".
+      onChange={(v) => onChange((v || "all") as LibraryList)}
+    />
+  )
+}
+
+function ChipFilters({ filters, onChange, className }: { filters: Filters; onChange: Props["onChange"]; className?: string }) {
+  // Keep a platform that came in by link (e.g. PC) visible as a chip.
+  const platforms = PLATFORMS.some(([v]) => v === filters.platform) ? PLATFORMS : [...PLATFORMS, [filters.platform, filters.platform] as const]
+  return (
+    <div className={`grid grid-cols-1 gap-6 ${className ?? ""}`}>
+      <ChipGroup label="Platform" value={filters.platform} options={platforms} onChange={(platform) => onChange({ platform })} />
+      <ChipGroup
+        label="Condition"
+        value={filters.condition}
+        options={CONDITIONS}
+        onChange={(condition) => onChange({ condition: condition as Filters["condition"] })}
+      />
+      <ChipGroup label="Type" value={filters.kind} options={KINDS} onChange={(kind) => onChange({ kind: kind as Filters["kind"] })} />
+    </div>
+  )
+}
+
+/** Genre, store and sort, and In stock only. `fill` stretches each to its cell (the drawer's grid). */
+function SelectFilters({ filters, meta, onChange, fill = false }: { filters: Filters; meta: Props["meta"]; onChange: Props["onChange"]; fill?: boolean }) {
+  const width = fill ? "w-full" : undefined
+  return (
+    <>
+      <FilterSelect
+        label="Genre"
+        value={filters.genre}
+        onChange={(genre) => onChange({ genre })}
+        options={[["", "All genres"], ...(meta?.genres ?? []).map((g) => [g.name, `${g.name} (${g.count})`] as const)]}
+        className={width}
+      />
+      <FilterSelect
+        label="Store"
+        value={filters.store}
+        onChange={(store) => onChange({ store })}
+        options={[["", "All stores"], ...(meta?.stores ?? []).map((s) => [s.id, s.name] as const)]}
+        className={width}
+      />
+      <FilterSelect
+        label="Sort"
+        value={filters.sort}
+        defaultValue={DEFAULT_FILTERS.sort}
+        onChange={(sort) => onChange({ sort: sort as SortOrder })}
+        options={SORTS}
+        className={width}
+      />
+      <StockToggle pressed={filters.inStock} onChange={(inStock) => onChange({ inStock })} className={fill ? "justify-self-start" : undefined} />
+    </>
   )
 }
 
@@ -116,7 +248,7 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
  * WG underline field. A neon line draws in from the left on focus; while empty,
  * the example after "Search games, e.g." rolls to the next one (INK slide).
  */
-function SearchField({ committed, onCommit }: { committed: string; onCommit: (value: string) => void }) {
+function SearchField({ committed, onCommit, lead = "Search games, e.g." }: { committed: string; onCommit: (value: string) => void; lead?: string }) {
   const q = useDebouncedSearch(committed, onCommit)
   const [focused, setFocused] = useState(false)
   const example = useCycle(EXAMPLES.length, 2600, !q.value)
@@ -140,7 +272,7 @@ function SearchField({ committed, onCommit }: { committed: string; onCommit: (va
 
       {!q.value && (
         <span aria-hidden className="pointer-events-none absolute inset-x-0 top-4 flex gap-[0.3em] overflow-hidden text-xl leading-none tracking-[-1px] whitespace-nowrap md:text-2xl">
-          <span className={focused ? "text-foreground transition-colors" : "text-muted-foreground transition-colors"}>Search games, e.g.</span>
+          <span className={focused ? "text-foreground transition-colors" : "text-muted-foreground transition-colors"}>{lead}</span>
           <span className="relative inline-flex h-[1.1em] min-w-0 overflow-hidden">
             <AnimatePresence mode="popLayout" initial={false}>
               <m.span
@@ -224,13 +356,13 @@ export function ChipGroup({
   )
 }
 
-function StockToggle({ pressed, onChange }: { pressed: boolean; onChange: (pressed: boolean) => void }) {
+function StockToggle({ pressed, onChange, className }: { pressed: boolean; onChange: (pressed: boolean) => void; className?: string }) {
   return (
     <Toggle
       pressed={pressed}
       onPressedChange={onChange}
       aria-label="In stock only"
-      className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
+      className={`${className ?? ""} group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent`}
     >
       <AnimatePresence initial={false}>
         {pressed && (
@@ -268,16 +400,18 @@ function FilterSelect({
   defaultValue = "",
   options,
   onChange,
+  className,
 }: {
   label: string
   value: string
   defaultValue?: string
   options: readonly (readonly [string, string])[]
   onChange: (value: string) => void
+  className?: string
 }) {
   return (
     <Select value={toUi(value)} onValueChange={(v) => onChange(fromUi(v))}>
-      <SelectTrigger aria-label={label} chosen={value !== defaultValue} className="min-w-40">
+      <SelectTrigger aria-label={label} chosen={value !== defaultValue} className={`min-w-40 ${className ?? ""}`}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
