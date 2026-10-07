@@ -275,3 +275,9 @@
     transparent 24px 48px
   );
 }
+
+/* While the page scrolls fast (smooth-scroll.tsx), cards sliding under the pointer don't
+   start their hover effects: glow, tilt and glare on every card crossed, mid-scroll. */
+.scrolling-fast [data-game-card] {
+  pointer-events: none;
+}

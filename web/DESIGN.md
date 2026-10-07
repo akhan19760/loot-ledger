@@ -98,6 +98,14 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 
 Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkroom.engineering/) smooth scrolling. Everything honours the OS "reduce motion" setting: motion goes instant, Lenis, the grain, stripes, equalizer and loading sweep stop, and the loading screen is skipped.
 
+Keeping it smooth while scrolling:
+
+- Lenis is stepped from motion's frame loop, so scroll-linked effects read the scroll position the page is drawn at (two loops drift a frame apart: jitter).
+- Scroll-in animations (sections, headlines, cards) animate `transform`, `opacity` and `clipPath`, which the browser runs off the main thread, rather than motion's `x`, `y` and `scale`, which run in JavaScript every frame. Anything moved from JavaScript by scroll or the pointer has `will-change`, so moving it doesn't repaint it.
+- Components use the slim `m.*` elements; `LazyMotion` (main.tsx) loads their features after the first render. The loading screen, a lazy chunk of its own, keeps the full `motion.*` elements from `motion/react-client`.
+- The library grid is virtualized: only the rows near the viewport are in the DOM.
+- While the page scrolls fast, game cards ignore the pointer, so the ones sliding under it don't start their hover effects.
+
 ### Easing (`src/lib/motion.ts`)
 
 | Token | Curve | Source |
@@ -130,7 +138,7 @@ Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkro
 | Search | Neon underline draws in from the left on focus; example text rolls to the next every 2.6 s; clear button spins in | WG field + INK slide |
 | Selects | Chevron flips, chosen select glows, options cascade in | WG select states + INK stagger |
 | Cards | Scroll-in stagger; cover wipes in (clip-path) and zooms; 3D tilt toward the pointer with a neon glare; neon glow + border; arrow circle spins in; "View N offers" rises | INK cards, clip-path, tilt; WG glow |
-| Grid | When filters change, cards that stay glide to their new place | — (layout animation) |
+| Grid | Virtualized; when filters change, cards that stay glide to their new place | — (CSS transition on each card's position) |
 | Dialog | Grows out of the clicked card: a panel carrying the card's cover flies to the dialog's box while the cover fades, then hands over to the dialog; closing flies back into the card. Opened from a link (no card on screen), it rises and scales in with `ease.wg`. Then the title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | Material container transform, WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
 | Header | Theme toggle: black circle, sun/moon roll through it; the new theme spreads in a circle from the button (View Transitions) | WG round icon + INK roll |
 | Footer | Neon hazard stripes slide endlessly; giant white wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |

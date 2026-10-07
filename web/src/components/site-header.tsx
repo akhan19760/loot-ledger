@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react"
+import { AnimatePresence, m, useMotionValueEvent, useScroll } from "motion/react"
 import { Moon, ShoppingBag, Sun } from "lucide-react"
 import { useState } from "react"
 import { cn } from "cn"
@@ -48,7 +48,7 @@ export function SiteHeader({
   })
 
   return (
-    <motion.header
+    <m.header
       initial={{ y: "-140%" }}
       animate={{ y: introDone && !hidden ? "0%" : "-140%" }}
       transition={{ duration: 0.8, ease: ease.wg }}
@@ -106,7 +106,7 @@ export function SiteHeader({
         <CartButton count={cartCount} onClick={onOpenCart} />
         <ThemeToggle />
       </nav>
-    </motion.header>
+    </m.header>
   )
 }
 
@@ -117,7 +117,7 @@ function CartButton({ count, onClick }: { count: number; onClick: () => void }) 
       <ShoppingBag />
       <AnimatePresence>
         {count > 0 && (
-          <motion.span
+          <m.span
             key={count}
             initial={{ scale: 0.4 }}
             animate={{ scale: 1 }}
@@ -126,7 +126,7 @@ function CartButton({ count, onClick }: { count: number; onClick: () => void }) 
             className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-semibold text-black tabular-nums"
           >
             {count}
-          </motion.span>
+          </m.span>
         )}
       </AnimatePresence>
     </Button>
@@ -149,7 +149,7 @@ function ThemeToggle() {
       }}
     >
       <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
+        <m.span
           key={theme}
           initial={{ y: "120%", rotate: -90, opacity: 0 }}
           animate={{ y: "0%", rotate: 0, opacity: 1 }}
@@ -158,7 +158,7 @@ function ThemeToggle() {
           className="grid place-items-center"
         >
           {dark ? <Moon /> : <Sun />}
-        </motion.span>
+        </m.span>
       </AnimatePresence>
     </Button>
   )

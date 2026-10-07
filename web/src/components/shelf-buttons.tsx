@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react"
+import { m, useReducedMotion } from "motion/react"
 import { Check, Heart } from "lucide-react"
 import { cn } from "cn"
 import { RollText } from "@/components/motion/roll-text"
@@ -25,7 +25,7 @@ function ShelfIcon({ list, on }: { list: ShelfList; on: boolean }) {
   const reduced = useReducedMotion()
   const Icon = ICONS[list]
   return (
-    <motion.span
+    <m.span
       key={String(on)}
       initial={reduced || !on ? false : { scale: 0.3, rotate: -30 }}
       animate={{ scale: 1, rotate: 0 }}
@@ -33,7 +33,7 @@ function ShelfIcon({ list, on }: { list: ShelfList; on: boolean }) {
       className="grid place-items-center"
     >
       <Icon className={cn("size-4", on && list === "wishlist" && "fill-current")} strokeWidth={list === "collection" ? 3 : 2} />
-    </motion.span>
+    </m.span>
   )
 }
 

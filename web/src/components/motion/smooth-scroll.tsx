@@ -1,13 +1,41 @@
-import { ReactLenis, useLenis } from "lenis/react"
-import { useReducedMotion } from "motion/react"
-import { useCallback, useEffect } from "react"
+import { ReactLenis, useLenis, type LenisRef } from "lenis/react"
+import { cancelFrame, frame, useReducedMotion, type FrameData } from "motion/react"
+import { useCallback, useEffect, useRef } from "react"
 
-/** Inertial page scrolling. Off for people who ask for reduced motion. */
+/** Scroll speed, in px a frame, above which game cards ignore the pointer (see index.css). */
+const FAST_SCROLL = 4
+
+/**
+ * Inertial page scrolling. Off for people who ask for reduced motion.
+ *
+ * Lenis is stepped from motion's frame loop rather than its own requestAnimationFrame:
+ * with two loops the scroll position and the scroll-linked animations reading it drift
+ * a frame apart, which shows as jitter. While the page scrolls fast, <html> carries
+ * `scrolling-fast`, so cards sliding under the pointer don't start their hover effects.
+ */
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const reduced = useReducedMotion()
+  const lenis = useRef<LenisRef>(null)
+
+  useEffect(() => {
+    if (reduced) return
+    const root = document.documentElement
+    const update = ({ timestamp }: FrameData) => {
+      const instance = lenis.current?.lenis
+      if (!instance) return
+      instance.raf(timestamp)
+      root.classList.toggle("scrolling-fast", Math.abs(instance.velocity) > FAST_SCROLL)
+    }
+    frame.update(update, true)
+    return () => {
+      cancelFrame(update)
+      root.classList.remove("scrolling-fast")
+    }
+  }, [reduced])
+
   if (reduced) return <>{children}</>
   return (
-    <ReactLenis root options={{ lerp: 0.09, allowNestedScroll: true }}>
+    <ReactLenis root ref={lenis} options={{ lerp: 0.09, allowNestedScroll: true, autoRaf: false }}>
       {children}
     </ReactLenis>
   )

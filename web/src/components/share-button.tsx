@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, m } from "motion/react"
 import { Check, Link, MessageCircle, Share2 } from "lucide-react"
 import { sharePath, shareText, type Game } from "@ugs/shared"
 import { RollText } from "@/components/motion/roll-text"
@@ -56,7 +56,7 @@ export function ShareButton({ game, storeNames }: { game: Game; storeNames: Map<
       </Button>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div
+          <m.div
             className="flex flex-wrap gap-2"
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -73,7 +73,7 @@ export function ShareButton({ game, storeNames }: { game: Game; storeNames: Map<
               {copied ? <Check /> : <Link />}
               <RollText>{copied ? "Link copied" : "Copy link"}</RollText>
             </Button>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

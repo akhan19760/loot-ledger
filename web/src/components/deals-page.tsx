@@ -193,7 +193,7 @@ function DealList({
                 game={c.game}
                 index={i}
                 storeName={storeName(c.game.best.store)}
-                onOpen={() => onOpenGame(c.game.id)}
+                onOpen={onOpenGame}
                 deal={{ sticker: c.sticker, note: c.note }}
               />
             ))}

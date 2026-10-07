@@ -1,5 +1,5 @@
 import { useQueries } from "@tanstack/react-query"
-import { motion, useReducedMotion } from "motion/react"
+import { m, useReducedMotion } from "motion/react"
 import { ArrowUpRight, Check, Heart, ShoppingBag, X } from "lucide-react"
 import { cn } from "cn"
 import { PLATFORM_FILTERS, planCart, wantMatches, type CartLine, type CartPlans, type CartWant, type Game, type Plan, type Store, type Zone } from "@ugs/shared"
@@ -175,7 +175,7 @@ function CartRow({
   if (item.want.platform && !platforms.some(([v]) => v === item.want.platform)) platforms.push([item.want.platform, item.want.platform])
 
   return (
-    <motion.li
+    <m.li
       initial={reduced ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: ease.wg, delay: Math.min(index * 0.04, 0.6) }}
@@ -218,7 +218,7 @@ function CartRow({
           <X />
         </Button>
       </div>
-    </motion.li>
+    </m.li>
   )
 }
 

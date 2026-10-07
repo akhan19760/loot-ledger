@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from "motion/react"
+import { m, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from "motion/react"
 import { ArrowDown } from "lucide-react"
 import { useRef } from "react"
 import { cn } from "cn"
@@ -43,6 +43,8 @@ interface Props {
   onDeals: () => void
 }
 
+// Everything here that scroll or the pointer moves has `will-change`: a transform set
+// from JS on an ordinary element makes the browser repaint it every frame.
 export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props) {
   const ref = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
@@ -53,8 +55,12 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
   const py = useMotionValue(0)
   const sx = useSpring(px, pointerSpring)
   const sy = useSpring(py, pointerSpring)
-  const glowX = useTransform(sx, (v) => `${(v + 0.5) * 100}%`)
-  const glowY = useTransform(sy, (v) => `${(v + 0.5) * 100}%`)
+  // The glow's offset from the hero's centre in px: moved by transform, not left/top,
+  // so following the pointer doesn't re-lay out (and re-blur) it every frame.
+  const gx = useMotionValue(0)
+  const gy = useMotionValue(0)
+  const glowX = useSpring(gx, pointerSpring)
+  const glowY = useSpring(gy, pointerSpring)
 
   const titleScale = useTransform(scrollYProgress, [0, 0.7], [1, 0.82])
   const titleOpacity = useTransform(scrollYProgress, [0.1, 0.65], [1, 0])
@@ -67,6 +73,8 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
     const r = e.currentTarget.getBoundingClientRect()
     px.set((e.clientX - r.left) / r.width - 0.5)
     py.set((e.clientY - r.top) / r.height - 0.5)
+    gx.set(e.clientX - r.left - r.width / 2)
+    gy.set(e.clientY - r.top - r.height / 2)
   }
 
   return (
@@ -77,21 +85,21 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
       className="dark relative isolate flex min-h-[calc(100svh-var(--height-bar-mobile)-1.5rem)] flex-col justify-between overflow-hidden rounded-2xl bg-black text-foreground md:min-h-[calc(100svh-var(--height-bar)-1.5rem)]"
     >
       {/* WG star glow: a blurred neon light that follows the pointer */}
-      <motion.div
+      <m.div
         aria-hidden
-        style={{ left: glowX, top: glowY }}
-        className="pointer-events-none absolute -z-10 size-[42vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-[120px]"
+        style={{ x: glowX, y: glowY }}
+        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[42vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-[120px] will-change-transform"
       />
 
       {covers.slice(0, SLOTS.length).map((game, i) => (
         <FloatingCover key={game.id} game={game} slot={SLOTS[i]!} index={i} play={play} progress={scrollYProgress} sx={sx} sy={sy} />
       ))}
 
-      <motion.div
+      <m.div
         style={reduced ? undefined : { scale: titleScale, opacity: titleOpacity, filter: titleBlur }}
-        className="relative z-10 grid flex-1 content-center justify-items-center gap-6 px-4 pt-16 pb-8 text-center md:gap-8"
+        className="relative z-10 grid flex-1 content-center justify-items-center gap-6 px-4 pt-16 pb-8 text-center will-change-[transform,opacity,filter] md:gap-8"
       >
-        <motion.div initial={{ opacity: 0 }} animate={play ? { opacity: 1 } : undefined} transition={{ duration: 0.8, ease: ease.inkFade, delay: 0.1 }}>
+        <m.div initial={{ opacity: 0 }} animate={play ? { opacity: 1 } : undefined} transition={{ duration: 0.8, ease: ease.inkFade, delay: 0.1 }}>
           <Eyebrow className="text-primary">
             {meta ? (
               <>
@@ -101,7 +109,7 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
               "Price comparison"
             )}
           </Eyebrow>
-        </motion.div>
+        </m.div>
 
         <h1 id="hero-title" className="font-display text-[clamp(4.5rem,18vw,18rem)] leading-[0.82] tracking-tight uppercase">
           {play ? (
@@ -119,16 +127,16 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
           )}
         </h1>
 
-        <motion.p
+        <m.p
           initial={{ opacity: 0, y: 24 }}
           animate={play ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 1, ease: ease.wg, delay: 0.55 }}
           className="max-w-xl text-lg text-muted-foreground md:text-xl"
         >
           Compare new and used PlayStation game prices across Pakistani game stores in one place.
-        </motion.p>
+        </m.p>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 24 }}
           animate={play ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 1, ease: ease.wg, delay: 0.7 }}
@@ -144,8 +152,8 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
           <Button variant="secondary" size="lg" className="pr-7" onClick={onStores}>
             <RollText>See the stores</RollText>
           </Button>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
       <div aria-hidden className="relative z-0 grid gap-1 pb-6 font-sans text-[clamp(2.75rem,8vw,8rem)] leading-[1] font-medium tracking-[-0.04em] whitespace-nowrap select-none">
         <WordRow words={ROW_A} x={rowA} play={play} />
@@ -157,19 +165,19 @@ export function Hero({ meta, covers, play, onBrowse, onStores, onDeals }: Props)
 
 function WordRow({ words, x, play, offset = 0 }: { words: string[]; x: MotionValue<string>; play: boolean; offset?: number }) {
   return (
-    <motion.div
+    <m.div
       style={{ x }}
       initial={{ opacity: 0 }}
       animate={play ? { opacity: 1 } : undefined}
       transition={{ duration: 1.2, ease: ease.inkFade, delay: 0.9 + offset * 0.15 }}
-      className="flex gap-[0.35em]"
+      className="flex gap-[0.35em] will-change-transform"
     >
       {words.map((w, i) => (
         <span key={i} className={(i + offset) % 2 ? (i % 4 < 2 ? "text-neon" : "text-neon-reverse") : "text-white"}>
           {w}
         </span>
       ))}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -196,12 +204,12 @@ function FloatingCover({
   const y = useTransform(() => scrollY.get() + mouseY.get())
 
   return (
-    <motion.div
+    <m.div
       aria-hidden
       style={{ left: slot.left, top: slot.top, x: mouseX, y }}
-      className={cn("absolute z-[5] w-[clamp(84px,11vw,190px)]", "desktop" in slot && "hidden md:block")}
+      className={cn("absolute z-[5] w-[clamp(84px,11vw,190px)] will-change-transform", "desktop" in slot && "hidden md:block")}
     >
-      <motion.div
+      <m.div
         initial={{ clipPath: "inset(100% 0% 0% 0%)", rotate: slot.rotate * 1.6, scale: 1.1 }}
         animate={play ? { clipPath: "inset(0% 0% 0% 0%)", rotate: slot.rotate, scale: 1 } : undefined}
         whileHover={{ rotate: 0, scale: 1.08, transition: { duration: 0.5, ease: ease.wg } }}
@@ -210,7 +218,7 @@ function FloatingCover({
       >
         {/* At most 190px wide; 400px covers 2x screens and is the copy the loading screen preloads */}
         <CoverArt src={game.image} title={game.title} width={400} />
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }
