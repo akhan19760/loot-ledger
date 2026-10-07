@@ -91,7 +91,11 @@ export function SiteHeader({
         </Button>
         <Button
           variant="ghost"
-          className={cn("hidden px-3 lg:inline-flex", page === "deals" && "text-primary-ink")}
+          // Current page: neon in dark; underlined in light, where primary-ink is plain black.
+          className={cn(
+            "hidden px-3 lg:inline-flex",
+            page === "deals" && "text-primary-ink light:after:absolute light:after:inset-x-3 light:after:bottom-1.5 light:after:h-0.5 light:after:rounded-full light:after:bg-current",
+          )}
           aria-current={page === "deals" ? "page" : undefined}
           onClick={() => (page === "deals" ? scrollTo(0) : onNavigate("deals"))}
         >
