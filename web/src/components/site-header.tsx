@@ -119,7 +119,9 @@ export function SiteHeader({
           <RollText>Stores</RollText>
         </Button>
         {filters?.generated && (
-          <Stat className="mx-2" value={timeAgo(filters.generated)} label="Updated" title={new Date(filters.generated).toLocaleString()} />
+          // Not where it would run under the centred wordmark: on phones, and beside the
+          // page links until the bar is wide enough for both
+          <Stat className="mx-2 hidden sm:flex lg:hidden xl:flex" value={timeAgo(filters.generated)} label="Updated" title={new Date(filters.generated).toLocaleString()} />
         )}
         <CartButton count={cartCount} onClick={onOpenCart} />
         <ThemeToggle />

@@ -25,7 +25,7 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
     <footer id="stores" className="grid gap-2">
       <HazardBand />
 
-      <div ref={ref} className="relative grid gap-10 overflow-hidden rounded-2xl bg-primary p-6 text-black md:gap-14 md:p-10">
+      <div ref={ref} className="@container relative grid gap-10 overflow-hidden rounded-2xl bg-primary p-6 text-black md:gap-14 md:p-10">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="grid max-w-3xl gap-4">
             <Eyebrow>Stores we compare</Eyebrow>
@@ -53,7 +53,7 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
         <m.p
           aria-hidden
           style={reduced ? undefined : { y, scale, willChange: "transform" }}
-          className="origin-bottom text-center font-display text-[clamp(4rem,19vw,21rem)] leading-[0.8] text-white uppercase"
+          className="origin-bottom text-center font-display text-[min(20cqw,21rem)] leading-[0.8] whitespace-nowrap text-black uppercase"
         >
           <SplitText text="LootLedger" by="letter" stagger={0.04} />
         </m.p>
