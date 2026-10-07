@@ -138,7 +138,7 @@ Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkro
 
 ### Loading screen (`src/components/loading-screen.tsx`)
 
-A video-game loading screen on every page load (skipped with reduced motion). Nothing on it is faked: each boot-log step resolves only when that part of the page has loaded. Steps are paced about 0.3 s apart so a fast load still reads as a sequence, and the screen never holds the page for more than 8 s. The loading-screen idea came from the brief ("like a video game loading screen"); the parts marked *new* have no counterpart in the references.
+A video-game loading screen on a first visit to the home page: shown at most once a week per browser, never on a link to something in particular (a shared game, /deals, a wishlist), and skipped with reduced motion. Nothing on it is faked: each boot-log step resolves only when that part of the page has loaded. Steps are paced about 0.15 s apart so a fast load still reads as a sequence, the screen never holds the page for more than 3.5 s, and a tap, click or Esc skips it at any time. The loading-screen idea came from the brief ("like a video game loading screen"); the parts marked *new* have no counterpart in the references.
 
 | Part | Effect | Source |
 |---|---|---|
@@ -148,5 +148,5 @@ A video-game loading screen on every page load (skipped with reduced motion). No
 | Boot log | Fonts, ledger, stores, library, cover art with their real results. The running step pulses; stores check in as chips turning neon | WG panel, chips and live dot; boot log *new* |
 | Bar | 40 blocks light one at a time with a glow at the edge; the whole bar glows when done; real load time beside it | WG loading bar; blocks *new* |
 | Tips | A random tip, then the next every 3.6 s or on "Next tip", sliding up | INK slide |
-| Prompt | The favicon's LL tile flips like a coin inside a spinning ring. Then "Press any key" (or "Tap to continue"), with the ring counting down 1.4 s before it continues by itself. Esc skips at any time | WG spin; prompt *new* |
+| Prompt | The favicon's LL tile flips like a coin inside a spinning ring. Then "Press any key" (or "Tap to continue"), with the ring counting down 0.7 s before it continues by itself. Esc, a tap or a click skips at any time | WG spin; prompt *new* |
 | Exit | Wipes up over 1.2 s with the hazard stripes trailing; the HUD sinks as it goes and the page's entrance starts underneath | WG `#loader` wipe + WG hazard band |

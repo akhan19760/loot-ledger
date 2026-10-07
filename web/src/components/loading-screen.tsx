@@ -16,13 +16,32 @@ import { ease, pointerSpring } from "@/lib/motion"
 
 // Nothing on this screen is faked: each boot-log line resolves only once that part of
 // the page has really loaded. The lines are paced so that even a fast load reads as a
-// sequence, and the screen never holds the page longer than GIVE_UP_MS.
-const FIRST_LINE_MS = 450
-const NEXT_LINE_MS = 280
-const ART_WAIT_MS = 3000 // once the cover list is known; then go on without the stragglers
-const GIVE_UP_MS = 8000
-const AUTO_CONTINUE_MS = 1400
+// sequence, and the screen never holds the page longer than GIVE_UP_MS. Kept short:
+// most visitors arrive on a phone from a link and want a price, not a show.
+const FIRST_LINE_MS = 250
+const NEXT_LINE_MS = 150
+const ART_WAIT_MS = 1200 // once the cover list is known; then go on without the stragglers
+const GIVE_UP_MS = 3500
+const AUTO_CONTINUE_MS = 700
 const TIP_MS = 3600
+
+// Shown at most once a week per browser, and never to someone who followed a link to
+// something in particular (a shared game, the deals, a wishlist): they came for that.
+const SEEN_KEY = "lootledger-intro-seen"
+const SHOW_EVERY_MS = 7 * 24 * 60 * 60 * 1000
+
+function introWanted(): boolean {
+  const params = new URLSearchParams(location.search)
+  if (location.pathname.replace(/\/+$/, "") !== "" || params.has("game") || params.has("list")) return false
+  try {
+    const seen = Number(localStorage.getItem(SEEN_KEY))
+    if (seen && Date.now() - seen < SHOW_EVERY_MS) return false
+    localStorage.setItem(SEEN_KEY, String(Date.now()))
+  } catch {
+    // Storage blocked: show it, it's short.
+  }
+  return true
+}
 
 const FONTS = ["1em Anton", "1em 'Urbanist Variable'"]
 
@@ -73,13 +92,14 @@ export interface LoadingScreenProps {
 }
 
 /**
- * A video-game loading screen, shown on every page load until the library is ready:
- * a boot log of what's really loading, a rolling percentage, a segmented bar, tips,
- * and "press any key". Continues by itself shortly after; Esc skips at any time.
+ * A video-game loading screen, shown on a first visit to the home page until the library
+ * is ready: a boot log of what's really loading, a rolling percentage, a segmented bar,
+ * tips, and "press any key". Continues by itself shortly after; a tap, a click or Esc
+ * skips it at any time.
  */
 export function LoadingScreen(props: LoadingScreenProps) {
   const reduced = useReducedMotion()
-  const [enabled] = useState(() => !reduced)
+  const [enabled] = useState(() => !reduced && introWanted())
   const [leaving, setLeaving] = useState(false)
   const visible = enabled && !leaving
   const { onDone } = props
@@ -231,7 +251,8 @@ function Screen({ meta, metaFailed, matches, matchesFailed, covers, coversFailed
         px.set(e.clientX / window.innerWidth - 0.5)
         py.set(e.clientY / window.innerHeight - 0.5)
       }}
-      onPointerDown={() => ready && onContinue()}
+      // Any tap or click skips, loaded or not: the page underneath fills in as it arrives.
+      onPointerDown={() => onContinue()}
     >
       <p className="sr-only" role="status">
         {ready ? "LootLedger is ready. Press any key to continue." : `Loading LootLedger: ${current?.busy ?? ""}`}
