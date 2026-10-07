@@ -5,7 +5,7 @@ import { unescape } from "./titles.ts";
 export interface StoreConfig {
   id: string;
   name: string;
-  platform: "shopify" | "woocommerce" | "payload";
+  platform: "shopify" | "woocommerce" | "payload" | "venture";
   base: string;
   linkStyle: "query" | null;
 }
@@ -179,8 +179,40 @@ export function* payloadListings(store: StoreConfig, p: PayloadProduct): Generat
   }
 }
 
+// ---------------------------------------------------------------- Venture Games (its own PHP site)
+
+/** One product card from a category page, as the fetcher reads it (ventureCards). */
+export interface VentureProduct {
+  id: number;
+  name: string;
+  /** What the customer pays. */
+  price: number;
+  /** List price: 0 when unset, the pre-sale price when on sale. */
+  mrp: number;
+  stock: number;
+  category: string;
+  /** Site-relative: /product/<id>?cat=<slug> */
+  url: string;
+  /** Site-relative: uploads/<file> */
+  image: string | null;
+}
+
+export function* ventureListings(store: StoreConfig, p: VentureProduct): Generator<RawListing> {
+  yield {
+    raw_title: unescape(p.name.trim()),
+    variant: "",
+    meta: [unescape(p.category.trim())],
+    price: p.price,
+    was: p.mrp > p.price ? p.mrp : null,
+    in_stock: p.stock > 0,
+    url: new URL(p.url, store.base).href,
+    image: p.image ? new URL(p.image, `${store.base}/`).href : null,
+  };
+}
+
 export const ADAPTERS = {
   shopify: (store: StoreConfig, p: unknown) => shopifyListings(store, p as ShopifyProduct),
   woocommerce: (store: StoreConfig, p: unknown) => wooListings(store, p as WooProduct),
   payload: (store: StoreConfig, p: unknown) => payloadListings(store, p as PayloadProduct),
+  venture: (store: StoreConfig, p: unknown) => ventureListings(store, p as VentureProduct),
 };

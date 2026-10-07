@@ -3,10 +3,11 @@
  *
  * Shopify stores expose /products.json; WooCommerce stores expose the Store API
  * (wc/store/v1/products); Payload CMS stores expose /api/products. All are public,
- * read-only feeds the stores' own sites use, so no HTML scraping is needed.
+ * read-only feeds the stores' own sites use. Venture Games' own PHP site has no
+ * feed, so its category pages are read instead (fetchVenture).
  */
-import type { StoreConfig } from "../catalog/adapters.ts";
-import { getJson, sleep, type Log } from "./http.ts";
+import type { StoreConfig, VentureProduct } from "../catalog/adapters.ts";
+import { getJson, getText, sleep, type Log } from "./http.ts";
 
 export interface FetchOptions {
   /** Pause between page requests, to be polite. */
@@ -67,7 +68,58 @@ async function fetchPayload(base: string, { delayMs, log }: FetchOptions): Promi
   }
 }
 
-const FETCHERS = { shopify: fetchShopify, woocommerce: fetchWooCommerce, payload: fetchPayload };
+/**
+ * The product cards on a Venture Games category page. Each card carries its details in
+ * hidden inputs for the add-to-cart script (addToCardName, addToCardPrice, ...), which
+ * are steadier to read than the visible text.
+ */
+export function ventureCards(html: string): VentureProduct[] {
+  return html.split('class="product-cart"').slice(1).flatMap((card) => {
+    const field = (name: string) => card.match(new RegExp(`class="addToCard${name}" value="([^"]*)"`))?.[1];
+    const id = Number(field("HiddenId"));
+    const name = field("Name");
+    const url = card.match(/data-url="([^"]*)"/)?.[1];
+    if (!id || !name || !url) return [];
+    return [{
+      id,
+      name,
+      price: Number(field("Price") || 0),
+      mrp: Number(field("MRP") || 0),
+      stock: Number(field("Stock") || 0),
+      category: field("Category") ?? "",
+      url,
+      image: field("Image") || null,
+    }];
+  });
+}
+
+async function fetchVenture(base: string, { delayMs, log }: FetchOptions): Promise<VentureProduct[]> {
+  // The menu links every category as /product?id=<category>; each lists 20 products a page.
+  const home = await getText(`${base}/`, { userAgent: UA, log });
+  const categories = [...new Set(Array.from(home.matchAll(/href="\/product\?id=(\d+)/g), (m) => m[1]!))];
+  if (!categories.length) throw new Error("no category links on the home page (has the site changed?)");
+  const items = new Map<number, VentureProduct>();
+  for (const category of categories) {
+    const seen = new Set<number>();
+    for (let page = 1; ; page++) {
+      const cards = ventureCards(await getText(`${base}/product?id=${category}&page=${page}`, { userAgent: UA, log }));
+      await sleep(delayMs);
+      // Past the last page the list is empty; stop too if a page only repeats earlier ones.
+      const fresh = cards.filter((c) => !seen.has(c.id));
+      if (!fresh.length) break;
+      for (const c of fresh) {
+        seen.add(c.id);
+        if (!items.has(c.id)) items.set(c.id, c);
+      }
+    }
+    log.info(`    category ${category}: ${seen.size} products, ${items.size} in all`);
+  }
+  // An empty catalog would wipe the store's listings; failing keeps the previous feed.
+  if (!items.size) throw new Error("no product cards on the category pages (has the site changed?)");
+  return [...items.values()];
+}
+
+const FETCHERS = { shopify: fetchShopify, woocommerce: fetchWooCommerce, payload: fetchPayload, venture: fetchVenture };
 
 export function fetchStore(store: StoreConfig, options: FetchOptions): Promise<unknown[]> {
   return FETCHERS[store.platform](store.base, options);
