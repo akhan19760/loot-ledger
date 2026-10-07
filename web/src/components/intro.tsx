@@ -1,5 +1,5 @@
 import { AnimatePresence, useReducedMotion } from "motion/react"
-import { lazy, Suspense, useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useLayoutEffect, useState } from "react"
 import type { LoadingScreenProps } from "@/components/loading-screen"
 
 // The loading screen itself is a chunk of its own: most visits never show it.
@@ -38,6 +38,17 @@ export function LoadingScreen({
   const [enabled] = useState(() => !reduced && introWanted())
   const [leaving, setLeaving] = useState(false)
   const visible = enabled && !leaving
+
+  // The screen opens on the top of the page: a reload partway down would otherwise have
+  // the browser restore that scroll position behind it, away from the hero.
+  useLayoutEffect(() => {
+    if (!enabled) return
+    history.scrollRestoration = "manual"
+    window.scrollTo(0, 0)
+    return () => {
+      history.scrollRestoration = "auto"
+    }
+  }, [enabled])
 
   // Start the page's entrance as the screen begins to wipe away.
   useEffect(() => {

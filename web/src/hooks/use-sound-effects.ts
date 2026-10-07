@@ -56,13 +56,16 @@ export function useSoundEffects(dialogOpen: boolean) {
       play("tick", dy / 60)
     }
 
+    // A mouse press counts as a gesture on the way down, a touch only on the way up.
     window.addEventListener("pointerdown", unlockAudio, { capture: true })
+    window.addEventListener("pointerup", unlockAudio, { capture: true })
     window.addEventListener("keydown", unlockAudio, { capture: true })
     document.addEventListener("pointerover", onOver, { passive: true })
     document.addEventListener("click", onClick, { capture: true })
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => {
       window.removeEventListener("pointerdown", unlockAudio, { capture: true })
+      window.removeEventListener("pointerup", unlockAudio, { capture: true })
       window.removeEventListener("keydown", unlockAudio, { capture: true })
       document.removeEventListener("pointerover", onOver)
       document.removeEventListener("click", onClick, { capture: true })

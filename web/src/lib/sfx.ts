@@ -130,14 +130,18 @@ export function play(sound: Sound, strength = 1) {
 }
 
 /**
- * Play a sound in answer to a click, tap or key, even the page's first: audio started by
- * that gesture may still be starting up, so the sound waits for it.
+ * Play a sound in answer to a click, tap or key, even the page's first. It's scheduled
+ * at once, so it sounds the moment audio is up rather than a round trip after. A touch
+ * only counts as a gesture once the finger lifts (browsers allow audio from then), so a
+ * sound for a touch still down plays on that lift.
  */
 export function playOnGesture(sound: Sound) {
-  unlockAudio()
-  if (!enabled || !ctx) return
-  if (ctx.state === "running") return play(sound)
-  void ctx.resume().then(() => play(sound))
+  if (!enabled || document.hidden) return
+  if (navigator.userActivation && !navigator.userActivation.isActive) {
+    window.addEventListener("pointerup", () => enabled && SOUNDS[sound](audio(), 1), { capture: true, once: true })
+    return
+  }
+  SOUNDS[sound](audio(), 1)
 }
 
 function setEnabled(next: boolean) {

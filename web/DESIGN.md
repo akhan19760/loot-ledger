@@ -160,8 +160,8 @@ WG's loader, on a first visit to the home page: shown at most once a week per br
 | Live count | "Tracking" over the real game and store counts, counting up once the ledger is in ("Connecting…", or "Offline") | WG "Login / Player 1"; counts *new* |
 | Letters | "LootLedger", one underline per letter. Each letter sharpens from a dim neon blur to neon as the progress passes it, left to right; all glow once ready | WG name entry |
 | Bar | A pill filling with striped neon, the step in progress named above it | WG loading bar |
-| START | The bar turns into a glowing neon START button, which takes the focus; "Or press any key" / "Tap to start" under it | WG START |
-| Exit (START) | The letters fly into the hero's title, one after another, each crossfading from the loader's neon letter into the title's own and landing on it exactly; the title then shows in their place (no slide-up). The black fades as the page's entrance starts behind, and START sinks away | WG exit (letters spreading over the page), flown into the title *new* |
+| START | Once the bar has filled completely and rested a moment, it turns into a glowing neon START button, which takes the focus; "Or press any key" / "Tap to start" under it | WG START |
+| Exit (START) | The page jumps to the top (the screen also opens there, rather than where a reload left it), then the letters fly into the hero's title, one after another, each crossfading from the loader's neon letter into the title's own and landing on it exactly; the title then shows in their place (no slide-up). The black fades as the page's entrance starts behind, and START sinks away | WG exit (letters spreading over the page), flown into the title *new* |
 | Exit (skip) | The letters spread large and blur away as the black fades | WG exit |
 
 ## Sound (`src/lib/sfx.ts`, `src/hooks/use-sound-effects.ts`)

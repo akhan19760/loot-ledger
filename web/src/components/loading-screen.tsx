@@ -8,6 +8,7 @@ import { cn } from "cn"
 import type { FiltersResponse } from "@ugs/shared"
 import type { TitleEntrance } from "@/components/hero"
 import { CountUp } from "@/components/motion/count-up"
+import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { useImagePreload } from "@/hooks/use-image-preload"
 import { ease } from "@/lib/motion"
 import { playOnGesture } from "@/lib/sfx"
@@ -20,6 +21,7 @@ const FIRST_LINE_MS = 250
 const NEXT_LINE_MS = 150
 const ART_WAIT_MS = 1200 // once the cover list is known; then go on without the stragglers
 const GIVE_UP_MS = 3500
+const FULL_HOLD_MS = 250 // the bar rests full a moment before it turns into START
 const EXIT_S = 1.2
 // START: each letter flies into the hero's title, one after another.
 const FLY_S = 1.1
@@ -119,18 +121,27 @@ export function Screen({ meta, metaFailed, matches, matchesFailed, art: artUrls,
     const t = setTimeout(() => setShown((n) => n + 1), shown === 0 ? FIRST_LINE_MS : NEXT_LINE_MS)
     return () => clearTimeout(t)
   }, [nextFinished, shown])
-  const ready = shown === steps.length
+  const loaded = shown === steps.length
   const current = steps[shown]
 
   // ---- progress: finished steps, plus a creep into the one running
   const progress = useMotionValue(0)
   const doneWeight = steps.slice(0, shown).reduce((sum, s) => sum + s.weight, 0)
   const running = current ? current.weight * 0.9 * (current.done ? 1 : (current.fraction ?? 0.5)) : 0
-  const target = ready ? 100 : doneWeight + running
+  const target = loaded ? 100 : doneWeight + running
+  const [filled, setFilled] = useState(false)
   useEffect(() => {
-    const controls = animate(progress, target, { duration: 0.9, ease: ease.wg })
+    const controls = animate(progress, target, { duration: 0.9, ease: ease.wg, onComplete: () => setFilled(target === 100) })
     return () => controls.stop()
   }, [progress, target])
+
+  // Ready once the bar has visibly filled and rested a moment, not the moment loading ends.
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    if (!filled) return
+    const t = setTimeout(() => setReady(true), FULL_HOLD_MS)
+    return () => clearTimeout(t)
+  }, [filled])
 
   // START takes the focus, so Enter and Space press it.
   useEffect(() => {
@@ -140,12 +151,14 @@ export function Screen({ meta, metaFailed, matches, matchesFailed, art: artUrls,
   // ---- continue: START, any key or any tap once ready; a tap, a click or Esc skips before
   const left = useRef(false)
   const [handoff, setHandoff] = useState(false)
+  const scrollTo = useScrollTo()
   const go = () => {
     if (left.current) return
     left.current = true
     playOnGesture("start") // the first gesture browsers allow audio on
     // Once loaded, the letters become the hero's title; a skip before then spreads them away.
     if (ready && document.getElementById("hero-title")) {
+      scrollTo(0, { instant: true }) // the title must be where the letters are measured to land
       setHandoff(true)
       onTitle("flying")
     }
@@ -198,8 +211,9 @@ export function Screen({ meta, metaFailed, matches, matchesFailed, art: artUrls,
   return (
     <motion.div
       ref={root}
-      // Once leaving, the page fading in underneath takes the pointer.
-      className={cn("dark fixed inset-0 z-[100] flex flex-col overflow-hidden text-foreground select-none", !present && "pointer-events-none")}
+      // Once leaving, the page fading in underneath takes the pointer; not while letters are
+      // in flight, though, since scrolling then would move the title out from under them.
+      className={cn("dark fixed inset-0 z-[100] flex flex-col overflow-hidden text-foreground select-none", !present && !handoff && "pointer-events-none")}
       // Its own exit keeps the screen mounted while the parts inside play theirs; after a
       // hand-off it fades off the flown letters only once the hero's own show beneath.
       exit={{ opacity: 0 }}
@@ -263,7 +277,7 @@ export function Screen({ meta, metaFailed, matches, matchesFailed, art: artUrls,
             animate={{ opacity: ready ? 0 : 1 }}
             transition={{ duration: 0.3 }}
           >
-            <Swap id={current?.busy ?? "done"}>{current?.busy}</Swap>
+            <Swap id={current?.busy ?? "loaded"}>{current?.busy ?? "Loaded"}</Swap>
           </motion.span>
           <Start ref={start} progress={progress} ready={ready} />
           <motion.span
