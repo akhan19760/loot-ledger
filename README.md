@@ -18,7 +18,7 @@ Compare new and used PlayStation game prices across Pakistani game stores in one
 
 | Store | Platform |
 |---|---|
-| [Venture Games](https://www.venturegames.com.pk) | Shopify |
+| [Venture Games](https://www.venturegames.com.pk) | Its own site (fetched by the server only) |
 | [GameStop.pk](https://gamestop.com.pk) | Shopify |
 | [Games4U](https://games4u.pk) | Shopify |
 | [Khanani Store](https://khananistore.com) | Shopify |
@@ -58,7 +58,7 @@ genres.py ─► raw/wikidata_games.json ──┘
 | `build.py` | Classifies products, detects platform and condition, groups by game, adds genres |
 | `site/index.html` | The library UI (static, no server needed) |
 
-The data comes from each store's public product feed. The scripts don't scrape any HTML.
+The data comes from each store's public product feed. The scripts don't scrape any HTML. The one exception is Venture Games: its own PHP site has no feed, so the server reads its category pages instead.
 
 ## Adding a store
 
