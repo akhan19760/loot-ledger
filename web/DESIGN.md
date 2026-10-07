@@ -104,7 +104,7 @@ Keeping it smooth while scrolling:
 - Scroll-in animations (sections, headlines, cards) animate `transform`, `opacity` and `clipPath`, which the browser runs off the main thread, rather than motion's `x`, `y` and `scale`, which run in JavaScript every frame. Anything moved from JavaScript by scroll or the pointer has `will-change`, so moving it doesn't repaint it.
 - Components use the slim `m.*` elements; `LazyMotion` (main.tsx) loads their features after the first render. The loading screen, a lazy chunk of its own, keeps the full `motion.*` elements from `motion/react-client`.
 - The library grid is virtualized: only the rows near the viewport are in the DOM.
-- While the page scrolls fast, game cards ignore the pointer, so the ones sliding under it don't start their hover effects.
+- While a wheel or trackpad scrolls the page fast, game cards ignore the pointer, so the ones sliding under it don't start their hover effects (not after touch or keyboard scrolling, which would swallow taps).
 
 ### Easing (`src/lib/motion.ts`)
 

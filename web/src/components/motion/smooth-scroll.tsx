@@ -10,8 +10,11 @@ const FAST_SCROLL = 4
  *
  * Lenis is stepped from motion's frame loop rather than its own requestAnimationFrame:
  * with two loops the scroll position and the scroll-linked animations reading it drift
- * a frame apart, which shows as jitter. While the page scrolls fast, <html> carries
- * `scrolling-fast`, so cards sliding under the pointer don't start their hover effects.
+ * a frame apart, which shows as jitter. While a wheel or trackpad scrolls the page fast,
+ * <html> carries `scrolling-fast`, so cards sliding under the pointer don't start their
+ * hover effects. Only Lenis's own (smooth) scrolling: after a native scroll (touch, keys,
+ * a jump) Lenis holds the whole jump as its velocity for 400 ms, and cards would ignore
+ * taps and clicks for that long.
  */
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const reduced = useReducedMotion()
@@ -24,7 +27,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       const instance = lenis.current?.lenis
       if (!instance) return
       instance.raf(timestamp)
-      root.classList.toggle("scrolling-fast", Math.abs(instance.velocity) > FAST_SCROLL)
+      root.classList.toggle("scrolling-fast", instance.isScrolling === "smooth" && Math.abs(instance.velocity) > FAST_SCROLL)
     }
     frame.update(update, true)
     return () => {
