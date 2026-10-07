@@ -74,6 +74,7 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 | Glow | `drop-shadow(0 0 15px #d4fb08)` | WG neon drop-shadows |
 | Scrollbars | Slim pill in the `input` colour on a clear track, `primary-ink` on hover; inset from rounded edges | — (matches WG chips/fields) |
 | Dialog | At most 44rem tall; the body scrolls inside the rounded panel, the close button stays pinned | WG content block |
+| Drawer | Phones: the dialog's glass docked to the bottom edge, top corners rounded, at most 88% of the screen tall; grab handle, display-type title and close button on top, the body scrolls, actions pinned along the bottom. Rises with `ease.wg`, drops away quicker | WG content block; bottom sheet *new* |
 | Stripes | 45° neon stripes | WG hazard-stripe panels |
 
 ## Components
@@ -86,7 +87,7 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 | Round icon button | 48px black circle | WG play-icon circle, close control |
 | Arrow on outbound links `↗` | after the label | INK "SIGN UP ↗", "EXPLORE ↗" |
 | Chip / toggle | white 10% fill, white text, 16px radius, `text-sm leading-none`; selected = neon fill, dark text (light theme: black fill, neon text, no glow) | WG tag chips (both variants) |
-| Text field | transparent, underline `white/10`, large text with -1px tracking, white/70 placeholder turning white on focus | WG contact form inputs |
+| Search field | 48px (56px from md) rounded box, white 5% fill, `border` outline, magnifier on the left; the border turns neon with a soft neon glow on focus (light theme: black border, no glow) | — (rounded field, chosen over WG's underline input) |
 | Select | transparent, `white/20` border, 16px radius; white border on focus; 2px `primary-ink` border + text when a value is chosen (an inset ring doubles the 1px border, so the label doesn't move) | WG contact form selects |
 | Panel | white 5% fill (or neutral-700 20% + blur on overlays), 16px radius | WG content blocks |
 | Status stat | small neon value over an uppercase grey label, optional dot | WG header "● ONLINE", "61 FPS" |
@@ -97,6 +98,7 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 | Share | A secondary "Share" button beside the dialog's wishlist and cart buttons. On a phone it opens the share sheet; elsewhere it turns neon and "WhatsApp" and "Copy link" slide in beside it (tick and "Link copied" for 2 s). The link's preview (served by the API, not the app) is the cover, "Game: Rs 9,000 at Store" and the version, markdown and number of stores | WG chips and secondary buttons |
 | Cart optimizer | Header: WG black circle with a bag and a neon count chip that pops on change. Dialog: "Delivering to" chips; one panel per game with its cover, the store and price the best plan picked, and version selects (neon when narrowed); the best plan in a neon-edged panel (total in the display face, neon), an order per store with neon price links, savings as outline chips; the single-store and each-cheapest alternatives as small panels | WG chips, WG selects, WG panels, INK headline type |
 | Deals page | Its own path, `/deals`, reached from the header ("Deals", neon while on it) and the hero. Headline and eyebrows like the library, jump chips for its three lists, the library's Platform and Condition chips in a panel. Each list is a section with an INK headline ("Marked down.", "Shop around.", "Just in.") over the usual card grid, 12 cards then "Show more". Deal cards add a neon sticker in the display face, tilted slightly ("−69%", "Save Rs 9,499", "In stock"), the struck-through was price, and a one-line note in place of the badges | INK headline type, INK price-tag stickers, WG chips, WG panels |
+| Filters on phones | Below 768px the filter panel gives way to the search field and a round filters button beside it, its neon chip counting the filters in use. The button opens the filters in a drawer; choices there are a draft until "Show results" applies them and closes it, while the X, a tap outside or Esc close it unchanged. Reset clears the draft. Opening and closing whoosh like a dialog | Search field, WG round icon + neon count chip (as the cart), WG chips and selects |
 | Wishlist and collection | Heart and tick in WG black circles at a card's top-left, shown on hover or focus (always on touch screens) and kept once on; wishlist = neon heart, owned = neon-filled circle with a black tick; the icon pops in with `ease.inkRoll`. The dialog has the same two as labelled buttons (secondary, neon when on). "Show: All games / Wishlist · n / Collection · n" chips top the filter bar; a list view gets a summary panel of big display figures (count, in stock, cost today in neon), notes for games the filters hide or no store lists, and backup export/import | WG round icon, WG chips, INK headline type |
 
 ## Motion
@@ -140,7 +142,7 @@ Keeping it smooth while scrolling:
 | Buttons | Neon glow on hover, press-in on click | WG neon drop-shadows |
 | Big buttons | Black circle icon spins to 330° on hover | WG `#big-button #icon` fastSpin |
 | Chips | One neon pill glides between options (spring); labels roll | WG neon chip + INK roll |
-| Search | Neon underline draws in from the left on focus; example text rolls to the next every 2.6 s; clear button spins in | WG field + INK slide |
+| Search | Border lights neon on focus; example text rolls to the next every 2.6 s; clear button spins in | INK slide |
 | Selects | Chevron flips, chosen select's border thickens, options cascade in | WG select states + INK stagger |
 | Cards | Scroll-in stagger; cover wipes in (clip-path) and zooms; 3D tilt toward the pointer with a neon glare; neon glow + border; arrow circle spins in; "View N offers" rises | INK cards, clip-path, tilt; WG glow |
 | Grid | Virtualized; when filters change, cards that stay glide to their new place | — (CSS transition on each card's position) |
