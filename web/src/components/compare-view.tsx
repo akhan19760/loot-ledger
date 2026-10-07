@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react"
+import { m, useReducedMotion } from "motion/react"
 import { cn } from "cn"
 import { listingMatches, type Insights, type Listing, type Version } from "@ugs/shared"
 import { Eyebrow } from "@/components/ui/eyebrow"
@@ -49,14 +49,14 @@ export function CompareView({ versions, insights, stores, filters }: Props) {
         </div>
         <ul className="grid gap-2">
           {ordered.map((v, i) => (
-            <motion.li
+            <m.li
               key={v.key}
               initial={reduced ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: ease.wg, delay: Math.min(0.1 + i * 0.06, 1) }}
             >
               <VersionPanel version={v} stores={stores} scale={scale} filters={filters} dimmed={!matches(v)} nameOf={nameOf} />
-            </motion.li>
+            </m.li>
           ))}
         </ul>
       </section>

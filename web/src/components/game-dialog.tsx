@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react"
 import { useQuery, type UseQueryResult } from "@tanstack/react-query"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, m, useReducedMotion } from "motion/react"
 import { cn } from "cn"
 import { byStockThenPrice, groupVersions, listingMatches, versionInsights, type Game, type Insights, type Listing, type Version } from "@ugs/shared"
 import { CompareView } from "@/components/compare-view"
@@ -179,7 +179,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
 
       <AnimatePresence>
         {flight && (flight.dir === "close" || box) && (
-          <motion.div
+          <m.div
             key={flight.dir}
             aria-hidden
             initial={flight.dir === "open" ? flight.card : flight.dialog}
@@ -190,7 +190,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
             className="pointer-events-none fixed z-[60] overflow-hidden rounded-2xl border border-border bg-popover shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)]"
           >
             {flight.image && (
-              <motion.img
+              <m.img
                 src={flight.image}
                 alt=""
                 initial={{ opacity: flight.dir === "open" ? 1 : 0 }}
@@ -199,7 +199,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
                 className="size-full object-cover"
               />
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>
@@ -241,7 +241,7 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
   ) : (
     <>
       <DialogHeader className="flex-row items-start gap-4 pr-10 text-left sm:gap-6">
-        <motion.div
+        <m.div
           initial={{ clipPath: "inset(100% 0% 0% 0%)", rotate: -8, scale: 1.1 }}
           animate={{ clipPath: "inset(0% 0% 0% 0%)", rotate: -3, scale: 1 }}
           whileHover={{ rotate: 0, scale: 1.05, transition: { duration: 0.5, ease: ease.wg } }}
@@ -249,7 +249,7 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
           className="aspect-[4/5] w-20 shrink-0 overflow-hidden rounded-sm bg-surface shadow-[0_20px_40px_-12px_rgb(0_0_0/0.8)] sm:w-28"
         >
           <CoverArt src={game.data.image} title={game.data.title} />
-        </motion.div>
+        </m.div>
         <div className="grid min-w-0 gap-3">
           <Eyebrow className="text-primary-ink">{game.data.genres.join(" · ") || "Genre unknown"}</Eyebrow>
           <DialogTitle>
@@ -312,14 +312,14 @@ function OfferList({
   return (
     <ul className="grid gap-2">
       {offers.map((l, i) => (
-        <motion.li
+        <m.li
           key={i}
           initial={reduced ? false : { opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: ease.wg, delay: Math.min(startDelay + i * 0.05, 1.2) }}
         >
           <OfferRow listing={l} storeName={storeNames.get(l.store) ?? l.store} cheapest={l.in_stock && l.price === cheapest} badge={badged.has(l)} />
-        </motion.li>
+        </m.li>
       ))}
     </ul>
   )

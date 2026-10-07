@@ -1,4 +1,4 @@
-import { motion, useTransform, type MotionValue } from "motion/react"
+import { m, useTransform, type MotionValue } from "motion/react"
 import { cn } from "cn"
 import { ease } from "@/lib/motion"
 
@@ -27,7 +27,7 @@ export function CoverWall({
   const filter = useTransform(progress, [0, 100], ["saturate(0.1) brightness(0.45)", "saturate(1) brightness(0.85)"])
 
   return (
-    <motion.div
+    <m.div
       aria-hidden
       className="absolute top-1/2 left-1/2 flex h-[140vh] w-[max(120vw,65vh)] -translate-x-1/2 -translate-y-1/2 -rotate-[10deg] gap-2"
       style={{ filter, x: shiftX, y: shiftY }}
@@ -54,7 +54,7 @@ export function CoverWall({
           </div>
         </div>
       ))}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -62,7 +62,7 @@ function Tile({ src, delay }: { src: string | null; delay: number }) {
   return (
     <div className="stripes relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface">
       {src && (
-        <motion.img
+        <m.img
           src={src}
           alt=""
           referrerPolicy="no-referrer"

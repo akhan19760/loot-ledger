@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
+import { m, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { ArrowUp, ArrowUpRight } from "lucide-react"
 import { useRef } from "react"
 import type { Store } from "@ugs/shared"
@@ -50,13 +50,13 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
           </Button>
         </div>
 
-        <motion.p
+        <m.p
           aria-hidden
-          style={reduced ? undefined : { y, scale }}
-          className="origin-bottom text-center font-display text-[clamp(4rem,19vw,21rem)] leading-[0.8] text-black uppercase"
+          style={reduced ? undefined : { y, scale, willChange: "transform" }}
+          className="origin-bottom text-center font-display text-[clamp(4rem,19vw,21rem)] leading-[0.8] text-white uppercase"
         >
           <SplitText text="LootLedger" by="letter" stagger={0.04} />
-        </motion.p>
+        </m.p>
 
         <div className="flex flex-wrap items-end justify-between gap-4 text-sm text-black/70">
           <p className="max-w-xl">

@@ -1,4 +1,8 @@
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue } from "motion/react"
+import { AnimatePresence, animate, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react"
+// The full <motion.*> elements (the rest of the app uses the slim <m.*> ones): this screen
+// is a lazy chunk of its own, so their features don't add to the page's first load.
+// Not `motion` from "motion/react", which would pull them into that first load.
+import * as motion from "motion/react-client"
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import { cn } from "cn"
 import type { FiltersResponse } from "@ugs/shared"
@@ -24,24 +28,6 @@ const ART_WAIT_MS = 1200 // once the cover list is known; then go on without the
 const GIVE_UP_MS = 3500
 const AUTO_CONTINUE_MS = 700
 const TIP_MS = 3600
-
-// Shown at most once a week per browser, and never to someone who followed a link to
-// something in particular (a shared game, the deals, a wishlist): they came for that.
-const SEEN_KEY = "lootledger-intro-seen"
-const SHOW_EVERY_MS = 7 * 24 * 60 * 60 * 1000
-
-function introWanted(): boolean {
-  const params = new URLSearchParams(location.search)
-  if (location.pathname.replace(/\/+$/, "") !== "" || params.has("game") || params.has("list")) return false
-  try {
-    const seen = Number(localStorage.getItem(SEEN_KEY))
-    if (seen && Date.now() - seen < SHOW_EVERY_MS) return false
-    localStorage.setItem(SEEN_KEY, String(Date.now()))
-  } catch {
-    // Storage blocked: show it, it's short.
-  }
-  return true
-}
 
 const FONTS = ["1em Anton", "1em 'Urbanist Variable'"]
 
@@ -87,32 +73,18 @@ export interface LoadingScreenProps {
   coversFailed: boolean
   /** Images the page shows first (the hero's covers), loaded alongside. */
   warm: readonly string[]
-  /** Called as the screen starts to wipe away (or at once with reduced motion). */
-  onDone: () => void
+  /** Called when the reader continues (or skips); the screen then wipes away. */
+  onContinue: () => void
 }
 
 /**
  * A video-game loading screen, shown on a first visit to the home page until the library
  * is ready: a boot log of what's really loading, a rolling percentage, a segmented bar,
  * tips, and "press any key". Continues by itself shortly after; a tap, a click or Esc
- * skips it at any time.
+ * skips it at any time. Loaded on demand by <LoadingScreen> (intro.tsx), which decides
+ * whether to show it at all.
  */
-export function LoadingScreen(props: LoadingScreenProps) {
-  const reduced = useReducedMotion()
-  const [enabled] = useState(() => !reduced && introWanted())
-  const [leaving, setLeaving] = useState(false)
-  const visible = enabled && !leaving
-  const { onDone } = props
-
-  // Start the page's entrance as the screen begins to wipe away.
-  useEffect(() => {
-    if (!visible) onDone()
-  }, [visible, onDone])
-
-  return <AnimatePresence>{visible && <Screen key="loading" {...props} onContinue={() => setLeaving(true)} />}</AnimatePresence>
-}
-
-function Screen({ meta, metaFailed, matches, matchesFailed, covers, coversFailed, warm, onContinue }: LoadingScreenProps & { onContinue: () => void }) {
+export function Screen({ meta, metaFailed, matches, matchesFailed, covers, coversFailed, warm, onContinue }: LoadingScreenProps) {
   const root = useRef<HTMLDivElement>(null)
   const touch = useMemo(() => matchMedia("(hover: none)").matches, [])
 

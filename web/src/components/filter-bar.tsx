@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, m } from "motion/react"
 import { X } from "lucide-react"
 import { useEffect, useEffectEvent, useId, useState } from "react"
 import type { FiltersResponse, SortOrder } from "@ugs/shared"
@@ -94,7 +94,7 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
           )}
           <AnimatePresence>
             {changed && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
@@ -103,7 +103,7 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
                 <Button variant="secondary" onClick={onReset}>
                   <RollText>Reset</RollText>
                 </Button>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -143,7 +143,7 @@ function SearchField({ committed, onCommit }: { committed: string; onCommit: (va
           <span className={focused ? "text-foreground transition-colors" : "text-muted-foreground transition-colors"}>Search games, e.g.</span>
           <span className="relative inline-flex h-[1.1em] min-w-0 overflow-hidden">
             <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
+              <m.span
                 key={example}
                 initial={{ y: "105%" }}
                 animate={{ y: "0%" }}
@@ -152,7 +152,7 @@ function SearchField({ committed, onCommit }: { committed: string; onCommit: (va
                 className="text-neon"
               >
                 {EXAMPLES[example]}
-              </motion.span>
+              </m.span>
             </AnimatePresence>
           </span>
         </span>
@@ -160,7 +160,7 @@ function SearchField({ committed, onCommit }: { committed: string; onCommit: (va
 
       <AnimatePresence>
         {q.value && (
-          <motion.span
+          <m.span
             className="absolute right-0 bottom-2.5"
             initial={{ opacity: 0, scale: 0.4, rotate: -90 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -170,7 +170,7 @@ function SearchField({ committed, onCommit }: { committed: string; onCommit: (va
             <Button variant="round" size="icon-sm" aria-label="Clear search" onClick={() => q.set("")}>
               <X />
             </Button>
-          </motion.span>
+          </m.span>
         )}
       </AnimatePresence>
     </div>
@@ -209,7 +209,7 @@ export function ChipGroup({
               className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
             >
               {on && (
-                <motion.span
+                <m.span
                   layoutId={layoutId}
                   transition={pillSpring}
                   className="absolute inset-0 -z-10 rounded-2xl chip-on"
@@ -234,7 +234,7 @@ function StockToggle({ pressed, onChange }: { pressed: boolean; onChange: (press
     >
       <AnimatePresence initial={false}>
         {pressed && (
-          <motion.span
+          <m.span
             key="pill"
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -245,7 +245,7 @@ function StockToggle({ pressed, onChange }: { pressed: boolean; onChange: (press
         )}
       </AnimatePresence>
       <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
-        <motion.path
+        <m.path
           d="M3 8.5l3.2 3L13 4.5"
           fill="none"
           stroke="currentColor"

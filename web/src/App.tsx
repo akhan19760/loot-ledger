@@ -1,35 +1,49 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { AnimatePresence, motion } from "motion/react"
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ArrowDown } from "lucide-react"
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import type { GamesResponse } from "@ugs/shared"
 import { FilterBar } from "@/components/filter-bar"
-import { GameCard } from "@/components/game-card"
-import { GameDialog } from "@/components/game-dialog"
 import { GameGrid } from "@/components/game-grid"
 import { Hero } from "@/components/hero"
-import { LoadingScreen } from "@/components/loading-screen"
+import { LoadingScreen } from "@/components/intro"
 import { Grain } from "@/components/motion/grain"
 import { Reveal } from "@/components/motion/reveal"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
 import { SiteFooter } from "@/components/site-footer"
-import { CartDialog } from "@/components/cart-dialog"
-import { DealsPage } from "@/components/deals-page"
 import { BackupButtons, ShelfSummary } from "@/components/shelf-summary"
 import { SiteHeader } from "@/components/site-header"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
+import { VirtualGameGrid } from "@/components/virtual-game-grid"
 import { DEFAULT_FILTERS, useLibraryUrl, type Filters, type LibraryList, type Page } from "@/hooks/use-library-url"
 import { addToCart, useCart } from "@/hooks/use-cart"
 import { idsOn, useShelf } from "@/hooks/use-shelf"
 import { api } from "@/lib/api"
 import { thumb } from "@/lib/images"
-import { ease } from "@/lib/motion"
 
 const PAGE_SIZE = 60
+
+// Code the first screen doesn't need is loaded when it's asked for, and fetched ahead
+// once the page is idle so it's usually there by then.
+const loadGameDialog = () => import("@/components/game-dialog")
+const loadCartDialog = () => import("@/components/cart-dialog")
+const loadDealsPage = () => import("@/components/deals-page")
+const GameDialog = lazy(() => loadGameDialog().then((m) => ({ default: m.GameDialog })))
+const CartDialog = lazy(() => loadCartDialog().then((m) => ({ default: m.CartDialog })))
+const DealsPage = lazy(() => loadDealsPage().then((m) => ({ default: m.DealsPage })))
+
+function prefetchWhenIdle() {
+  const prefetch = () => void Promise.all([loadGameDialog(), loadCartDialog(), loadDealsPage()]).catch(() => undefined)
+  if (!("requestIdleCallback" in window)) {
+    const t = setTimeout(prefetch, 1500)
+    return () => clearTimeout(t)
+  }
+  const id = requestIdleCallback(prefetch, { timeout: 4000 })
+  return () => cancelIdleCallback(id)
+}
 
 const withArt = (r: GamesResponse) => r.items.filter((g) => g.image)
 
@@ -81,6 +95,12 @@ export default function App() {
   }, [page, scrollTo])
   const [introDone, setIntroDone] = useState(false)
   const onIntroDone = useCallback(() => setIntroDone(true), [])
+  useEffect(() => (introDone ? prefetchWhenIdle() : undefined), [introDone])
+  // The dialogs load on first use and then stay mounted, so they can animate closed.
+  const [dialogUsed, setDialogUsed] = useState(gameId !== null)
+  if (gameId && !dialogUsed) setDialogUsed(true)
+  const [cartUsed, setCartUsed] = useState(false)
+  if (cartOpen && !cartUsed) setCartUsed(true)
 
   const meta = useQuery({ queryKey: ["filters"], queryFn: api.filters, refetchInterval: 5 * 60_000 })
   // Art for the hero and the loading screen's wall: games sold by the most stores
@@ -108,7 +128,7 @@ export default function App() {
   })
 
   const storeNames = useMemo(() => new Map(meta.data?.stores.map((s) => [s.id, s.name])), [meta.data])
-  const items = games.data?.pages.flatMap((p) => p.items) ?? []
+  const items = useMemo(() => games.data?.pages.flatMap((p) => p.items) ?? [], [games.data])
   const total = games.data?.pages[0]?.total
 
   return (
@@ -138,7 +158,9 @@ export default function App() {
       {/* inert until the loading screen has gone, so focus can't wander behind it */}
       <main inert={!introDone} className="grid grid-cols-1 gap-2 px-2 pt-[calc(var(--height-bar-mobile)+1rem)] pb-2 md:pt-[calc(var(--height-bar)+1rem)]">
         {page === "deals" ? (
-          <DealsPage filters={filters} onFiltersChange={setFilters} storeNames={storeNames} onOpenGame={setGameId} onBack={() => navigate("library", "library")} />
+          <Suspense fallback={<div className="min-h-svh" />}>
+            <DealsPage filters={filters} onFiltersChange={setFilters} storeNames={storeNames} onOpenGame={setGameId} onBack={() => navigate("library", "library")} />
+          </Suspense>
         ) : (
           <>
             <Hero
@@ -227,21 +249,12 @@ export default function App() {
                 />
               ) : (
                 <>
-                  <GameGrid className={games.isPlaceholderData ? "opacity-50 blur-[2px] transition-[opacity,filter] duration-300" : "transition-[opacity,filter] duration-300"}>
-                    {/* Cards that stay glide to their new place; the rest fade out and in. */}
-                    <AnimatePresence mode="popLayout">
-                      {items.map((g, i) => (
-                        <motion.div
-                          key={g.id}
-                          layout="position"
-                          exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.25 } }}
-                          transition={{ layout: { duration: 0.7, ease: ease.wg } }}
-                        >
-                          <GameCard game={g} index={i} storeName={storeNames.get(g.best.store) ?? g.best.store} onOpen={() => setGameId(g.id)} />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </GameGrid>
+                  <VirtualGameGrid
+                    games={items}
+                    storeNames={storeNames}
+                    onOpen={setGameId}
+                    className={games.isPlaceholderData ? "opacity-50 blur-[2px] transition-[opacity,filter] duration-300" : "transition-[opacity,filter] duration-300"}
+                  />
                   {games.hasNextPage && (
                     <div className="flex justify-center py-10">
                       <Button size="lg" onClick={() => games.fetchNextPage()} disabled={games.isFetchingNextPage}>
@@ -259,8 +272,10 @@ export default function App() {
         {meta.data && <SiteFooter stores={meta.data.stores} />}
       </main>
 
-      <GameDialog gameId={gameId} filters={filters} storeNames={storeNames} onClose={() => setGameId(null)} onOpenCart={openCart} />
-      <CartDialog open={cartOpen} onOpenChange={setCartOpen} stores={meta.data?.stores} wishlist={wishlist} defaultWant={cartWant} />
+      <Suspense fallback={null}>
+        {dialogUsed && <GameDialog gameId={gameId} filters={filters} storeNames={storeNames} onClose={() => setGameId(null)} onOpenCart={openCart} />}
+        {cartUsed && <CartDialog open={cartOpen} onOpenChange={setCartOpen} stores={meta.data?.stores} wishlist={wishlist} defaultWant={cartWant} />}
+      </Suspense>
     </>
   )
 }

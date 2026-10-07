@@ -1,4 +1,4 @@
-import { motion, useTransform, type MotionValue } from "motion/react"
+import { m, useTransform, type MotionValue } from "motion/react"
 import { cn } from "cn"
 
 const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0] // trailing 0 so 9 → 0 rolls on, not back
@@ -33,14 +33,14 @@ function Wheel({ value, place }: { value: MotionValue<number>; place: number }) 
   const opacity = useTransform(value, [place - ROLL, place], [place === 1 ? 1 : 0.14, 1])
 
   return (
-    <motion.span className="relative inline-block h-[1em] overflow-hidden" style={{ opacity }}>
-      <motion.span className="flex flex-col" style={{ y }}>
+    <m.span className="relative inline-block h-[1em] overflow-hidden" style={{ opacity }}>
+      <m.span className="flex flex-col" style={{ y }}>
         {DIGITS.map((d, i) => (
           <span key={i} className="block h-[1em]">
             {d}
           </span>
         ))}
-      </motion.span>
-    </motion.span>
+      </m.span>
+    </m.span>
   )
 }

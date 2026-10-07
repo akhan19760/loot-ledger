@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, m } from "motion/react"
 import { Download, ShoppingBag, Upload } from "lucide-react"
 import type { GamesResponse } from "@ugs/shared"
 import { CountUp } from "@/components/motion/count-up"
@@ -128,7 +128,7 @@ export function BackupButtons() {
       </div>
       <AnimatePresence>
         {note && (
-          <motion.p
+          <m.p
             key={note}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -138,7 +138,7 @@ export function BackupButtons() {
             className="text-xs text-muted-foreground"
           >
             {note}
-          </motion.p>
+          </m.p>
         )}
       </AnimatePresence>
       <p className="text-xs text-muted-foreground">Your lists are saved in this browser only.</p>

@@ -1,4 +1,4 @@
-import { motion, useInView, useReducedMotion } from "motion/react"
+import { m, useInView, useReducedMotion } from "motion/react"
 import { useRef } from "react"
 import { cn } from "cn"
 import { ease } from "@/lib/motion"
@@ -42,15 +42,16 @@ export function SplitText({
           <span key={i}>{part}</span>
         ) : (
           <span key={i} aria-hidden className="inline-block overflow-hidden pb-[0.08em] align-bottom">
-            <motion.span
-              className={cn("inline-block will-change-transform", partClassName?.(part, i))}
+            {/* `transform` rather than `y`, so the browser runs it off the main thread */}
+            <m.span
+              className={cn("inline-block", partClassName?.(part, i))}
               style={partStyle?.(part, i)}
-              initial={reduced ? false : { y: "102%" }}
-              animate={show ? { y: "0%" } : undefined}
+              initial={reduced ? false : { transform: "translateY(102%)" }}
+              animate={show ? { transform: "translateY(0%)" } : undefined}
               transition={{ duration: 0.8, ease: ease.inkSlide, delay: delay + i * stagger }}
             >
               {part}
-            </motion.span>
+            </m.span>
           </span>
         ),
       )}

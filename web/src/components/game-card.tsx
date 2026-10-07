@@ -1,4 +1,5 @@
-import { motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
+import { m, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
+import { memo, useState } from "react"
 import { ArrowUpRight } from "lucide-react"
 import type { GameSummary } from "@ugs/shared"
 import { CoverArt } from "@/components/cover-art"
@@ -14,21 +15,28 @@ const CARD_SIZES = "(min-width: 2200px) 14vw, (min-width: 1536px) 17vw, (min-wid
 interface Props {
   game: GameSummary
   storeName: string
-  /** Position in the grid, for the stagger when cards scroll in. */
+  /** Position in the grid (or column in a row), for the stagger when cards scroll in. */
   index: number
-  onOpen: () => void
+  onOpen: (id: string) => void
   /** On the deals page: a neon sticker ("−60%") and a note that replaces the usual badges. */
   deal?: { sticker: string; note?: string }
+  /** False skips the scroll-in, e.g. for a card the virtualized grid brings back into the DOM. */
+  appear?: boolean
+  /** Called once the card has scrolled into view. */
+  onAppear?: (id: string) => void
 }
 
 /**
  * INK image card: art fills the card; eyebrow, uppercase title and price sit over the
  * bottom. Tilts toward the pointer in 3D (INK tilted cards) with a neon glare, glows
  * neon on hover (WG drop-shadow), and wipes in with INK's clip-path reveal.
+ * Memoized: the virtualized grid re-renders as rows come and go while scrolling.
  */
-export function GameCard({ game, storeName, index, onOpen, deal }: Props) {
+export const GameCard = memo(function GameCard({ game, storeName, index, onOpen, deal, appear = true, onAppear }: Props) {
   const { best } = game
   const reduced = useReducedMotion()
+  // Fixed at mount: dropping whileInView later would send the card back to "hidden".
+  const [scrollsIn] = useState(appear)
 
   // Pointer position over the card, 0..1 (centre = 0.5).
   const px = useMotionValue(0.5)
@@ -53,26 +61,28 @@ export function GameCard({ game, storeName, index, onOpen, deal }: Props) {
   const delay = (index % 6) * 0.06
   // The wrapper watches the viewport and drives the image through variants: the
   // image itself starts fully clipped, and Chrome never reports a fully clipped
-  // element as in view.
+  // element as in view. `transform` rather than `y`/`scale`, so the browser runs these
+  // off the main thread and they stay smooth while the page scrolls.
   const card = {
-    hidden: { opacity: 0, y: 60 },
-    shown: { opacity: 1, y: 0, transition: { duration: 0.9, ease: ease.wg, delay } },
+    hidden: { opacity: 0, transform: "translateY(60px)" },
+    shown: { opacity: 1, transform: "translateY(0px)", transition: { duration: 0.9, ease: ease.wg, delay } },
   }
   const art = {
-    hidden: { clipPath: "inset(100% 0% 0% 0%)", scale: 1.25 },
-    shown: { clipPath: "inset(0% 0% 0% 0%)", scale: 1, transition: { duration: 1.2, ease: ease.wg, delay: delay + 0.1 } },
+    hidden: { clipPath: "inset(100% 0% 0% 0%)", transform: "scale(1.25)" },
+    shown: { clipPath: "inset(0% 0% 0% 0%)", transform: "scale(1)", transition: { duration: 1.2, ease: ease.wg, delay: delay + 0.1 } },
   }
 
   return (
-    <motion.div
+    <m.div
       variants={card}
-      initial={reduced ? false : "hidden"}
-      whileInView="shown"
+      initial={reduced || !scrollsIn ? false : "hidden"}
+      whileInView={scrollsIn ? "shown" : undefined}
       viewport={{ once: true, margin: "0px 0px -6% 0px" }}
+      onViewportEnter={onAppear && (() => onAppear(game.id))}
       style={{ perspective: 1000 }}
     >
       {/* The tilting card holds the open button and, beside it, the shelf buttons (buttons can't nest). */}
-      <motion.div
+      <m.div
         // The game dialog opens out of (and closes back into) the element with this attribute.
         data-game-card={game.id}
         onPointerMove={onPointerMove}
@@ -80,22 +90,24 @@ export function GameCard({ game, storeName, index, onOpen, deal }: Props) {
         style={reduced ? undefined : { rotateX, rotateY }}
         className="dark group/card relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-surface text-foreground shadow-[0_0_0_0_rgb(212_251_8/0)] transition-shadow duration-500 hover:shadow-[0_0_40px_-8px_rgb(212_251_8/0.55)]"
       >
-        <motion.button
+        <m.button
           type="button"
           onClick={() => {
             onPointerLeave() // level the tilt so the dialog grows from the card's resting box
-            onOpen()
+            onOpen(game.id)
           }}
           whileTap={{ scale: 0.97 }}
           className="absolute inset-0 block rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
         >
           {/* INK clip-path reveal, then a slow zoom on hover */}
-          <motion.div className="absolute inset-0" variants={art}>
+          <m.div className="absolute inset-0" variants={art}>
             <CoverArt src={game.image} title={game.title} sizes={CARD_SIZES} className="transition-transform duration-[1.2s] ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-110" />
-          </motion.div>
+          </m.div>
   
-          <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black via-black/85 to-transparent transition-[height] duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:h-full sm:h-3/4" />
-          <motion.div aria-hidden style={{ backgroundImage: glare }} className="pointer-events-none absolute inset-0 opacity-0 mix-blend-screen transition-opacity duration-300 group-hover/card:opacity-100" />
+          {/* Scaled rather than resized, and blended only while hovered: neither costs a
+              thing on the cards the page scrolls past. */}
+          <div className="absolute inset-0 origin-bottom bg-gradient-to-t from-black via-black/85 to-transparent transition-transform duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-y-100 sm:scale-y-75" />
+          <m.div aria-hidden style={{ backgroundImage: glare }} className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100 group-hover/card:mix-blend-screen" />
           <span className="pointer-events-none absolute inset-0 rounded-2xl border border-white/5 transition-colors duration-300 group-hover/card:border-primary" />
   
           {/* WG black circle with the arrow that spins in on hover */}
@@ -140,9 +152,9 @@ export function GameCard({ game, storeName, index, onOpen, deal }: Props) {
               </div>
             </div>
           </div>
-        </motion.button>
+        </m.button>
         <ShelfCardButtons game={game} className="absolute top-3 left-3" />
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
-}
+})
