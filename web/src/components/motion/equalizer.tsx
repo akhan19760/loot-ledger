@@ -2,9 +2,10 @@ import { cn } from "cn"
 
 /**
  * WG's header audio control: a round black badge with small neon bars that bounce.
- * Here it shows the API is live; the bars rest when it's offline.
+ * The bars are neon while the API is live (grey when it's offline) and bounce while
+ * `playing` (in the header: while sound effects are on; by default, while live).
  */
-export function Equalizer({ live, className }: { live: boolean; className?: string }) {
+export function Equalizer({ live, playing = live, className }: { live: boolean; playing?: boolean; className?: string }) {
   return (
     <span
       aria-hidden
@@ -15,7 +16,7 @@ export function Equalizer({ live, className }: { live: boolean; className?: stri
           <span
             key={i}
             className={cn("equalizer-bar w-[2px] rounded-full", live ? "bg-primary" : "bg-white/40")}
-            style={{ height: `${h * 100}%`, animationDelay: `${i * -0.23}s`, animationPlayState: live ? "running" : "paused" }}
+            style={{ height: `${h * 100}%`, animationDelay: `${i * -0.23}s`, animationPlayState: playing ? "running" : "paused" }}
           />
         ))}
       </span>

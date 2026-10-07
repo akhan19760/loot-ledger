@@ -116,7 +116,7 @@ Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkro
 | Whole page | Film grain, jittering | WG `#noise` overlay |
 | Whole page | Inertial smooth scrolling | Lenis (the one addition not taken from the references) |
 | Header | Slides in after the loading screen, hides on scroll down, returns on scroll up, turns more opaque once scrolled; stats count up | WG floating header + WG live FPS counter |
-| Header | Round black badge with bouncing neon bars (API live) | WG audio control |
+| Header | Round black badge with neon bars (grey when the API is offline); it's the sound switch, and the bars bounce while sound is on, with "● Sound" / "Muted" beside it on wide screens | WG audio control ("● AUDIO") |
 | Hero | Wordmark letters slide up from a mask; "Ledger" in the neon gradient | INK split-text + WG gradient words |
 | Hero | Real game covers, tilted, around the headline; clip-path reveal; drift with scroll and pointer; straighten on hover | INK tilted art around its headline + INK clip-path |
 | Hero | Neon light that follows the pointer | WG `#star-glow-element` (blurred neon) |
@@ -150,3 +150,17 @@ A video-game loading screen on a first visit to the home page: shown at most onc
 | Tips | A random tip, then the next every 3.6 s or on "Next tip", sliding up | INK slide |
 | Prompt | The favicon's LL tile flips like a coin inside a spinning ring. Then "Press any key" (or "Tap to continue"), with the ring counting down 0.7 s before it continues by itself. Esc, a tap or a click skips at any time | WG spin; prompt *new* |
 | Exit | Wipes up over 1.2 s with the hazard stripes trailing; the HUD sinks as it goes and the page's entrance starts underneath | WG `#loader` wipe + WG hazard band |
+
+## Sound (`src/lib/sfx.ts`, `src/hooks/use-sound-effects.ts`)
+
+Short effects, synthesized with the Web Audio API (no audio files): a few oscillators or a burst of filtered noise each. On by default, switched by the header's equalizer badge and remembered per browser. Browsers allow audio only after a click, tap or key, so the first sound is the first click. The effects come from listeners on the document, not from each component.
+
+| When | Sound |
+|---|---|
+| Hovering something clickable (mouse only; not while the page scrolls under the pointer) | Faint high tick |
+| Clicking a button or link | Soft falling blip over a tiny noise click |
+| Switching something on: a chip, a select option, the wishlist, In stock only | Two notes up |
+| Switching something off | Two notes down |
+| A dialog opening / closing | Rising / falling whoosh |
+| Scrolling with a mouse or trackpad (not touch) | A wheel-like tick every 140px, brighter and louder the faster the scroll |
+| Turning sound back on | Two notes up, to confirm |
