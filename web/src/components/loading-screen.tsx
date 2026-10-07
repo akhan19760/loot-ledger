@@ -18,8 +18,8 @@ import { formatCount, timeAgo } from "@/lib/format"
 import { thumb } from "@/lib/images"
 import { ease, pointerSpring } from "@/lib/motion"
 
-// Nothing on this screen is faked: each boot-log line resolves only once that part of
-// the page has really loaded. The lines are paced so that even a fast load reads as a
+// Nothing on this screen is faked: each loading step resolves only once that part of
+// the page has really loaded. The steps are paced so that even a fast load reads as a
 // sequence, and the screen never holds the page longer than GIVE_UP_MS. Kept short:
 // most visitors arrive on a phone from a link and want a price, not a show.
 const FIRST_LINE_MS = 250
@@ -52,8 +52,6 @@ interface Step {
   /** Share of the bar, out of 100. */
   weight: number
   result: { tone: Tone; text: string } | null
-  /** Shown while the step runs, e.g. "12/30". */
-  live?: string
   /** 0–1 done while running, when known. */
   fraction?: number
 }
@@ -79,7 +77,7 @@ export interface LoadingScreenProps {
 
 /**
  * A video-game loading screen, shown on a first visit to the home page until the library
- * is ready: a boot log of what's really loading, a rolling percentage, a segmented bar,
+ * is ready: a rolling percentage and a segmented bar that follow what's really loading,
  * tips, and "press any key". Continues by itself shortly after; a tap, a click or Esc
  * skips it at any time. Loaded on demand by <LoadingScreen> (intro.tsx), which decides
  * whether to show it at all.
@@ -143,13 +141,12 @@ export function Screen({ meta, metaFailed, matches, matchesFailed, covers, cover
       label: "Cover art",
       busy: "Loading cover art",
       weight: 25,
-      live: art.total ? artCount : undefined,
       fraction: art.total ? art.settled / art.total : undefined,
       result: coversFailed ? fail("Skipped") : coversKnown && (art.settled === art.total || artDeadline) ? ok(artCount) : null,
     },
   ].map((s): Step => (s.result || !gaveUp ? s : { ...s, result: { tone: "wait", text: "Still loading" } }))
 
-  // ---- pacing: reveal one finished line at a time
+  // ---- pacing: finish one step at a time
   const [shown, setShown] = useState(0)
   const nextFinished = steps[shown]?.result != null
   useEffect(() => {
@@ -248,17 +245,14 @@ export function Screen({ meta, metaFailed, matches, matchesFailed, covers, cover
         <motion.div className="relative flex h-full flex-col" exit={{ y: "20vh" }} transition={{ duration: 1.2, ease: ease.wgWipe }}>
           <TopBar meta={meta} metaFailed={metaFailed} />
 
-          <div className="mt-auto grid grid-cols-1 gap-5 p-4 compact:gap-3 md:gap-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)] lg:items-end">
+          <div className="mt-auto grid grid-cols-1 gap-5 p-4 compact:gap-3 md:gap-6 md:p-8">
             <Rise delay={0.15}>
               <Readout progress={progress} ready={ready} />
             </Rise>
             <Rise delay={0.25}>
-              <BootLog steps={steps} shown={shown} stores={meta?.stores.map((s) => s.name)} />
-            </Rise>
-            <Rise delay={0.35} className="lg:col-span-2">
               <Bar label={ready ? "Loot secured" : (current?.busy ?? "")} ready={ready} progress={progress} />
             </Rise>
-            <Rise delay={0.45} className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5 lg:col-span-2">
+            <Rise delay={0.35} className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
               <Tips />
               <Prompt ready={ready} countdown={countdown} touch={touch} />
             </Rise>
@@ -391,82 +385,6 @@ function Readout({ progress, ready }: { progress: MotionValue<number>; ready: bo
         <span className="mt-[0.06em] ml-[0.04em] text-[0.3em] leading-none">%</span>
       </motion.div>
     </div>
-  )
-}
-
-function BootLog({ steps, shown, stores }: { steps: Step[]; shown: number; stores: string[] | undefined }) {
-  return (
-    <section aria-label="Boot log" className="rounded-2xl border border-white/10 bg-neutral-900/60 p-4 backdrop-blur-[37.5px] compact:p-3 md:p-5">
-      <div className="mb-2 flex items-center justify-between gap-4">
-        <Eyebrow className="text-primary">Boot log</Eyebrow>
-        <span className="text-xs font-semibold text-muted-foreground tabular-nums">
-          {pad(shown)}/{pad(steps.length)}
-        </span>
-      </div>
-      <ol className="grid text-[11px] font-semibold tracking-wider uppercase md:text-xs">
-        {steps.map((s, i) => {
-          const state = i < shown ? "done" : i === shown ? "running" : "queued"
-          return (
-            <li
-              key={s.label}
-              className={cn(
-                "-mx-2 grid grid-cols-[2ch_auto_minmax(1rem,1fr)_auto] items-center gap-x-3 rounded-lg px-2 py-1.5 transition-colors compact:py-1 duration-300",
-                state === "running" && "sweep bg-white/5",
-              )}
-            >
-              <span className="text-white/30 tabular-nums">{pad(i + 1)}</span>
-              <span className={cn("transition-colors duration-300", state === "queued" ? "text-white/35" : "text-white")}>{s.label}</span>
-              <span aria-hidden className="border-t border-dashed border-white/15" />
-              <Swap id={state}>
-                {state === "done" ? (
-                  <span className={s.result!.tone === "ok" ? "text-primary" : s.result!.tone === "fail" ? "text-destructive" : "text-muted-foreground"}>
-                    {s.result!.text}
-                  </span>
-                ) : state === "running" ? (
-                  <>
-                    <span className="text-muted-foreground tabular-nums">{s.live}</span>
-                    <LiveDot />
-                  </>
-                ) : (
-                  <span className="text-white/25">Queued</span>
-                )}
-              </Swap>
-              {s.label === "Stores" && stores && <StoreChips names={stores} lit={i < shown} />}
-            </li>
-          )
-        })}
-      </ol>
-    </section>
-  )
-}
-
-/** The stores check in one by one: WG chips turning neon. */
-function StoreChips({ names, lit }: { names: string[]; lit: boolean }) {
-  return (
-    <motion.div
-      className="col-span-4 overflow-hidden compact:hidden"
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: "auto", opacity: 1 }}
-      transition={{ duration: 0.5, ease: ease.wg }}
-    >
-      <div className="flex flex-wrap gap-1 pt-2">
-        {names.map((name, i) => (
-          <motion.span
-            key={name}
-            className="rounded-2xl px-2 py-1 text-[10px] leading-none normal-case"
-            initial={false}
-            animate={
-              lit
-                ? { backgroundColor: "#d4fb08", color: "#253300", scale: [1, 1.12, 1] }
-                : { backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", scale: 1 }
-            }
-            transition={{ duration: 0.35, delay: lit ? i * 0.07 : 0 }}
-          >
-            {name}
-          </motion.span>
-        ))}
-      </div>
-    </motion.div>
   )
 }
 
