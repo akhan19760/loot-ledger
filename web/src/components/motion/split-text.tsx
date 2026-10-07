@@ -16,6 +16,7 @@ export function SplitText({
   partClassName,
   partStyle,
   onMount = false,
+  still = false,
 }: {
   text: string
   by?: "word" | "letter"
@@ -28,6 +29,8 @@ export function SplitText({
   partStyle?: (part: string, index: number) => React.CSSProperties | undefined
   /** Play immediately (when true) instead of waiting for the element to enter the viewport. */
   onMount?: boolean
+  /** Show the parts in place at once, without the reveal. */
+  still?: boolean
 }) {
   const ref = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" })
@@ -46,7 +49,8 @@ export function SplitText({
             <m.span
               className={cn("inline-block", partClassName?.(part, i))}
               style={partStyle?.(part, i)}
-              initial={reduced ? false : { transform: "translateY(102%)" }}
+              data-part
+              initial={reduced || still ? false : { transform: "translateY(102%)" }}
               animate={show ? { transform: "translateY(0%)" } : undefined}
               transition={{ duration: 0.8, ease: ease.inkSlide, delay: delay + i * stagger }}
             >
