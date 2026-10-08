@@ -11,7 +11,8 @@
     "refresh:prices": "tsx --env-file-if-exists=.env scripts/refresh.ts prices",
     "refresh:genres": "tsx --env-file-if-exists=.env scripts/refresh.ts genres",
     "refresh:ci": "tsx --env-file-if-exists=.env scripts/ci-refresh.ts",
-    "build:netlify": "tsx --env-file-if-exists=.env scripts/build-netlify.ts",
+    "build:netlify": "tsx --env-file-if-exists=.env scripts/build-function.ts netlify",
+    "build:vercel": "tsx --env-file-if-exists=.env scripts/build-function.ts vercel",
     "parity": "tsx --env-file-if-exists=.env scripts/parity.ts",
     "check:delivery": "tsx --env-file-if-exists=.env scripts/check-delivery.ts",
     "test": "vitest run"

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { normalizeSearch, type GamesResponse, type Listing, type StatusResponse } from "@ugs/shared";
 import type { IndexedGame } from "./library.ts";
-import { createHandler, type Snapshot } from "./netlify.ts";
+import { netlify } from "./hosts/netlify.ts";
+import { createHandler, type Snapshot } from "./serverless.ts";
 
 const offer = (store: string, platform: string, price: number): Listing => ({
   store, raw_title: "", variant: "", platform, condition: "new", format: "disc", price, was: null, in_stock: true, url: "",
@@ -29,11 +30,11 @@ const snapshot: Snapshot = {
   },
 };
 
-const handler = createHandler(snapshot, { max: 3, timeWindow: "1 minute" });
+const handler = createHandler(snapshot, { max: 3, timeWindow: "1 minute" }, netlify);
 const get = (path: string, ip = "203.0.113.1") => handler(new Request(`https://lootledger.example${path}`), { ip });
 const cdn = (res: Response) => res.headers.get("netlify-cdn-cache-control");
 
-describe("Netlify function", () => {
+describe("the serverless API on Netlify", () => {
   it("serves the games API from the snapshot, cached on the CDN until the next deploy", async () => {
     const res = await get("/api/games?platform=PS5");
     expect(res.status).toBe(200);
