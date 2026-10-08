@@ -1,6 +1,6 @@
 // Classify a store listing: platform, condition, disc/digital and kind.
 // Port of build.py; the patterns are unchanged Python regexes (see pyregex.ts).
-import type { Condition, Kind } from "@ugs/shared";
+import type { Condition, Kind } from "@lootledger/shared";
 import { pyRegex } from "./pyregex.ts";
 
 const rx = (pattern: string) => pyRegex(pattern, "i");

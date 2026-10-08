@@ -6,7 +6,7 @@
  * requested job, then rebuilds the library so a deploy of new catalog rules
  * applies them to the current data.
  *
- * Usage:  pnpm --filter @ugs/server refresh:ci none|prices|genres|all
+ * Usage:  pnpm --filter @lootledger/server refresh:ci none|prices|genres|all
  */
 import { config } from "../src/config.ts";
 import { openDb } from "../src/db/client.ts";

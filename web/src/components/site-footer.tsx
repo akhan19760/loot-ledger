@@ -1,7 +1,7 @@
 import { m, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { ArrowUp, ArrowUpRight } from "lucide-react"
 import { useRef } from "react"
-import type { Store } from "@ugs/shared"
+import type { Store } from "@lootledger/shared"
 import { HazardBand } from "@/components/motion/hazard-band"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"

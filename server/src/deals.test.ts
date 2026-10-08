@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeSearch, type DealsQuery, type Game, type Listing } from "@ugs/shared";
+import { normalizeSearch, type DealsQuery, type Game, type Listing } from "@lootledger/shared";
 import { openDb } from "./db/client.ts";
 import { readLibrary, saveLibrary } from "./db/library.ts";
 import { stores } from "./db/schema.ts";

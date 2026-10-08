@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ArrowDown } from "lucide-react"
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
-import type { GamesResponse } from "@ugs/shared"
+import type { GamesResponse } from "@lootledger/shared"
 import { FilterBar } from "@/components/filter-bar"
 import { GameGrid } from "@/components/game-grid"
 import { Hero, type TitleEntrance } from "@/components/hero"

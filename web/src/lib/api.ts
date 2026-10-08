@@ -1,4 +1,4 @@
-import type { DealsQuery, DealsResponse, FiltersResponse, Game, GamesLookup, GamesQuery, GamesResponse } from "@ugs/shared"
+import type { DealsQuery, DealsResponse, FiltersResponse, Game, GamesLookup, GamesQuery, GamesResponse } from "@lootledger/shared"
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { ...init, headers: { Accept: "application/json", ...init?.headers } })

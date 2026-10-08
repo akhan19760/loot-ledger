@@ -8,6 +8,10 @@ dist/
 *.tsbuildinfo
 .env
 server/data/
-# Netlify: the generated API function, and the CLI's local state
+# The generated API function and each host's CLI state; built by the deploy workflow
 netlify/functions/
 .netlify/
+# Vercel: .vercel/output is generated, .vercel/project.json is `vercel link`'s
+.vercel/
+.vercel
+.env*

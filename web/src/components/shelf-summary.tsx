@@ -1,7 +1,7 @@
 import { useRef, useState } from "react"
 import { AnimatePresence, m } from "motion/react"
 import { Download, ShoppingBag, Upload } from "lucide-react"
-import type { GamesResponse } from "@ugs/shared"
+import type { GamesResponse } from "@lootledger/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
 import { Button } from "@/components/ui/button"

@@ -3,7 +3,7 @@
  * same routes can run from the DB (src/index.ts) or from a snapshot baked at
  * deploy time (src/netlify.ts); db/library.ts loads it from the DB.
  */
-import type { Game, Store } from "@ugs/shared";
+import type { Game, Store } from "@lootledger/shared";
 
 export interface IndexedGame extends Game {
   /** normalizeSearch(title + every store's raw title). */

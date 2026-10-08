@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react"
-import type { CartWant, Zone } from "@ugs/shared"
+import type { CartWant, Zone } from "@lootledger/shared"
 
 /**
  * The reader's cart for the optimizer: games they plan to buy together, which copies

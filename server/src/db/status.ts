@@ -1,5 +1,5 @@
 import { count, desc, eq } from "drizzle-orm";
-import type { RefreshRun, RunType, StatusResponse } from "@ugs/shared";
+import type { RefreshRun, RunType, StatusResponse } from "@lootledger/shared";
 import { runningJob } from "../jobs/refresh.ts";
 import type { Db } from "./client.ts";
 import { libraryBuiltAt } from "./library.ts";

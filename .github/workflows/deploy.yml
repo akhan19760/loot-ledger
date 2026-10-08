@@ -1,19 +1,30 @@
-# Deploys LootLedger to Netlify: the site (web/dist) plus the API as one Netlify
-# Function that serves a snapshot of the library (server/src/netlify.ts).
+# Deploys LootLedger to Netlify and Vercel: the site (web/dist) plus the API as one
+# function serving a snapshot of the library (server/src/serverless.ts).
 #
-# Netlify can't run the Node server's scheduler or keep its SQLite file, so this
+# Neither host can run the Node server's scheduler or keep its SQLite file, so this
 # workflow does the scheduling: it fetches the stores, rebuilds the library and
-# deploys. The SQLite file is carried from one run to the next in the Actions
-# cache; if GitHub evicts it, the next run fetches everything again.
+# deploys. The SQLite file is carried from one run to the next in the Actions cache;
+# if GitHub evicts it, the next run fetches everything again. One run's data goes to
+# both hosts, so deploying to both costs little more than deploying to one.
+#
+# Neither host may build this itself — only this workflow has the database — so both
+# are set up unlinked from Git and these steps upload what was built here.
 #
 # Setup, once:
 #   1. On Netlify, create a site that is not linked to Git (Add new project →
 #      Deploy manually), or stop builds on an existing one (Project configuration →
-#      Build & deploy → Stop builds). This workflow builds; Netlify must not.
-#   2. Add repository secrets (GitHub: Settings → Secrets and variables → Actions):
+#      Build & deploy → Stop builds).
+#   2. On Vercel, create the project from the CLI, not the Git import, which would
+#      wire up builds: `vercel link --yes --project <name> --scope <team>`. If it is
+#      already linked to Git, disconnect it (Settings → Git) or set the Ignored
+#      Build Step to `exit 0`.
+#   3. Add repository secrets (GitHub: Settings → Secrets and variables → Actions):
 #        NETLIFY_AUTH_TOKEN  a personal access token (Netlify: User settings → Applications)
 #        NETLIFY_SITE_ID     the Project ID (Netlify: Project configuration → General)
-#   3. Run it: Actions → Deploy → Run workflow, with refresh "all" the first time.
+#        VERCEL_TOKEN        an access token (Vercel: Account Settings → Tokens)
+#        VERCEL_ORG_ID       "orgId" from .vercel/project.json, written by `vercel link`
+#        VERCEL_PROJECT_ID   "projectId" from the same file
+#   4. Run it: Actions → Deploy → Run workflow, with refresh "all" the first time.
 
 name: Deploy
 
@@ -24,7 +35,10 @@ on:
     # In UTC. GitHub may start a scheduled run a few minutes late, and pauses
     # schedules in a public repo after 60 days without commits.
     # Keep these in sync with CRON_PRICES / CRON_GENRES below (/api/status shows them).
-    - cron: "0 */6 * * *" # prices: every 6 hours
+    # Cron can't express an interval that doesn't divide into a day, so 36 hours is
+    # out: every other day at 04:00 is the nearest it gets. Day-of-month steps start
+    # again each month, so the 31st is followed by the 1st a day later, not two.
+    - cron: "0 4 */2 * *" # prices: every 2 days at 04:00
     - cron: "0 4 1 * *" # genres: 04:00 on the 1st of each month
   workflow_dispatch:
     inputs:
@@ -33,6 +47,11 @@ on:
         type: choice
         options: [none, prices, genres, all]
         default: none
+      target:
+        description: Where to deploy
+        type: choice
+        options: [both, netlify, vercel]
+        default: both
 
 # One run at a time, like the server's refresh lock: a run that starts while
 # another is going waits for it.
@@ -48,9 +67,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      CRON_PRICES: "0 */6 * * *"
+      CRON_PRICES: "0 4 */2 * *"
       CRON_GENRES: "0 4 1 * *"
       CRON_TIMEZONE: UTC
+      # A schedule or a push goes everywhere; a manual run goes where it was asked.
+      TARGET: ${{ inputs.target || 'both' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -72,7 +93,7 @@ jobs:
           restore-keys: ugs-db-
 
       - name: Refresh data
-        run: pnpm --filter @ugs/server refresh:ci "$REFRESH"
+        run: pnpm --filter @lootledger/server refresh:ci "$REFRESH"
         env:
           # A schedule runs its job, a push only rebuilds, a manual run does what was picked.
           REFRESH: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 4 1 * *' && 'genres' || 'prices') || inputs.refresh || 'none' }}
@@ -84,21 +105,39 @@ jobs:
           key: ugs-db-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Build
+        # The site once, then the API for each host this run deploys to. The hosts differ
+        # only in how the function is packaged and routed (src/hosts/, build-function.ts).
         run: |
-          pnpm --filter @ugs/web build
-          pnpm --filter @ugs/server build:netlify
+          pnpm --filter @lootledger/web build
+          [ "$TARGET" = vercel ] || pnpm --filter @lootledger/server build:netlify
+          [ "$TARGET" = netlify ] || pnpm --filter @lootledger/server build:vercel
 
-      - name: Deploy
+      - name: Deploy to Netlify
+        if: env.TARGET != 'vercel'
         # The CLI's own build is skipped: everything is built above.
-        # --filter picks @ugs/web out of the pnpm workspace so the CLI doesn't
-        # error on "multiple projects" (it also sees @ugs/server, @ugs/shared).
+        # --filter picks @lootledger/web out of the pnpm workspace so the CLI doesn't
+        # error on "multiple projects" (it also sees @lootledger/server, @lootledger/shared).
         # --filter also makes the CLI resolve --functions from web/, not the repo
         # root (unlike --dir, which it resolves correctly) — so --functions must
         # be absolute, or it silently deploys the site without the API function.
         run: >-
           pnpm dlx --allow-build=esbuild --allow-build=sharp --allow-build=unix-dgram --package=netlify-cli@27
-          netlify deploy --filter @ugs/web --prod --no-build --dir web/dist --functions "$PWD/netlify/functions" --message "$MESSAGE"
+          netlify deploy --filter @lootledger/web --prod --no-build --dir web/dist --functions "$PWD/netlify/functions" --message "$MESSAGE"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           MESSAGE: ${{ github.event_name }} ${{ github.sha }}
+
+      - name: Deploy to Vercel
+        if: env.TARGET != 'netlify'
+        # --prebuilt uploads .vercel/output as it is, so Vercel builds nothing. The two
+        # ids stand in for the .vercel/project.json that `vercel link` writes, which is
+        # not in the repo. pnpm refuses install scripts unless they are allowed, and the
+        # CLI brings its own esbuild.
+        run: >-
+          pnpm dlx --allow-build=esbuild vercel@latest
+          deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

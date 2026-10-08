@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { AnimatePresence, m } from "motion/react"
 import { Check, Link, MessageCircle, Share2 } from "lucide-react"
-import { sharePath, shareText, type Game } from "@ugs/shared"
+import { sharePath, shareText, type Game } from "@lootledger/shared"
 import { RollText } from "@/components/motion/roll-text"
 import { Button } from "@/components/ui/button"
 import { ease } from "@/lib/motion"

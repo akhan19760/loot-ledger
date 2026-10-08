@@ -1,5 +1,5 @@
 import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import type { Condition, Delivery, Format, Kind } from "@ugs/shared";
+import type { Condition, Delivery, Format, Kind } from "@lootledger/shared";
 
 // Timestamps are ISO-8601 UTC strings.
 

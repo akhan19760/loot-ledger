@@ -1,6 +1,6 @@
 import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyServerOptions } from "fastify";
-import type { StatusResponse } from "@ugs/shared";
+import type { StatusResponse } from "@lootledger/shared";
 import type { LibrarySnapshot } from "./library.ts";
 import { gamesRoutes } from "./routes/games.ts";
 import { metaRoutes } from "./routes/meta.ts";

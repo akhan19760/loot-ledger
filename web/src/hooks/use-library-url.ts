@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react"
-import { PLATFORM_FILTERS, type GamesQuery, type SortOrder } from "@ugs/shared"
+import { PLATFORM_FILTERS, type GamesQuery, type SortOrder } from "@lootledger/shared"
 import type { ShelfList } from "@/hooks/use-shelf"
 
 /**

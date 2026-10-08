@@ -4,16 +4,16 @@
  * 1. Runs build.py on ../raw with its output redirected to data/python-baseline.js
  *    (site/data.js is left alone).
  * 2. Builds the library in TypeScript from the raw feeds stored in the DB
- *    (import them first: pnpm --filter @ugs/server import:legacy).
+ *    (import them first: pnpm --filter @lootledger/server import:legacy).
  * 3. Compares every game and listing, field by field, including order.
  *
- * Usage:  pnpm --filter @ugs/server parity
+ * Usage:  pnpm --filter @lootledger/server parity
  * Needs Python on PATH (or set PYTHON). Goes away with the Python scripts.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import type { Game, Store } from "@ugs/shared";
+import type { Game, Store } from "@lootledger/shared";
 import { buildLibrary } from "../src/catalog/build.ts";
 import { SERVER_ROOT, config } from "../src/config.ts";
 import { openDb } from "../src/db/client.ts";

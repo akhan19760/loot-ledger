@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { PLATFORM_FILTERS, type DealsQuery, type DealsResponse, type FiltersResponse, type Game, type GamesLookup, type GamesQuery, type GamesResponse } from "@ugs/shared";
+import { PLATFORM_FILTERS, type DealsQuery, type DealsResponse, type FiltersResponse, type Game, type GamesLookup, type GamesQuery, type GamesResponse } from "@lootledger/shared";
 import { queryDeals } from "../deals.ts";
 import type { LibrarySnapshot } from "../library.ts";
 import { libraryFilters, queryGames } from "../query.ts";
