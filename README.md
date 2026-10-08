@@ -81,6 +81,40 @@ pnpm --filter @ugs/server check:delivery games4u      # just one
 
 It fills anonymous carts with 1 to 6 games (nothing is ordered), asks for delivery to a Karachi and a Lahore address, and prints a `delivery` entry per store to paste into `stores.json`. A store without one is planned as free delivery, and the cart says so.
 
+## Deploying
+
+The site is deployed by GitHub Actions (`.github/workflows/deploy.yml`), to Netlify and Vercel from the same run. Neither host builds anything itself, because neither can hold the database: a serverless host can't keep a SQLite file or run the refresh scheduler. So the workflow does both jobs — it fetches the stores, rebuilds the library, and deploys the result — and the library is read-only between deploys.
+
+The SQLite file is carried from one run to the next in the Actions cache, so each run starts from the last run's data and only fetches what is due. If GitHub evicts it, the next run fetches every store again.
+
+Both hosts serve the same API — the routes in `server/src/app.ts`, answered from a snapshot by `server/src/serverless.ts` — packaged differently. A host contributes just two things, in `server/src/hosts/`: the response header its CDN reads, and where it finds the visitor's IP. `server/scripts/build-function.ts` adds the packaging and the routing.
+
+| Host | Function | CDN header | Routing |
+|---|---|---|---|
+| Netlify | `netlify/functions/api.mjs` | `Netlify-CDN-Cache-Control` | the function's own `config.path`, plus `netlify.toml` |
+| Vercel | `.vercel/output/` (Build Output API v3) | `CDN-Cache-Control` | the generated `config.json` |
+
+To build either one by hand, after `pnpm --filter @ugs/web build`:
+
+```bash
+pnpm --filter @ugs/server build:netlify
+pnpm --filter @ugs/server build:vercel
+```
+
+A manual run (Actions → Deploy → Run workflow) takes a `target` of `both`, `netlify` or `vercel`, and a `refresh` of `none`, `prices`, `genres` or `all`. On a schedule or a push to `main` it deploys everywhere. Prices refresh every other day and genres monthly; the cadence is set in three places the workflow's own comments point at, because `/api/status` reports when the next refresh is due.
+
+The repository secrets it needs are listed at the top of the workflow. Both hosts must be set up *unlinked from Git*, or a push will start a host-side build that has no database and publishes a site with no API.
+
+### Running it yourself
+
+`server/src/index.ts` is a normal long-running Fastify server with a live SQLite file and the scheduler in-process, so it refreshes its own data and needs no deploy pipeline:
+
+```bash
+pnpm dev     # the API on :3001 and the web app on :5173
+```
+
+It serves the API only, not `web/dist`, so a static host or `@fastify/static` goes in front of it in production. Settings come from the environment, or from `server/.env` in development; `server/src/config.ts` lists them with their defaults.
+
 ## Limitations
 
 - Games are matched across stores by title, so titles spelled very differently between stores may show up as separate entries.
