@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeSearch, type GamesResponse, type Listing, type StatusResponse } from "@ugs/shared";
+import { normalizeSearch, type GamesResponse, type Listing, type StatusResponse } from "@lootledger/shared";
 import { netlify } from "./hosts/netlify.ts";
 import { vercel } from "./hosts/vercel.ts";
 import type { IndexedGame } from "./library.ts";

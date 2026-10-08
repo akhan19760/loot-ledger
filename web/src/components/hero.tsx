@@ -2,7 +2,7 @@ import { m, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform
 import { ArrowDown } from "lucide-react"
 import { useRef } from "react"
 import { cn } from "cn"
-import type { FiltersResponse, GameSummary } from "@ugs/shared"
+import type { FiltersResponse, GameSummary } from "@lootledger/shared"
 import { CoverArt } from "@/components/cover-art"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"

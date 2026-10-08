@@ -12,7 +12,7 @@
  */
 import { Cron } from "croner";
 import type { InjectOptions } from "fastify";
-import type { StatusResponse } from "@ugs/shared";
+import type { StatusResponse } from "@lootledger/shared";
 import { buildApp } from "./app.ts";
 import { indexLibrary, type LibraryData } from "./library.ts";
 

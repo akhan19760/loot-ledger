@@ -1,9 +1,9 @@
 /**
  * Run a refresh job once, outside the server's schedule (for development).
  *
- * Usage:  pnpm --filter @ugs/server refresh:prices              # all stores
- *         pnpm --filter @ugs/server refresh:prices khanani      # some stores
- *         pnpm --filter @ugs/server refresh:genres
+ * Usage:  pnpm --filter @lootledger/server refresh:prices              # all stores
+ *         pnpm --filter @lootledger/server refresh:prices khanani      # some stores
+ *         pnpm --filter @lootledger/server refresh:genres
  */
 import { config } from "../src/config.ts";
 import { openDb } from "../src/db/client.ts";

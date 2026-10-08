@@ -1,7 +1,7 @@
 // The deals page: the biggest discounts, the biggest price gaps between stores, and
 // games newly in stock. Games only, in-stock offers only, narrowed by platform and
 // condition like the library.
-import { groupVersions, listingMatches, type DealsQuery, type DealsResponse, type DiscountDeal, type GapDeal, type GameSummary, type Listing } from "@ugs/shared";
+import { groupVersions, listingMatches, type DealsQuery, type DealsResponse, type DiscountDeal, type GapDeal, type GameSummary, type Listing } from "@lootledger/shared";
 import type { LibrarySnapshot } from "./library.ts";
 import { summarize } from "./query.ts";
 

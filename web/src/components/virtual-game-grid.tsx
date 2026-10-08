@@ -1,7 +1,7 @@
 import { useWindowVirtualizer } from "@tanstack/react-virtual"
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { cn } from "cn"
-import type { GameSummary } from "@ugs/shared"
+import type { GameSummary } from "@lootledger/shared"
 import { GameCard } from "@/components/game-card"
 import { GRID_COLUMNS } from "@/components/game-grid"
 

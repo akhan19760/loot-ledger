@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { idFromShareSlug, sharePath, shareText } from "@ugs/shared";
+import { idFromShareSlug, sharePath, shareText } from "@lootledger/shared";
 import type { LibrarySnapshot } from "../library.ts";
 
 const escape = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);

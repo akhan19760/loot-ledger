@@ -1,5 +1,5 @@
 {
-  "name": "@ugs/server",
+  "name": "@lootledger/server",
   "private": true,
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@fastify/rate-limit": "^11.2.0",
-    "@ugs/shared": "workspace:*",
+    "@lootledger/shared": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "croner": "^10.0.1",
     "drizzle-orm": "^0.45.3",

@@ -1,5 +1,5 @@
 {
-  "name": "@ugs/shared",
+  "name": "@lootledger/shared",
   "private": true,
   "type": "module",
   "exports": {

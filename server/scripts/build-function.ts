@@ -3,8 +3,8 @@
  * the built library and refresh status from the DB into a snapshot, and bundle it with
  * the routes into one self-contained file.
  *
- * Usage:  pnpm --filter @ugs/server build:netlify
- *         pnpm --filter @ugs/server build:vercel
+ * Usage:  pnpm --filter @lootledger/server build:netlify
+ *         pnpm --filter @lootledger/server build:vercel
  *
  * Netlify gets netlify/functions/api.mjs at the repo root, and routes to it with the
  * function's own `config.path`; the rest of its routing is netlify.toml. Vercel gets a
@@ -81,7 +81,7 @@ function vercelTarget(): Target {
     ],
     finish: () => {
       if (!fs.existsSync(path.join(WEB_DIST, "index.html")))
-        fail(`${WEB_DIST} has no index.html: run \`pnpm --filter @ugs/web build\` first.`);
+        fail(`${WEB_DIST} has no index.html: run \`pnpm --filter @lootledger/web build\` first.`);
       fs.cpSync(WEB_DIST, path.join(out, "static"), { recursive: true });
 
       fs.writeFileSync(

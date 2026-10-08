@@ -13,7 +13,7 @@ import {
   type GamesResponse,
   type Listing,
   type SortOrder,
-} from "@ugs/shared";
+} from "@lootledger/shared";
 import type { LibrarySnapshot } from "./library.ts";
 
 const SORTS: Record<SortOrder, (a: GameSummary, b: GameSummary) => number> = {

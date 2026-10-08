@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { ArrowDown, ArrowLeft } from "lucide-react"
-import type { GameSummary } from "@ugs/shared"
+import type { GameSummary } from "@lootledger/shared"
 import { ChipGroup } from "@/components/filter-bar"
 import { GameCard } from "@/components/game-card"
 import { GameGrid } from "@/components/game-grid"

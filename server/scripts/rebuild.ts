@@ -2,7 +2,7 @@
  * Rebuild games + listings from the raw feeds already in the DB, without
  * fetching. Handy after changing a rule in src/catalog/.
  *
- * Usage:  pnpm --filter @ugs/server build:library
+ * Usage:  pnpm --filter @lootledger/server build:library
  */
 import { config } from "../src/config.ts";
 import { openDb } from "../src/db/client.ts";

@@ -5,7 +5,7 @@
  * Listings for the same game are grouped under one *game* using a normalized title,
  * so the library can show "cheapest offer across all stores" per game.
  */
-import type { Game, Kind, Listing, Store } from "@ugs/shared";
+import type { Game, Kind, Listing, Store } from "@lootledger/shared";
 import { ADAPTERS, type RawListing, type StoreConfig } from "./adapters.ts";
 import { DIGITAL, detectCondition, detectKind, detectPlatform } from "./detect.ts";
 import { buildGenreIndex, lookupGenres, type WikidataGames } from "./genres.ts";

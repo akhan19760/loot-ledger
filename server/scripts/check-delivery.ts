@@ -4,7 +4,7 @@
  * `delivery` entry per store to paste into stores.json. Nothing is ordered: the
  * carts are anonymous and abandoned.
  *
- *   pnpm --filter @ugs/server check:delivery [store-id ...]
+ *   pnpm --filter @lootledger/server check:delivery [store-id ...]
  *
  * Shopify: /cart/add.js then /cart/shipping_rates.json (the cart's own rate lookup).
  * WooCommerce: the Store API cart (/wc/store/v1/cart/...), the same one its checkout uses.
@@ -14,7 +14,7 @@
  * the fee from its checkout by hand.
  */
 import fs from "node:fs";
-import type { Delivery } from "@ugs/shared";
+import type { Delivery } from "@lootledger/shared";
 import { config } from "../src/config.ts";
 
 const MAX_GAMES = 6;

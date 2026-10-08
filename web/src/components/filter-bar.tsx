@@ -1,7 +1,7 @@
 import { AnimatePresence, m } from "motion/react"
 import { Search, SlidersHorizontal, X } from "lucide-react"
 import { useEffect, useEffectEvent, useId, useState } from "react"
-import type { FiltersResponse, SortOrder } from "@ugs/shared"
+import type { FiltersResponse, SortOrder } from "@lootledger/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollLock } from "@/components/motion/smooth-scroll"

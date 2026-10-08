@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeSearch, type GamesQuery, type Listing } from "@ugs/shared";
+import { normalizeSearch, type GamesQuery, type Listing } from "@lootledger/shared";
 import type { IndexedGame, LibrarySnapshot } from "./library.ts";
 import { libraryFilters, queryGames } from "./query.ts";
 

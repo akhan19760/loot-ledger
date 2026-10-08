@@ -93,7 +93,7 @@ jobs:
           restore-keys: ugs-db-
 
       - name: Refresh data
-        run: pnpm --filter @ugs/server refresh:ci "$REFRESH"
+        run: pnpm --filter @lootledger/server refresh:ci "$REFRESH"
         env:
           # A schedule runs its job, a push only rebuilds, a manual run does what was picked.
           REFRESH: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 4 1 * *' && 'genres' || 'prices') || inputs.refresh || 'none' }}
@@ -108,21 +108,21 @@ jobs:
         # The site once, then the API for each host this run deploys to. The hosts differ
         # only in how the function is packaged and routed (src/hosts/, build-function.ts).
         run: |
-          pnpm --filter @ugs/web build
-          [ "$TARGET" = vercel ] || pnpm --filter @ugs/server build:netlify
-          [ "$TARGET" = netlify ] || pnpm --filter @ugs/server build:vercel
+          pnpm --filter @lootledger/web build
+          [ "$TARGET" = vercel ] || pnpm --filter @lootledger/server build:netlify
+          [ "$TARGET" = netlify ] || pnpm --filter @lootledger/server build:vercel
 
       - name: Deploy to Netlify
         if: env.TARGET != 'vercel'
         # The CLI's own build is skipped: everything is built above.
-        # --filter picks @ugs/web out of the pnpm workspace so the CLI doesn't
-        # error on "multiple projects" (it also sees @ugs/server, @ugs/shared).
+        # --filter picks @lootledger/web out of the pnpm workspace so the CLI doesn't
+        # error on "multiple projects" (it also sees @lootledger/server, @lootledger/shared).
         # --filter also makes the CLI resolve --functions from web/, not the repo
         # root (unlike --dir, which it resolves correctly) — so --functions must
         # be absolute, or it silently deploys the site without the API function.
         run: >-
           pnpm dlx --allow-build=esbuild --allow-build=sharp --allow-build=unix-dgram --package=netlify-cli@27
-          netlify deploy --filter @ugs/web --prod --no-build --dir web/dist --functions "$PWD/netlify/functions" --message "$MESSAGE"
+          netlify deploy --filter @lootledger/web --prod --no-build --dir web/dist --functions "$PWD/netlify/functions" --message "$MESSAGE"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

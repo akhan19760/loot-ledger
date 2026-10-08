@@ -2,7 +2,7 @@
  * One-time: load the Python pipeline's raw/*.json feeds into raw_feeds, so the
  * TypeScript build can run on the same data without fetching every store again.
  *
- * Usage:  pnpm --filter @ugs/server import:legacy [path/to/raw]   (default: ../raw)
+ * Usage:  pnpm --filter @lootledger/server import:legacy [path/to/raw]   (default: ../raw)
  */
 import fs from "node:fs";
 import path from "node:path";

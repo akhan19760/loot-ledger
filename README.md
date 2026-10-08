@@ -75,8 +75,8 @@ Then run `fetch.py` and `build.py`.
 The cart optimizer uses each store's delivery fees from `stores.json`: a `delivery` entry with the fee by number of games, for Karachi and for the rest of Pakistan (`fees[i]` is for i+1 games; the last applies to bigger orders). They were read from each store's own checkout, and stores change them, so re-check now and then:
 
 ```bash
-pnpm --filter @ugs/server check:delivery              # every store
-pnpm --filter @ugs/server check:delivery games4u      # just one
+pnpm --filter @lootledger/server check:delivery              # every store
+pnpm --filter @lootledger/server check:delivery games4u      # just one
 ```
 
 It fills anonymous carts with 1 to 6 games (nothing is ordered), asks for delivery to a Karachi and a Lahore address, and prints a `delivery` entry per store to paste into `stores.json`. A store without one is planned as free delivery, and the cart says so.
@@ -94,11 +94,11 @@ Both hosts serve the same API — the routes in `server/src/app.ts`, answered fr
 | Netlify | `netlify/functions/api.mjs` | `Netlify-CDN-Cache-Control` | the function's own `config.path`, plus `netlify.toml` |
 | Vercel | `.vercel/output/` (Build Output API v3) | `CDN-Cache-Control` | the generated `config.json` |
 
-To build either one by hand, after `pnpm --filter @ugs/web build`:
+To build either one by hand, after `pnpm --filter @lootledger/web build`:
 
 ```bash
-pnpm --filter @ugs/server build:netlify
-pnpm --filter @ugs/server build:vercel
+pnpm --filter @lootledger/server build:netlify
+pnpm --filter @lootledger/server build:vercel
 ```
 
 A manual run (Actions → Deploy → Run workflow) takes a `target` of `both`, `netlify` or `vercel`, and a `refresh` of `none`, `prices`, `genres` or `all`. On a schedule or a push to `main` it deploys everywhere. Prices refresh every other day and genres monthly; the cadence is set in three places the workflow's own comments point at, because `/api/status` reports when the next refresh is due.

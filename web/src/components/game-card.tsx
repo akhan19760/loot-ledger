@@ -1,7 +1,7 @@
 import { m, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
 import { memo, useState } from "react"
 import { ArrowUpRight } from "lucide-react"
-import type { GameSummary } from "@ugs/shared"
+import type { GameSummary } from "@lootledger/shared"
 import { CoverArt } from "@/components/cover-art"
 import { ShelfCardButtons } from "@/components/shelf-buttons"
 import { Badge } from "@/components/ui/badge"

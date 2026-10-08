@@ -1,6 +1,6 @@
 import { m, useReducedMotion } from "motion/react"
 import { cn } from "cn"
-import { listingMatches, type Insights, type Listing, type Version } from "@ugs/shared"
+import { listingMatches, type Insights, type Listing, type Version } from "@lootledger/shared"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import type { Filters } from "@/hooks/use-library-url"
 import { formatPrice, versionLabel } from "@/lib/format"

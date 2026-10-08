@@ -2,7 +2,7 @@
 # not by Netlify's own builds.
 [build]
   publish = "web/dist"
-  # Written by `pnpm --filter @ugs/server build:netlify`: the API as one function.
+  # Written by `pnpm --filter @lootledger/server build:netlify`: the API as one function.
   functions = "netlify/functions"
 
 # Vite fingerprints every file in /assets, so browsers can keep them for good.

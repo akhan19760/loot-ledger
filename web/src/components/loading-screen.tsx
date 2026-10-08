@@ -5,7 +5,7 @@ import { AnimatePresence, animate, useIsPresent, useMotionTemplate, useMotionVal
 import * as motion from "motion/react-client"
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import { cn } from "cn"
-import type { FiltersResponse } from "@ugs/shared"
+import type { FiltersResponse } from "@lootledger/shared"
 import type { TitleEntrance } from "@/components/hero"
 import { CountUp } from "@/components/motion/count-up"
 import { useScrollTo } from "@/components/motion/smooth-scroll"

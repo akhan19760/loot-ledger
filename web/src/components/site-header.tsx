@@ -2,7 +2,7 @@ import { AnimatePresence, m, useMotionValueEvent, useScroll } from "motion/react
 import { Moon, ShoppingBag, Sun } from "lucide-react"
 import { useState } from "react"
 import { cn } from "cn"
-import type { FiltersResponse } from "@ugs/shared"
+import type { FiltersResponse } from "@lootledger/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { Equalizer } from "@/components/motion/equalizer"
 import { RollText } from "@/components/motion/roll-text"

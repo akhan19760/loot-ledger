@@ -1,5 +1,5 @@
 import { asc, eq, isNotNull, sql } from "drizzle-orm";
-import { normalizeSearch, type Listing, type Store } from "@ugs/shared";
+import { normalizeSearch, type Listing, type Store } from "@lootledger/shared";
 import type { BuildInput, Library } from "../catalog/build.ts";
 import type { WikidataGames } from "../catalog/genres.ts";
 import { indexLibrary, latestFetch, stockSince, type IndexedGame, type LibraryData, type LibrarySnapshot, type PreviousStock } from "../library.ts";

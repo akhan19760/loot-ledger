@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --parallel --filter @ugs/server --filter @ugs/web dev",
+    "dev": "pnpm --parallel --filter @lootledger/server --filter @lootledger/web dev",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "parity": "pnpm --filter @ugs/server parity"
+    "parity": "pnpm --filter @lootledger/server parity"
   },
   "engines": {
     "node": ">=22"
