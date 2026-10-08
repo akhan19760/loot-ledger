@@ -121,8 +121,16 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Neon arrow (public/cursor.svg) as the site-wide default cursor; the hotspot is its tip.
+     Buttons keep the hand and text fields the I-beam (rules below). */
   html {
     @apply font-sans;
+    cursor: url("/cursor.svg") 2 2, auto;
+  }
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]),
+  textarea,
+  [contenteditable="true"] {
+    cursor: text;
   }
   body {
     @apply bg-background text-foreground antialiased;

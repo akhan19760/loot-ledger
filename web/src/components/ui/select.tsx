@@ -114,7 +114,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         // Options cascade in (pass style.animationDelay per item for the stagger).
-        "relative flex w-full cursor-default items-center gap-1.5 rounded-sm py-2.5 pr-8 pl-3 text-sm outline-hidden transition-[background-color,color,padding] duration-300 select-none animate-in fade-in-0 slide-in-from-left-2 fill-mode-both focus:bg-accent focus:pl-4 focus:text-accent-foreground data-[state=checked]:text-primary-ink data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full items-center gap-1.5 rounded-sm py-2.5 pr-8 pl-3 text-sm outline-hidden transition-[background-color,color,padding] duration-300 select-none animate-in fade-in-0 slide-in-from-left-2 fill-mode-both focus:bg-accent focus:pl-4 focus:text-accent-foreground data-[state=checked]:text-primary-ink data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}
@@ -150,7 +150,7 @@ function SelectScrollUpButton({
     <SelectPrimitive.ScrollUpButton
       data-slot="select-scroll-up-button"
       className={cn(
-        "z-10 flex cursor-default items-center justify-center bg-popover py-1 [&_svg:not([class*='size-'])]:size-4",
+        "z-10 flex items-center justify-center bg-popover py-1 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -169,7 +169,7 @@ function SelectScrollDownButton({
     <SelectPrimitive.ScrollDownButton
       data-slot="select-scroll-down-button"
       className={cn(
-        "z-10 flex cursor-default items-center justify-center bg-popover py-1 [&_svg:not([class*='size-'])]:size-4",
+        "z-10 flex items-center justify-center bg-popover py-1 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
