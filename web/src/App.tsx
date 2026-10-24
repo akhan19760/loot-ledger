@@ -18,10 +18,10 @@ import { Button, ButtonCircle } from "@/components/ui/button"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
 import { VirtualGameGrid } from "@/components/virtual-game-grid"
-import { DEFAULT_FILTERS, useLibraryUrl, type Filters, type LibraryList, type Page } from "@/hooks/use-library-url"
+import { DEFAULT_FILTERS, gameOpen, useGameId, useLibraryUrl, type Filters, type LibraryList, type Page } from "@/hooks/use-library-url"
 import { addToCart, useCart } from "@/hooks/use-cart"
 import { idsOn, useShelf } from "@/hooks/use-shelf"
-import { useSoundEffects } from "@/hooks/use-sound-effects"
+import { useDialogSound, useSoundEffects } from "@/hooks/use-sound-effects"
 import { api } from "@/lib/api"
 import { thumb } from "@/lib/images"
 
@@ -63,19 +63,20 @@ const EMPTY_LIST = {
 const SHOW_ALL: Partial<Filters> = { q: "", genre: "", store: "", platform: "", condition: "", kind: "", inStock: false }
 
 export default function App() {
-  const { page, filters, list, gameId, setFilters, resetFilters, setList, setGameId, setPage } = useLibraryUrl()
+  const { page, filters, list, setFilters, resetFilters, setList, setGameId, setPage } = useLibraryUrl()
   const shelf = useShelf()
   const shelfIds = useMemo(() => (list === "all" ? null : idsOn(shelf, list)), [shelf, list])
   const counts = useMemo(() => ({ wishlist: idsOn(shelf, "wishlist").length, collection: idsOn(shelf, "collection").length }), [shelf])
   const listEmpty = shelfIds?.length === 0
   const cart = useCart()
   const [cartOpen, setCartOpen] = useState(false)
-  useSoundEffects(gameId !== null || cartOpen)
+  useSoundEffects()
+  useDialogSound("cart", cartOpen)
   const wishlist = useMemo(() => idsOn(shelf, "wishlist").map((id) => ({ id, title: shelf[id]!.title, image: shelf[id]!.image })), [shelf])
   // Games added to the cart accept what the library is filtered to (platform, condition).
   const cartWant = { platform: filters.platform || null, condition: filters.condition || null, format: null }
   const openCart = () => {
-    if (gameId) setGameId(null)
+    if (gameOpen()) setGameId(null)
     setCartOpen(true)
   }
   const scrollTo = useScrollTo()
@@ -101,8 +102,6 @@ export default function App() {
   const [titleEntrance, setTitleEntrance] = useState<TitleEntrance>("slide")
   useEffect(() => (introDone ? prefetchWhenIdle() : undefined), [introDone])
   // The dialogs load on first use and then stay mounted, so they can animate closed.
-  const [dialogUsed, setDialogUsed] = useState(gameId !== null)
-  if (gameId && !dialogUsed) setDialogUsed(true)
   const [cartUsed, setCartUsed] = useState(false)
   if (cartOpen && !cartUsed) setCartUsed(true)
 
@@ -276,11 +275,25 @@ export default function App() {
       </main>
 
       <Suspense fallback={null}>
-        {dialogUsed && <GameDialog gameId={gameId} filters={filters} storeNames={storeNames} onClose={() => setGameId(null)} onOpenCart={openCart} />}
+        <GameDialogHost filters={filters} storeNames={storeNames} onOpenCart={openCart} />
         {cartUsed && <CartDialog open={cartOpen} onOpenChange={setCartOpen} stores={meta.data?.stores} wishlist={wishlist} defaultWant={cartWant} />}
       </Suspense>
     </>
   )
+}
+
+/**
+ * The game dialog, the one part of the page that follows ?game: opening or closing a game
+ * re-renders this, not the library behind it. Loads on first use, then stays mounted so
+ * it can animate closed.
+ */
+function GameDialogHost({ filters, storeNames, onOpenCart }: { filters: Filters; storeNames: Map<string, string>; onOpenCart: () => void }) {
+  const gameId = useGameId()
+  const { setGameId } = useLibraryUrl()
+  useDialogSound("game", gameId !== null)
+  const [used, setUsed] = useState(gameId !== null)
+  if (gameId && !used) setUsed(true)
+  return used ? <GameDialog gameId={gameId} filters={filters} storeNames={storeNames} onClose={() => setGameId(null)} onOpenCart={onOpenCart} /> : null
 }
 
 function Message({ title, body, action }: { title: string; body: string; action: React.ReactNode }) {

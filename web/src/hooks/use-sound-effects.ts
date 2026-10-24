@@ -12,10 +12,10 @@ const SCROLL_QUIET_MS = 150
 /**
  * The site's sound effects (lib/sfx.ts), from listeners on the document rather than on
  * each component: a tick on hovering something clickable, a press on clicking it (two
- * notes up or down when it switches something on or off), a whoosh as a dialog opens
- * or closes, and a wheel-like tick while scrolling with a mouse or trackpad.
+ * notes up or down when it switches something on or off), and a wheel-like tick while
+ * scrolling with a mouse or trackpad. Dialogs whoosh through useDialogSound.
  */
-export function useSoundEffects(dialogOpen: boolean) {
+export function useSoundEffects() {
   useEffect(() => {
     const finePointer = matchMedia("(hover: hover) and (pointer: fine)")
     let hovered: Element | null = null
@@ -72,14 +72,35 @@ export function useSoundEffects(dialogOpen: boolean) {
       window.removeEventListener("scroll", onScroll)
     }
   }, [])
+}
 
-  // Dialogs whoosh open and closed (not for one open on arrival, from a link).
-  const wasOpen = useRef(dialogOpen)
+// The dialogs open now, each reported by its own component, so following ?game doesn't
+// take the whole page along. One whoosh as the first opens and one as the last closes:
+// going from one dialog straight to another (a game to the cart) is silent, as one dialog.
+const openDialogs = new Set<string>()
+let heardOpen = false
+let settle: ReturnType<typeof setTimeout> | undefined
+
+/** A dialog's whoosh as it opens and closes (not for one open on arrival, from a link). */
+export function useDialogSound(id: string, open: boolean) {
+  const wasOpen = useRef(open)
   useEffect(() => {
-    if (wasOpen.current === dialogOpen) return
-    wasOpen.current = dialogOpen
-    play(dialogOpen ? "open" : "close")
-  }, [dialogOpen])
+    if (open) openDialogs.add(id)
+    else openDialogs.delete(id)
+    if (wasOpen.current === open) {
+      heardOpen ||= open
+      return
+    }
+    wasOpen.current = open
+    // After the other changes made at the same time (one dialog closing as another opens).
+    clearTimeout(settle)
+    settle = setTimeout(() => {
+      const now = openDialogs.size > 0
+      if (now === heardOpen) return
+      heardOpen = now
+      play(now ? "open" : "close")
+    })
+  }, [id, open])
 }
 
 /** Options and switches turning on get two notes up; switches turning off, two down. */

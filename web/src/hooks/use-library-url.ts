@@ -120,8 +120,31 @@ function snapshot() {
   return lastParsed
 }
 
+// The library's view without the open game, unchanged while only ?game changes: opening
+// or closing a game re-renders the dialog (useGameId), not the whole page.
+type View = Omit<UrlState, "gameId">
+let lastViewKey: string | null = null
+let lastView: View
+function viewSnapshot(): View {
+  const { page, filters, list } = snapshot()
+  const key = serialize({ page, filters, list, gameId: null })
+  if (key !== lastViewKey) [lastViewKey, lastView] = [key, { page, filters, list }]
+  return lastView
+}
+
+const gameSnapshot = () => snapshot().gameId
+
+/** The game open in the dialog (?game), if any. */
+export function useGameId() {
+  return useSyncExternalStore(subscribe, gameSnapshot)
+}
+
+/** Whether a game is open right now, read without subscribing to it. */
+export const gameOpen = () => gameSnapshot() !== null
+
+/** The library's view (page, filters, list) and the ways to change it; the open game is useGameId's. */
 export function useLibraryUrl() {
-  const { page, filters, list, gameId } = useSyncExternalStore(subscribe, snapshot)
+  const { page, filters, list } = useSyncExternalStore(subscribe, viewSnapshot)
 
   const setFilters = useCallback((patch: Partial<Filters>) => {
     const current = snapshot()
@@ -153,5 +176,5 @@ export function useLibraryUrl() {
   /** Go to another page (adds a history entry), keeping the filters. */
   const setPage = useCallback((next: Page) => write(serialize({ ...snapshot(), page: next, gameId: null }), "push"), [])
 
-  return { page, filters, list, gameId, setFilters, resetFilters, setList, setGameId, setPage }
+  return { page, filters, list, setFilters, resetFilters, setList, setGameId, setPage }
 }
