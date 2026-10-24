@@ -281,6 +281,14 @@
   );
 }
 
+/* Radix's scroll lock sets this on <body> as a dialog opens and drops it as it closes. As an
+   ordinary custom property it's inherited, so each change restyled every element on the
+   page (~35 ms, twice per dialog). Nothing here reads it; not inherited, it's body's alone. */
+@property --removed-body-scroll-bar-size {
+  syntax: "*";
+  inherits: false;
+}
+
 /* Stopped Lenis (a dialog or drawer is open, smooth-scroll.tsx) leaves the page's overflow
    alone: its own `overflow: clip` took the scrollbar away with nothing in its place, so the
    whole page re-laid out a scrollbar's width wider under every dialog, and back on close.
