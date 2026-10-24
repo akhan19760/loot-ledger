@@ -147,12 +147,15 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
       <Dialog open={!!gameId} onOpenChange={(open) => !open && onClose()}>
         <DialogContent
           ref={setContent}
+          // The page blurs once the panel has landed, not under it as it flies.
+          overlayBlur={!inFlight}
           className={cn(
             "sm:max-w-3xl",
             // The flying panel stands in for the dialog's own entrance and exit. The dialog
-            // waits, invisible but laid out (so the panel knows where to go), then fades in.
+            // waits, hidden but laid out (so the panel knows where to go), then fades in.
+            // Hidden, not just transparent, so its own backdrop blur isn't drawn meanwhile.
             fromCard && "transition-opacity data-open:animate-none! data-closed:animate-none! data-open:duration-300!",
-            inFlight && "opacity-0",
+            inFlight && "invisible opacity-0",
           )}
         >
           {/* Mounted afresh when the panel lands, so the entrance plays where it can be seen */}

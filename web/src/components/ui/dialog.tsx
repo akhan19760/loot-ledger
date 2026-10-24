@@ -31,14 +31,19 @@ function DialogClose({
 
 function DialogOverlay({
   className,
+  blur = true,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+}: React.ComponentProps<typeof DialogPrimitive.Overlay> & {
+  /** False holds the blur back (it comes in when set): blurring the page under something moving costs every frame. */
+  blur?: boolean
+}) {
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
         // WG: black 50% + 8px blur (lighter in light theme, so the white panel stays white)
-        "fixed inset-0 isolate z-50 bg-black/50 light:bg-black/25 duration-500 supports-backdrop-filter:backdrop-blur-[8px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-200",
+        "fixed inset-0 isolate z-50 bg-black/50 light:bg-black/25 transition-[backdrop-filter] duration-500 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-200",
+        blur && "supports-backdrop-filter:backdrop-blur-[8px]",
         className
       )}
       {...props}
@@ -51,14 +56,17 @@ function DialogContent({
   bodyClassName,
   children,
   showCloseButton = true,
+  overlayBlur = true,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
   bodyClassName?: string
+  /** See DialogOverlay's `blur`. */
+  overlayBlur?: boolean
 }) {
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay blur={overlayBlur} />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
