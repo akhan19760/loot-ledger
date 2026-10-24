@@ -103,7 +103,7 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 
 ## Motion
 
-Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkroom.engineering/) smooth scrolling. Everything honours the OS "reduce motion" setting: motion goes instant, Lenis, the grain, stripes, equalizer and loading sweep stop, and the loading screen is skipped.
+Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkroom.engineering/) smooth scrolling, plus [three.js](https://threejs.org/) for the footer's controller. Everything honours the OS "reduce motion" setting: motion goes instant, Lenis, the grain, stripes, equalizer and loading sweep stop, the loading screen is skipped, and the footer's controller is shown at rest.
 
 Keeping it smooth while scrolling:
 
@@ -149,6 +149,7 @@ Keeping it smooth while scrolling:
 | Dialog | Grows out of the clicked card: a panel carrying the card's cover flies to the dialog's box while the cover fades, then hands over to the dialog; closing flies back into the card. Opened from a link (no card on screen), it rises and scales in with `ease.wg`. Then the title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | Material container transform, WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
 | Header | Theme toggle: black circle, sun/moon roll through it; the new theme spreads in a circle from the button (View Transitions) | WG round icon + INK roll |
 | Footer | Neon hazard stripes slide endlessly; giant black wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |
+| Footer | WG's 3D controller, scrubbed by scroll down the tall neon panel: it rises from the bottom of the screen, tumbles, spins round and comes to rest on the wordmark at the page's end, reflections sweeping over it as it turns. Their model, environment map, camera and Theatre.js keyframes, on three.js r152 like theirs (`src/lib/controller-scene.ts`); loaded only as the footer comes near. On narrow screens the camera backs off so it fits across | WG `#section-skills` controller |
 | Loading | Skeletons with a sweeping light band (`sweep`) | — |
 
 ### Loading screen (`src/components/loading-screen.tsx`)
