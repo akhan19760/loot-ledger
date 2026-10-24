@@ -158,25 +158,25 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
             inFlight && "invisible opacity-0",
           )}
         >
-          {/* Mounted afresh when the panel lands, so the entrance plays where it can be seen */}
-          <div key={inFlight ? "measuring" : "shown"} className="contents">
-            <DialogBody
-              game={game}
-              offers={offers}
-              matching={matching}
-              others={others}
-              cheapest={cheapest}
-              storeCount={storeCount}
-              storeNames={storeNames}
-              view={view}
-              onViewChange={setView}
-              versions={versions}
-              insights={insights}
-              stores={stores}
-              filters={filters}
-              onOpenCart={onOpenCart}
-            />
-          </div>
+          {/* Laid out while the panel flies (it heads for this box), its entrance held back
+              until the panel lands, so it plays where it can be seen */}
+          <DialogBody
+            play={!inFlight}
+            game={game}
+            offers={offers}
+            matching={matching}
+            others={others}
+            cheapest={cheapest}
+            storeCount={storeCount}
+            storeNames={storeNames}
+            view={view}
+            onViewChange={setView}
+            versions={versions}
+            insights={insights}
+            stores={stores}
+            filters={filters}
+            onOpenCart={onOpenCart}
+          />
         </DialogContent>
       </Dialog>
 
@@ -210,6 +210,8 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
 }
 
 interface BodyProps {
+  /** False holds the entrance back, while the dialog is hidden under the flying panel. */
+  play: boolean
   game: UseQueryResult<Game>
   offers: Listing[]
   matching: Listing[]
@@ -226,7 +228,7 @@ interface BodyProps {
   onOpenCart: () => void
 }
 
-function DialogBody({ game, offers, matching, others, cheapest, storeCount, storeNames, view, onViewChange, versions, insights, stores, filters, onOpenCart }: BodyProps) {
+function DialogBody({ play, game, offers, matching, others, cheapest, storeCount, storeNames, view, onViewChange, versions, insights, stores, filters, onOpenCart }: BodyProps) {
   // "Cheapest" marks the best offer of each version (a used PS4 disc isn't competing with a
   // new PS5 one) when it beat another offer, and always the cheapest overall.
   const badged = new Set(versions.flatMap((v) => (v.best && (v.inStock > 1 || v.best.price === cheapest) ? [v.best] : [])))
@@ -246,7 +248,7 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
       <DialogHeader className="flex-row items-start gap-4 pr-10 text-left sm:gap-6">
         <m.div
           initial={{ clipPath: "inset(100% 0% 0% 0%)", rotate: -8, scale: 1.1 }}
-          animate={{ clipPath: "inset(0% 0% 0% 0%)", rotate: -3, scale: 1 }}
+          animate={play ? { clipPath: "inset(0% 0% 0% 0%)", rotate: -3, scale: 1 } : undefined}
           whileHover={{ rotate: 0, scale: 1.05, transition: { duration: 0.5, ease: ease.wg } }}
           transition={{ duration: 1, ease: ease.wg, delay: 0.1 }}
           className="aspect-[4/5] w-20 shrink-0 overflow-hidden rounded-sm bg-surface shadow-[0_20px_40px_-12px_rgb(0_0_0/0.8)] sm:w-28"
@@ -256,7 +258,7 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
         <div className="grid min-w-0 gap-3">
           <Eyebrow className="text-primary-ink">{game.data.genres.join(" · ") || "Genre unknown"}</Eyebrow>
           <DialogTitle>
-            <SplitText text={game.data.title} onMount delay={0.15} stagger={0.05} />
+            <SplitText text={game.data.title} onMount play={play} delay={0.15} stagger={0.05} />
           </DialogTitle>
           <DialogDescription>
             {offers.length} {offers.length === 1 ? "offer" : "offers"} across {storeCount} {storeCount === 1 ? "store" : "stores"}
@@ -276,15 +278,15 @@ function DialogBody({ game, offers, matching, others, cheapest, storeCount, stor
       {offers.length > 1 && <PillToggle label="Offers view" value={view} options={VIEWS} onChange={onViewChange} />}
 
       {view === "compare" && offers.length > 1 ? (
-        <CompareView versions={versions} insights={insights} stores={stores} filters={filters} />
+        <CompareView versions={versions} insights={insights} stores={stores} filters={filters} play={play} />
       ) : (
         <>
-          <OfferList offers={matching} storeNames={storeNames} cheapest={cheapest} badged={badged} startDelay={0.3} />
+          <OfferList offers={matching} storeNames={storeNames} cheapest={cheapest} badged={badged} startDelay={0.3} play={play} />
 
           {others.length > 0 && (
             <section className="grid gap-3">
               <Eyebrow className="text-muted-foreground">Other offers, outside your filters</Eyebrow>
-              <OfferList offers={others} storeNames={storeNames} cheapest={cheapest} badged={badged} startDelay={0.3 + matching.length * 0.05} />
+              <OfferList offers={others} storeNames={storeNames} cheapest={cheapest} badged={badged} startDelay={0.3 + matching.length * 0.05} play={play} />
             </section>
           )}
         </>
@@ -304,12 +306,14 @@ function OfferList({
   cheapest,
   badged,
   startDelay,
+  play,
 }: {
   offers: Listing[]
   storeNames: Map<string, string>
   cheapest: number | null
   badged: Set<Listing>
   startDelay: number
+  play: boolean
 }) {
   const reduced = useReducedMotion()
   return (
@@ -318,7 +322,7 @@ function OfferList({
         <m.li
           key={i}
           initial={reduced ? false : { opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={play ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.7, ease: ease.wg, delay: Math.min(startDelay + i * 0.05, 1.2) }}
         >
           <OfferRow listing={l} storeName={storeNames.get(l.store) ?? l.store} cheapest={l.in_stock && l.price === cheapest} badge={badged.has(l)} />

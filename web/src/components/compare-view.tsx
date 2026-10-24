@@ -12,6 +12,8 @@ interface Props {
   /** Stores with any offer for this game, in the library's order: one column each. */
   stores: { id: string; name: string }[]
   filters: Filters
+  /** False holds the entrance back (see SplitText's `play`). */
+  play?: boolean
 }
 
 const capitalize = (s: string) => s[0]!.toUpperCase() + s.slice(1)
@@ -24,7 +26,7 @@ const platformLabel = (p: string | null) => p ?? "Platform unknown"
  * store in the same order in every panel, so the stores line up in columns like a table and
  * still wrap on a phone. A bar on a scale shared by every version shows where each sits.
  */
-export function CompareView({ versions, insights, stores, filters }: Props) {
+export function CompareView({ versions, insights, stores, filters, play = true }: Props) {
   const reduced = useReducedMotion()
   const matches = (v: Version) => v.offers.some((l) => listingMatches(l, filters))
   // Versions outside the filters go last, dimmed; the rest keep their order.
@@ -52,7 +54,7 @@ export function CompareView({ versions, insights, stores, filters }: Props) {
             <m.li
               key={v.key}
               initial={reduced ? false : { opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={play ? { opacity: 1, y: 0 } : undefined}
               transition={{ duration: 0.7, ease: ease.wg, delay: Math.min(0.1 + i * 0.06, 1) }}
             >
               <VersionPanel version={v} stores={stores} scale={scale} filters={filters} dimmed={!matches(v)} nameOf={nameOf} />

@@ -17,6 +17,7 @@ export function SplitText({
   partStyle,
   onMount = false,
   still = false,
+  play = true,
 }: {
   text: string
   by?: "word" | "letter"
@@ -31,11 +32,13 @@ export function SplitText({
   onMount?: boolean
   /** Show the parts in place at once, without the reveal. */
   still?: boolean
+  /** False holds the reveal back, parts hidden, until it turns true (e.g. while a dialog is hidden). */
+  play?: boolean
 }) {
   const ref = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" })
   const reduced = useReducedMotion()
-  const show = onMount || inView
+  const show = play && (onMount || inView)
   const parts = by === "word" ? text.split(/(\s+)/) : [...text]
 
   return (
