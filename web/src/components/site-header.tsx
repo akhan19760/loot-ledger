@@ -55,7 +55,8 @@ export function SiteHeader({
       animate={{ y: introDone && !hidden ? "0%" : "-140%" }}
       transition={{ duration: 0.8, ease: ease.wg }}
       className={cn(
-        "fixed inset-x-2 top-2 z-40 flex h-(--height-bar-mobile) items-center justify-between gap-4 rounded-2xl border px-3 backdrop-blur-[16px] transition-colors duration-500 md:h-(--height-bar) md:px-4",
+        // width-before-scroll-bar: Radix's scroll lock (an open dialog) keeps it as wide as the page beneath.
+        "width-before-scroll-bar fixed inset-x-2 top-2 z-40 flex h-(--height-bar-mobile) items-center justify-between gap-4 rounded-2xl border px-3 backdrop-blur-[16px] transition-colors duration-500 md:h-(--height-bar) md:px-4",
         scrolled ? "border-border bg-popover/70" : "border-transparent bg-popover/40",
       )}
     >

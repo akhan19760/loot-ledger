@@ -281,6 +281,14 @@
   );
 }
 
+/* Stopped Lenis (a dialog or drawer is open, smooth-scroll.tsx) leaves the page's overflow
+   alone: its own `overflow: clip` took the scrollbar away with nothing in its place, so the
+   whole page re-laid out a scrollbar's width wider under every dialog, and back on close.
+   Radix's scroll lock hides the scrollbar instead and keeps its width as a margin. */
+html.lenis.lenis-stopped:not(.lenis-autoToggle) {
+  overflow: visible;
+}
+
 /* While the page glides (smooth-scroll.tsx), cards sliding under the pointer don't start
    their hover effects: glow, tilt and glare on every card crossed, mid-scroll. */
 .scrolling [data-game-card] {
