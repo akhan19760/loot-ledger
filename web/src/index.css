@@ -207,14 +207,15 @@
   100% { transform: translate(0, 0); }
 }
 
-/* WG hazard stripe band: neon/black stripes sliding endlessly (their slideFooter loop). */
+/* WG hazard stripe band: neon/black stripes sliding endlessly (their slideFooter loop).
+   On a strip one period wider than the band (hazard-band.tsx), moved rather than repainted. */
 @utility hazard-band {
   background-image: repeating-linear-gradient(-45deg, var(--primary) 0 28px, #000 28px 56px);
   background-size: 79.2px 79.2px; /* one stripe period along x: 56px / cos(45deg) */
   animation: hazard-slide 1.6s linear infinite;
 }
 @keyframes hazard-slide {
-  to { background-position: -79.2px 0; }
+  to { transform: translateX(-79.2px); }
 }
 
 /* WG header audio bars. */
