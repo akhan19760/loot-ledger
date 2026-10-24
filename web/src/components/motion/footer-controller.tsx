@@ -10,6 +10,24 @@ const CATCH_UP = 5 // per second
 // to rest above the wordmark. Fades in once the scene has drawn.
 const CANVAS_CLASS = "sticky top-[7.5svh] block h-[85svh] w-full opacity-0 transition-opacity duration-700"
 
+/** Resolves once the page hasn't scrolled for `ms` (or `signal` aborts). */
+function whenStill(signal: AbortSignal, ms = 250) {
+  return new Promise<void>((resolve) => {
+    let timer = setTimeout(done, ms)
+    function done() {
+      clearTimeout(timer)
+      window.removeEventListener("scroll", wait)
+      resolve()
+    }
+    function wait() {
+      clearTimeout(timer)
+      timer = setTimeout(done, ms)
+    }
+    window.addEventListener("scroll", wait, { passive: true })
+    signal.addEventListener("abort", done)
+  })
+}
+
 /** Where in the sequence a scroll progress lands: GSAP's default ease, power1.out. */
 const positionAt = (progress: number, still: boolean | null) => (still ? LENGTH : LENGTH * (1 - (1 - progress) ** 2))
 
@@ -67,8 +85,11 @@ export function FooterController({ progress, className }: { progress: MotionValu
       made?.resize()
       made?.render(shown.current)
     })
+    // The model loads while the page scrolls; building the scene waits for it to stop.
+    const unmounted = new AbortController()
+    const still = whenStill(unmounted.signal)
     import("@/lib/controller-host")
-      .then(({ mountController }) => mountController(el, CANVAS_CLASS))
+      .then(({ mountController }) => mountController(el, CANVAS_CLASS, still))
       .then((v) => {
         if (gone) return v.dispose()
         made = view.current = v
@@ -80,6 +101,7 @@ export function FooterController({ progress, className }: { progress: MotionValu
       .catch(() => undefined) // no WebGL, or the model didn't load: the panel just goes without
     return () => {
       gone = true
+      unmounted.abort()
       resize.disconnect()
       if (loop.current) cancelFrame(loop.current)
       loop.current = null

@@ -147,7 +147,21 @@ async function loadCubeMap(): Promise<CubeTexture> {
   return texture
 }
 
-export async function createControllerScene(canvas: HTMLCanvasElement | OffscreenCanvas, size: ViewSize): Promise<ControllerScene> {
+/**
+ * Load the model and cube map, then build the scene once `start` resolves. Creating the
+ * context and compiling the shaders keep the GPU busy for a second or more, and the page's
+ * own frames queue behind that work wherever it runs, so the caller holds `start` until
+ * the page is still.
+ */
+export async function createControllerScene(
+  canvas: HTMLCanvasElement | OffscreenCanvas,
+  size: ViewSize,
+  start: Promise<unknown> = Promise.resolve(),
+): Promise<ControllerScene> {
+  const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
+  const [gltf, envMap] = await Promise.all([gltfLoader.loadAsync("/3d/controller.glb"), loadCubeMap()])
+  await start
+
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" })
   renderer.toneMapping = ACESFilmicToneMapping
   renderer.outputColorSpace = SRGBColorSpace
@@ -159,9 +173,6 @@ export async function createControllerScene(canvas: HTMLCanvasElement | Offscree
   const controller = new Group()
   environment.add(camera, controller)
   scene.add(environment)
-
-  const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
-  const [gltf, envMap] = await Promise.all([gltfLoader.loadAsync("/3d/controller.glb"), loadCubeMap()])
   // Threlte's <Environment> loads a cube map as linear data, which makes it read brighter.
   envMap.colorSpace = NoColorSpace
   scene.environment = envMap
