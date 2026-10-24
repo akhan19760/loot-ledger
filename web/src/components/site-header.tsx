@@ -71,7 +71,8 @@ export function SiteHeader({
           onClick={sound.toggle}
           className="group/sound rounded-full transition-transform outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
         >
-          <Equalizer live={online} playing={sound.on} className="transition-colors duration-300 group-hover/sound:border-primary" />
+          {/* Resting while the header is tucked away: an endless animation costs a restyle every frame */}
+          <Equalizer live={online} playing={sound.on && introDone && !hidden} className="transition-colors duration-300 group-hover/sound:border-primary" />
         </button>
         <Stat className="hidden xl:flex" dot={sound.on ? "live" : "idle"} label={sound.on ? "Sound" : "Muted"} />
         <Stat className="hidden lg:flex" dot={online ? "live" : "idle"} label={online ? "Online" : "Offline"} />
