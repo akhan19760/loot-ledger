@@ -2,19 +2,17 @@ import { ReactLenis, useLenis, type LenisRef } from "lenis/react"
 import { cancelFrame, frame, useReducedMotion, type FrameData } from "motion/react"
 import { useCallback, useEffect, useRef } from "react"
 
-/** Scroll speed, in px a frame, above which game cards ignore the pointer (see index.css). */
-const FAST_SCROLL = 4
-
 /**
  * Inertial page scrolling. Off for people who ask for reduced motion.
  *
  * Lenis is stepped from motion's frame loop rather than its own requestAnimationFrame:
  * with two loops the scroll position and the scroll-linked animations reading it drift
- * a frame apart, which shows as jitter. While a wheel or trackpad scrolls the page fast,
- * <html> carries `scrolling-fast`, so cards sliding under the pointer don't start their
- * hover effects. Only Lenis's own (smooth) scrolling: after a native scroll (touch, keys,
- * a jump) Lenis holds the whole jump as its velocity for 400 ms, and cards would ignore
- * taps and clicks for that long.
+ * a frame apart, which shows as jitter. While a wheel or trackpad glides the page,
+ * <html> carries `scrolling`, so cards sliding under the pointer don't start their hover
+ * effects (index.css): not even in a glide's slow tail, where a card's hover set off
+ * mid-scroll costs frames. Only Lenis's own (smooth) scrolling: after a native scroll
+ * (touch, keys, a jump) Lenis reports scrolling for 400 ms, and cards would ignore taps
+ * and clicks for that long.
  */
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const reduced = useReducedMotion()
@@ -23,16 +21,18 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (reduced) return
     const root = document.documentElement
+    let gliding = false
     const update = ({ timestamp }: FrameData) => {
       const instance = lenis.current?.lenis
       if (!instance) return
       instance.raf(timestamp)
-      root.classList.toggle("scrolling-fast", instance.isScrolling === "smooth" && Math.abs(instance.velocity) > FAST_SCROLL)
+      // Only on a change: any class change on <html> restyles the whole page.
+      if (gliding !== (instance.isScrolling === "smooth")) root.classList.toggle("scrolling", (gliding = !gliding))
     }
     frame.update(update, true)
     return () => {
       cancelFrame(update)
-      root.classList.remove("scrolling-fast")
+      root.classList.remove("scrolling")
     }
   }, [reduced])
 
