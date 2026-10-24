@@ -1,6 +1,6 @@
 // The footer's 3D controller: WG's own model, rig and animation (wondermakers.games, the
 // section after their hero), rebuilt on plain three.js at the version they use (r152).
-// Loaded on demand by footer-controller.tsx, so three.js stays out of the main bundle.
+// Loaded on demand by controller-host.ts, so three.js stays out of the main bundle.
 //
 // Their scene, a Threlte canvas animated with Theatre.js:
 //   environment: the six-face cube map in /3d/env, for reflections only (no lights)
@@ -12,10 +12,14 @@
 // The sequence runs 0–10; the keyframes below are copied from their Theatre.js state.
 // /3d/controller.glb is their controller.gltf repacked with meshopt (16-bit positions,
 // 12-bit normals): 1.8 MB instead of 8.9, and renders the same.
+//
+// It runs in a worker where it can (controller-worker.ts, on an OffscreenCanvas): creating
+// the WebGL context and linking the shaders block whichever thread does them for well over
+// a second. So nothing here touches `window` or the DOM; the page passes in its sizes.
 
 import {
   ACESFilmicToneMapping,
-  CubeTextureLoader,
+  CubeTexture,
   Group,
   MathUtils,
   NoColorSpace,
@@ -23,7 +27,6 @@ import {
   Scene,
   SRGBColorSpace,
   WebGLRenderer,
-  type CubeTexture,
 } from "three"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js"
@@ -111,15 +114,40 @@ function sample(track: Keyframe[], at: number) {
   return track[track.length - 1]!.value
 }
 
+/** The canvas's size on the page, and the screen's, as the scene can't read them in a worker. */
+export interface ViewSize {
+  width: number
+  height: number
+  pixelRatio: number
+  viewportWidth: number
+}
+
 export interface ControllerScene {
   /** Pose the scene at a sequence position (0–10) and draw it. */
   render(position: number): void
-  /** Match the canvas's current size. */
-  resize(): void
+  /** Match the canvas's size on the page. */
+  resize(size: ViewSize): void
   dispose(): void
 }
 
-export async function createControllerScene(canvas: HTMLCanvasElement): Promise<ControllerScene> {
+const ENV_FACES = ["px", "nx", "py", "ny", "pz", "nz"]
+
+/** The cube map from decoded bitmaps: decoding happens off the thread, and works in a worker. */
+async function loadCubeMap(): Promise<CubeTexture> {
+  const faces = await Promise.all(
+    ENV_FACES.map(async (face) => {
+      const res = await fetch(`/3d/env/${face}.png`)
+      if (!res.ok) throw new Error(`env map ${face}: ${res.status}`)
+      // As three's own ImageBitmapLoader: unpremultiplied, like the <img> upload path.
+      return createImageBitmap(await res.blob(), { premultiplyAlpha: "none" })
+    }),
+  )
+  const texture = new CubeTexture(faces)
+  texture.needsUpdate = true
+  return texture
+}
+
+export async function createControllerScene(canvas: HTMLCanvasElement | OffscreenCanvas, size: ViewSize): Promise<ControllerScene> {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" })
   renderer.toneMapping = ACESFilmicToneMapping
   renderer.outputColorSpace = SRGBColorSpace
@@ -133,10 +161,7 @@ export async function createControllerScene(canvas: HTMLCanvasElement): Promise<
   scene.add(environment)
 
   const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
-  const [gltf, envMap] = await Promise.all([
-    gltfLoader.loadAsync("/3d/controller.glb"),
-    new CubeTextureLoader().setPath("/3d/env/").loadAsync(["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"]) as Promise<CubeTexture>,
-  ])
+  const [gltf, envMap] = await Promise.all([gltfLoader.loadAsync("/3d/controller.glb"), loadCubeMap()])
   // Threlte's <Environment> loads a cube map as linear data, which makes it read brighter.
   envMap.colorSpace = NoColorSpace
   scene.environment = envMap
@@ -152,17 +177,16 @@ export async function createControllerScene(canvas: HTMLCanvasElement): Promise<
       controller.rotation.set(deg(sample(c.rotation.x, position)), deg(sample(c.rotation.y, position)), deg(sample(c.rotation.z, position)))
       renderer.render(scene, camera)
     },
-    resize() {
-      const { clientWidth: w, clientHeight: h } = canvas
+    resize({ width: w, height: h, pixelRatio, viewportWidth }) {
       if (!w || !h) return
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.setPixelRatio(pixelRatio)
       renderer.setSize(w, h, false)
       camera.aspect = w / h
       camera.updateProjectionMatrix()
       // WG's distance, but on a tall narrow screen far enough back that the controller
       // (1.5 wide, resting at z = 0.3) still fits across it.
       const fit = 0.3 + 0.75 / 0.9 / (Math.tan(MathUtils.degToRad(camera.fov / 2)) * camera.aspect)
-      camera.position.set(0, 0, Math.max(window.innerWidth < 769 ? 3 : 2, fit))
+      camera.position.set(0, 0, Math.max(viewportWidth < 769 ? 3 : 2, fit))
     },
     dispose() {
       gltf.scene.traverse((o) => {
@@ -173,6 +197,6 @@ export async function createControllerScene(canvas: HTMLCanvasElement): Promise<
       renderer.dispose()
     },
   }
-  scene3d.resize()
+  scene3d.resize(size)
   return scene3d
 }
