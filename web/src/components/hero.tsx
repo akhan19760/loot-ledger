@@ -9,6 +9,7 @@ import { RollText } from "@/components/motion/roll-text"
 import { SplitText } from "@/components/motion/split-text"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Eyebrow } from "@/components/ui/eyebrow"
+import { useFinePointer } from "@/hooks/use-fine-pointer"
 import { ease, pointerSpring } from "@/lib/motion"
 
 // INK hero: tilted art floating around the headline. Positions are % of the hero.
@@ -55,6 +56,7 @@ interface Props {
 export function Hero({ meta, covers, play, title, onBrowse, onStores, onDeals }: Props) {
   const ref = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
+  const fine = useFinePointer()
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] })
 
   // Pointer position in the hero, -0.5..0.5, smoothed.
@@ -95,7 +97,8 @@ export function Hero({ meta, covers, play, title, onBrowse, onStores, onDeals }:
       <m.div
         aria-hidden
         style={{ x: glowX, y: glowY }}
-        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[42vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-[120px] will-change-transform"
+        // On touch screens it can't follow a pointer and a 120px blur is heavy there: a lighter, still one.
+        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[42vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-[120px] will-change-transform touch:blur-[48px] touch:will-change-auto"
       />
 
       {covers.slice(0, SLOTS.length).map((game, i) => (
@@ -103,8 +106,12 @@ export function Hero({ meta, covers, play, title, onBrowse, onStores, onDeals }:
       ))}
 
       <m.div
-        style={reduced ? undefined : { scale: titleScale, opacity: titleOpacity, filter: titleBlur }}
-        className="relative z-10 grid flex-1 content-center justify-items-center gap-6 px-4 pt-16 pb-8 text-center will-change-[transform,opacity,filter] md:gap-8"
+        // The scroll-linked blur redraws the whole title every frame: not on touch screens.
+        style={reduced ? undefined : fine ? { scale: titleScale, opacity: titleOpacity, filter: titleBlur } : { scale: titleScale, opacity: titleOpacity }}
+        className={cn(
+          "relative z-10 grid flex-1 content-center justify-items-center gap-6 px-4 pt-16 pb-8 text-center md:gap-8",
+          fine ? "will-change-[transform,opacity,filter]" : "will-change-[transform,opacity]",
+        )}
       >
         <m.div initial={{ opacity: 0 }} animate={play ? { opacity: 1 } : undefined} transition={{ duration: 0.8, ease: ease.inkFade, delay: 0.1 }}>
           <Eyebrow className="text-primary">

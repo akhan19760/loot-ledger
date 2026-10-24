@@ -7,6 +7,7 @@ import { ShelfCardButtons } from "@/components/shelf-buttons"
 import { Badge } from "@/components/ui/badge"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { formatPrice } from "@/lib/format"
+import { useFinePointer } from "@/hooks/use-fine-pointer"
 import { ease, pointerSpring } from "@/lib/motion"
 
 // Card width per grid breakpoint in App.tsx: 2 columns, then 3 / 4 / 5 / 6 / 7.
@@ -35,6 +36,9 @@ interface Props {
 export const GameCard = memo(function GameCard({ game, storeName, index, onOpen, deal, appear = true, onAppear }: Props) {
   const { best } = game
   const reduced = useReducedMotion()
+  // Tilt and glare follow a mouse: on a touch screen there's none, so neither is set up.
+  const fine = useFinePointer()
+  const tilt = !reduced && fine
   // Fixed at mount: dropping whileInView later would send the card back to "hidden".
   const [scrollsIn] = useState(appear)
 
@@ -87,7 +91,7 @@ export const GameCard = memo(function GameCard({ game, storeName, index, onOpen,
         data-game-card={game.id}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
-        style={reduced ? undefined : { rotateX, rotateY }}
+        style={tilt ? { rotateX, rotateY } : undefined}
         className="dark group/card relative aspect-[4/5] w-full rounded-2xl text-foreground"
       >
         {/* WG neon glow: drawn once and faded in, rather than a shadow repainted every frame */}
@@ -113,7 +117,9 @@ export const GameCard = memo(function GameCard({ game, storeName, index, onOpen,
             {/* Scaled rather than resized, and blended only while hovered: neither costs a
                 thing on the cards the page scrolls past. */}
             <div className="absolute inset-0 origin-bottom bg-gradient-to-t from-black via-black/85 to-transparent transition-transform duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-y-100 sm:scale-y-75" />
-            <m.div aria-hidden style={{ backgroundImage: glare }} className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100 group-hover/card:mix-blend-screen" />
+            {tilt && (
+              <m.div aria-hidden style={{ backgroundImage: glare }} className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100 group-hover/card:mix-blend-screen" />
+            )}
             <span className="pointer-events-none absolute inset-0 rounded-2xl border border-white/5 transition-colors duration-300 group-hover/card:border-primary" />
   
             {/* WG black circle with the arrow that spins in on hover */}

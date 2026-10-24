@@ -12,6 +12,13 @@
 @custom-variant light (&:not(.dark *));
 /* Stacked (below lg) on a short screen, e.g. an iPhone SE: the loading screen tightens up. */
 @custom-variant compact (@media (max-width: 1023.98px) and (max-height: 760px));
+/* A touch screen (a phone or tablet): lighter effects, since those GPUs and CPUs have far
+   less to spare. The JS side is hooks/use-fine-pointer.ts. */
+@custom-variant touch {
+  @media (hover: none), (pointer: coarse) {
+    @slot;
+  }
+}
 
 @theme inline {
   --font-sans: "Urbanist Variable", ui-sans-serif, system-ui, sans-serif;

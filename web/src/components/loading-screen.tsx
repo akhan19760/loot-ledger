@@ -227,7 +227,7 @@ export function Screen({ meta, metaFailed, matches, matchesFailed, art: artUrls,
 
       {/* The black fades to reveal the page's entrance behind the letters */}
       <motion.div aria-hidden className="absolute inset-0 bg-black" exit={{ opacity: 0 }} transition={{ duration: EXIT_S, ease: ease.wg }} />
-      <div aria-hidden className="grain pointer-events-none absolute -inset-[50%] opacity-[0.05]" />
+      <div aria-hidden className="grain pointer-events-none absolute -inset-[50%] opacity-[0.05] touch:hidden" />
 
       {/* The wordmark sits where the header's will land */}
       <motion.div
