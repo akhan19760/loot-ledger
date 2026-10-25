@@ -3,10 +3,10 @@ import { m } from "motion/react"
 import { RollText } from "@/components/motion/roll-text"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-/** The chip highlight glides between options (one shared layout per group). */
-const pillSpring = { type: "spring", bounce: 0.22, duration: 0.55 } as const
+/** The chip highlight glides between options (one shared layout per group), without a bounce. */
+const pillSpring = { type: "spring", bounce: 0, duration: 0.6 } as const
 
-/** WG chips with one neon pill gliding between them, like the filter bar's. Always one chosen. */
+/** Chips with one lime block gliding between them, like the filter bar's. Always one chosen. */
 export function PillToggle<T extends string>({
   label,
   value,
@@ -35,13 +35,13 @@ export function PillToggle<T extends string>({
         <ToggleGroupItem
           key={v}
           value={v}
-          className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
+          className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
         >
           {value === v && (
             <m.span
               layoutId={layoutId}
               transition={pillSpring}
-              className="absolute inset-0 -z-10 rounded-2xl chip-on"
+              className="chamfer-sm absolute inset-0 -z-10 bg-primary"
             />
           )}
           <RollText>{text}</RollText>

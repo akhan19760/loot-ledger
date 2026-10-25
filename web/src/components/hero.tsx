@@ -1,243 +1,373 @@
-import { m, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from "motion/react"
-import { ArrowDown } from "lucide-react"
-import { useRef } from "react"
+import { AnimatePresence, m, useInView, useReducedMotion } from "motion/react"
+import { ArrowLeft, ArrowRight, Search } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { cn } from "cn"
 import type { FiltersResponse, GameSummary } from "@lootledger/shared"
 import { CoverArt } from "@/components/cover-art"
-import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
 import { SplitText } from "@/components/motion/split-text"
+import { ShelfActions } from "@/components/shelf-buttons"
 import { Button, ButtonCircle } from "@/components/ui/button"
-import { Eyebrow } from "@/components/ui/eyebrow"
-import { useFinePointer } from "@/hooks/use-fine-pointer"
-import { ease, pointerSpring } from "@/lib/motion"
+import { capitalize, formatPrice, timeAgo } from "@/lib/format"
+import { thumb } from "@/lib/images"
+import { ease } from "@/lib/motion"
+import { play as playSound } from "@/lib/sfx"
 
-// INK hero: tilted art floating around the headline. Positions are % of the hero.
-const SLOTS = [
-  { left: "3%", top: "12%", rotate: -12, depth: 1.2 },
-  { left: "80%", top: "9%", rotate: 10, depth: 0.8 },
-  { left: "8%", top: "56%", rotate: 8, depth: 1 },
-  { left: "84%", top: "52%", rotate: -9, depth: 1.4 },
-  { left: "24%", top: "74%", rotate: -5, depth: 0.6, desktop: true },
-  { left: "66%", top: "76%", rotate: 11, depth: 0.9, desktop: true },
-] as const
+/** How the title arrives: slides in itself, or is flown in by the loading screen's letters (hidden until they land). */
+export type TitleEntrance = "slide" | "flying" | "landed"
 
 const BRAND = "LootLedger"
-const NEON_FROM = 4 // "Ledger" gets WG's neon gradient
+const NEON_FROM = 4 // "Ledger"
+const FEATURED = 12
+/** An attract mode: the featured game moves on by itself this often, unless someone is looking. */
+const TURN_MS = 7000
+/** The hero's cover is drawn up to ~30rem wide: this copy stays sharp on a 2x screen. */
+export const HERO_COVER_WIDTH = 800
 
-/** Each letter shows its own slice of one gradient, so the word reads as one continuous sweep. */
-const neonSlice = (k: number, n: number): React.CSSProperties => ({
-  backgroundSize: `${n * 100}% 100%`,
-  backgroundPosition: `${(k / (n - 1)) * 100}% 0`,
-})
-
-// WG rows of big words, alternating white and neon gradient, sliding opposite ways on scroll.
-const ROW_A = ["PS5", "PS4", "Switch", "Xbox", "PC", "PS5", "PS4", "Switch", "Xbox", "PC"]
-const ROW_B = ["New", "Used", "Disc", "Digital", "Deals", "New", "Used", "Disc", "Digital", "Deals"]
-
-/**
- * How the title arrives: sliding up letter by letter, or flown in by the loading screen
- * (`flying` keeps it hidden in place while the letters travel; `landed` shows it).
- */
-export type TitleEntrance = "slide" | "flying" | "landed"
+const pad = (n: number) => String(n).padStart(2, "0")
 
 interface Props {
   meta: FiltersResponse | undefined
-  covers: GameSummary[]
+  /** The most-stocked games with art; the first dozen take turns as the featured game. */
+  covers: readonly GameSummary[]
+  storeNames: Map<string, string>
+  /** False until the loading screen has gone: the entrance waits for it. */
   play: boolean
   title: TitleEntrance
-  onBrowse: () => void
-  onStores: () => void
-  onDeals: () => void
+  onOpen: (id: string) => void
+  onSearch: () => void
 }
 
-// Everything here that scroll or the pointer moves has `will-change`: a transform set
-// from JS on an ordinary element makes the browser repaint it every frame.
-export function Hero({ meta, covers, play, title, onBrowse, onStores, onDeals }: Props) {
-  const ref = useRef<HTMLElement>(null)
+/**
+ * The title screen (DESIGN.md, "Hero"): the wordmark like a game's logo, and one featured game
+ * as key art. Its cover, tilted on a lime plate; its cheapest price, the biggest figure on the
+ * page; its title, huge. Every few seconds the next game wipes in, like a game's attract mode,
+ * unless the pointer or focus is on it; arrows, the segments along the bottom and ← → move by hand.
+ */
+export function Hero({ meta, covers, storeNames, play, title, onOpen, onSearch }: Props) {
   const reduced = useReducedMotion()
-  const fine = useFinePointer()
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] })
+  const games = covers.slice(0, FEATURED)
+  const n = games.length
+  const [focus, setFocus] = useState(0)
+  const [direction, setDirection] = useState(1)
+  const [resting, setResting] = useState(false)
+  const section = useRef<HTMLElement>(null)
+  const inView = useInView(section, { amount: 0.4 })
+  const game = n ? games[focus % n]! : undefined
 
-  // Pointer position in the hero, -0.5..0.5, smoothed.
-  const px = useMotionValue(0)
-  const py = useMotionValue(0)
-  const sx = useSpring(px, pointerSpring)
-  const sy = useSpring(py, pointerSpring)
-  // The glow's offset from the hero's centre in px: moved by transform, not left/top,
-  // so following the pointer doesn't re-lay out (and re-blur) it every frame.
-  const gx = useMotionValue(0)
-  const gy = useMotionValue(0)
-  const glowX = useSpring(gx, pointerSpring)
-  const glowY = useSpring(gy, pointerSpring)
+  const turnTo = useCallback(
+    (i: number, by = i > focus ? 1 : -1) => {
+      if (!n) return
+      setDirection(by)
+      setFocus(((i % n) + n) % n)
+      playSound("tick")
+    },
+    [focus, n],
+  )
+  const turn = useCallback((by: number) => turnTo(focus + by, by), [focus, turnTo])
 
-  const titleScale = useTransform(scrollYProgress, [0, 0.7], [1, 0.82])
-  const titleOpacity = useTransform(scrollYProgress, [0.1, 0.65], [1, 0])
-  const titleBlur = useTransform(scrollYProgress, [0.1, 0.65], ["blur(0px)", "blur(12px)"])
-  const rowA = useTransform(scrollYProgress, [0, 1], ["0%", "-22%"])
-  const rowB = useTransform(scrollYProgress, [0, 1], ["-22%", "0%"])
+  // Attract mode: on to the next game, unless someone's looking, it's off screen or hidden.
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const onChange = () => setVisible(document.visibilityState === "visible")
+    document.addEventListener("visibilitychange", onChange)
+    return () => document.removeEventListener("visibilitychange", onChange)
+  }, [])
+  const attract = play && !reduced && !resting && inView && visible && n > 1
+  useEffect(() => {
+    if (!attract) return
+    const t = setTimeout(() => {
+      setDirection(1)
+      setFocus((f) => (f + 1) % n)
+    }, TURN_MS)
+    return () => clearTimeout(t)
+  }, [attract, focus, n])
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (reduced || e.pointerType !== "mouse") return
-    const r = e.currentTarget.getBoundingClientRect()
-    px.set((e.clientX - r.left) / r.width - 0.5)
-    py.set((e.clientY - r.top) / r.height - 0.5)
-    gx.set(e.clientX - r.left - r.width / 2)
-    gy.set(e.clientY - r.top - r.height / 2)
-  }
+  // ← → while the hero is on screen (not while typing, or with a dialog open over it).
+  useEffect(() => {
+    if (!inView || n < 2) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return
+      const t = e.target as HTMLElement | null
+      if (t?.closest("input, textarea, select, [contenteditable], [role=dialog], [role=listbox], [role=slider]")) return
+      if (document.querySelector("[role=dialog]")) return
+      e.preventDefault()
+      turn(e.key === "ArrowRight" ? 1 : -1)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [inView, n, turn])
+
+  // The next cover, fetched ahead (as CoverArt asks for it) so its wipe never uncovers an empty frame.
+  useEffect(() => {
+    const next = n > 1 ? games[(focus + 1) % n] : undefined
+    if (!next?.image) return
+    const img = new Image()
+    img.referrerPolicy = "no-referrer"
+    img.src = thumb(next.image, HERO_COVER_WIDTH)
+  }, [focus, games, n])
+  // The queue after the featured game, like an attract mode's "up next".
+  const upNext = n > 1 ? Array.from({ length: Math.min(5, n - 1) }, (_, k) => (focus + 1 + k) % n) : []
+
+  const rise = (delay: number) =>
+    ({ initial: reduced ? false : { opacity: 0, y: 28 }, animate: play ? { opacity: 1, y: 0 } : undefined, transition: { duration: 1, ease: ease.cine, delay } }) as const
 
   return (
     <section
-      ref={ref}
+      ref={section}
       aria-labelledby="hero-title"
-      onPointerMove={onPointerMove}
-      className="dark relative isolate flex min-h-[calc(100svh-var(--height-bar-mobile)-1.5rem)] flex-col justify-between overflow-hidden rounded-2xl bg-black text-foreground md:min-h-[calc(100svh-var(--height-bar)-1.5rem)]"
+      className="dark relative isolate grid min-h-svh grid-rows-[auto_1fr_auto] gap-6 overflow-hidden bg-background px-4 pt-[calc(var(--height-bar-mobile)+0.5rem)] pb-8 text-foreground md:gap-8 md:px-8 md:pt-[calc(var(--height-bar)+0.25rem)] md:pb-10"
     >
-      {/* WG star glow: a blurred neon light that follows the pointer */}
-      <m.div
-        aria-hidden
-        style={{ x: glowX, y: glowY }}
-        // On touch screens it can't follow a pointer and a 120px blur is heavy there: a lighter, still one.
-        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[42vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-[120px] will-change-transform touch:blur-[48px] touch:will-change-auto"
-      />
-
-      {covers.slice(0, SLOTS.length).map((game, i) => (
-        <FloatingCover key={game.id} game={game} slot={SLOTS[i]!} index={i} play={play} progress={scrollYProgress} sx={sx} sy={sy} />
-      ))}
-
-      <m.div
-        // The scroll-linked blur redraws the whole title every frame: not on touch screens.
-        style={reduced ? undefined : fine ? { scale: titleScale, opacity: titleOpacity, filter: titleBlur } : { scale: titleScale, opacity: titleOpacity }}
-        className={cn(
-          "relative z-10 grid flex-1 content-center justify-items-center gap-6 px-4 pt-16 pb-8 text-center md:gap-8",
-          fine ? "will-change-[transform,opacity,filter]" : "will-change-[transform,opacity]",
-        )}
-      >
-        <m.div initial={{ opacity: 0 }} animate={play ? { opacity: 1 } : undefined} transition={{ duration: 0.8, ease: ease.inkFade, delay: 0.1 }}>
-          <Eyebrow className="text-primary">
-            {meta ? (
-              <>
-                <CountUp value={meta.stores.length} /> stores · <CountUp value={meta.totals.offers} /> offers · <CountUp value={meta.totals.games} /> games
-              </>
+      {/* ------------------------------------------------ the logo */}
+      <div className="flex items-start justify-between gap-6">
+        <div className="grid gap-3">
+          <h1
+            id="hero-title"
+            className="font-display text-[clamp(2.4rem,6.2vw,6.25rem)] leading-[0.86] uppercase short:text-[clamp(2.4rem,5vw,4.5rem)]"
+            style={title === "flying" ? { opacity: 0 } : undefined}
+          >
+            {play ? (
+              <SplitText
+                text={BRAND}
+                by="letter"
+                onMount
+                still={title !== "slide"}
+                stagger={0.05}
+                delay={0.1}
+                partClassName={(_, i) => (i >= NEON_FROM ? "text-neon" : undefined)}
+              />
             ) : (
-              "Price comparison"
+              <span className="invisible">{BRAND}</span>
             )}
-          </Eyebrow>
+          </h1>
+          <m.p {...rise(0.3)} className="max-w-[34ch] text-base text-muted-foreground md:text-lg">
+            Every game&rsquo;s price at {meta ? `${meta.stores.length} ` : ""}Pakistani game shops, new and used, cheapest first.
+          </m.p>
+        </div>
+        <m.div {...rise(0.4)} className="hidden justify-items-end gap-2 text-right sm:grid">
+          <span className="label-caps text-foreground">
+            Featured {n ? `${pad(focus + 1)} / ${pad(n)}` : ""}
+          </span>
+          <span className="label-caps text-muted-foreground">{meta ? `${meta.stores.length} shops${meta.generated ? ` · checked ${timeAgo(meta.generated)}` : ""}` : "Checking the shops…"}</span>
         </m.div>
+      </div>
 
-        <h1
-          id="hero-title"
-          className="font-display text-[clamp(4.5rem,18vw,18rem)] leading-[0.82] tracking-tight uppercase"
-          style={title === "flying" ? { opacity: 0 } : undefined}
-        >
-          {play ? (
-            <SplitText
-              text={BRAND}
-              by="letter"
-              onMount
-              still={title !== "slide"}
-              stagger={0.05}
-              delay={0.15}
-              partClassName={(_, i) => (i >= NEON_FROM ? "text-neon" : undefined)}
-              partStyle={(_, i) => (i >= NEON_FROM ? neonSlice(i - NEON_FROM, BRAND.length - NEON_FROM) : undefined)}
-            />
-          ) : (
-            <span className="invisible">{BRAND}</span>
+      {/* ------------------------------------------------ the featured game */}
+      <div
+        className="grid min-h-0 items-end gap-x-10 gap-y-6 lg:grid-cols-12"
+        onPointerEnter={() => setResting(true)}
+        onPointerLeave={() => setResting(false)}
+        onFocus={() => setResting(true)}
+        onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setResting(false)}
+      >
+        <Cover game={game} index={focus} direction={direction} play={play} reduced={!!reduced} onOpen={onOpen} />
+
+        <div className="grid min-w-0 content-end gap-5 lg:col-span-7 lg:row-start-1 md:gap-6">
+          {upNext.length > 0 && (
+            <m.div {...rise(0.5)} className="mb-auto hidden items-center gap-4 pb-6 lg:flex short:hidden">
+              <span className="label-caps text-muted-foreground">Up next</span>
+              <div className="flex gap-2">
+                {upNext.map((i) => (
+                  <button
+                    key={games[i]!.id}
+                    type="button"
+                    aria-label={`Show ${games[i]!.title}`}
+                    onClick={() => turnTo(i, 1)}
+                    className="group/next chamfer-sm relative aspect-[4/5] w-12 overflow-hidden bg-raised outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-lime"
+                  >
+                    <CoverArt src={games[i]!.image} title={games[i]!.title} width={200} className="opacity-60 transition-opacity duration-300 group-hover/next:opacity-100" />
+                  </button>
+                ))}
+              </div>
+            </m.div>
           )}
-        </h1>
+          <AnimatePresence mode="wait" initial={false}>
+            {game ? (
+              <m.div
+                key={game.id}
+                className="grid gap-5 md:gap-6"
+                initial={reduced ? false : { opacity: 0 }}
+                animate={play ? { opacity: 1 } : { opacity: 0 }}
+                exit={reduced ? undefined : { opacity: 0, transition: { duration: 0.25 } }}
+                transition={{ duration: 0.2 }}
+              >
+                <Line delay={0.05} reduced={!!reduced} play={play}>
+                  <span className="label-caps text-muted-foreground">Cheapest today</span>
+                  <p className="font-display text-[clamp(3rem,8.4vw,8.75rem)] leading-[0.84] text-primary-ink short:text-[clamp(3rem,6.5vw,6.5rem)]">{formatPrice(game.best.price)}</p>
+                  <p className="mt-2 text-base text-muted-foreground md:text-lg">
+                    at <span className="font-semibold text-foreground">{storeNames.get(game.best.store) ?? game.best.store}</span>
+                    {" · "}
+                    {[game.best.platform, game.best.condition && capitalize(game.best.condition)].filter(Boolean).join(" · ")}
+                    {" · "}
+                    {game.storeCount} {game.storeCount === 1 ? "shop" : "shops"} compared
+                  </p>
+                </Line>
+                <Line delay={0.14} reduced={!!reduced} play={play}>
+                  <h2
+                    className="font-display text-[clamp(2rem,calc(108vw/var(--per-line)),4.75rem)] leading-[0.9] text-balance uppercase lg:text-[clamp(2.5rem,calc(62vw/var(--per-line)),8.5rem)] short:lg:text-[clamp(2.25rem,calc(54vw/var(--per-line)),6rem)]"
+                    style={{ "--per-line": perLine(game.title) } as React.CSSProperties}
+                  >
+                    {game.title}
+                  </h2>
+                </Line>
+              </m.div>
+            ) : (
+              <div className="grid gap-5">
+                <span className="label-caps text-muted-foreground">Cheapest today</span>
+                <div className="sweep chamfer h-[clamp(3rem,8.4vw,8.75rem)] w-2/3 bg-surface" />
+                <div className="sweep chamfer h-[clamp(2.5rem,6vw,6rem)] w-5/6 bg-surface" />
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
-        <m.p
-          initial={{ opacity: 0, y: 24 }}
-          animate={play ? { opacity: 1, y: 0 } : undefined}
-          transition={{ duration: 1, ease: ease.wg, delay: 0.55 }}
-          className="max-w-xl text-lg text-muted-foreground md:text-xl"
-        >
-          Compare new and used PlayStation game prices across Pakistani game stores in one place.
-        </m.p>
-
-        <m.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={play ? { opacity: 1, y: 0 } : undefined}
-          transition={{ duration: 1, ease: ease.wg, delay: 0.7 }}
-          className="flex flex-wrap justify-center gap-3"
-        >
-          <Button size="lg" onClick={onBrowse}>
-            <RollText>Start browsing</RollText>
-            <ButtonCircle icon={ArrowDown} />
+      {/* ------------------------------------------------ the controls */}
+      <m.div {...rise(0.55)} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button size="lg" disabled={!game} onClick={() => game && onOpen(game.id)} className="max-sm:flex-1">
+            <RollText>{game ? `See all ${game.offerCount} prices` : "See every price"}</RollText>
+            <ButtonCircle />
           </Button>
-          <Button variant="secondary" size="lg" className="pr-7" onClick={onDeals}>
-            <RollText>Today's deals</RollText>
+          {game && (
+            <div className="hidden md:block">
+              <ShelfActions game={game} />
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="mr-2 hidden label-caps text-muted-foreground xl:inline">← → Browse · Enter Open</span>
+          <Button variant="round" size="icon" aria-label="Previous game" disabled={n < 2} onClick={() => turn(-1)}>
+            <ArrowLeft />
           </Button>
-          <Button variant="secondary" size="lg" className="pr-7" onClick={onStores}>
-            <RollText>See the stores</RollText>
+          <Button variant="round" size="icon" aria-label="Next game" disabled={n < 2} onClick={() => turn(1)}>
+            <ArrowRight />
           </Button>
-        </m.div>
+          <Button variant="round" size="icon" aria-label="Search the library" onClick={onSearch}>
+            <Search />
+          </Button>
+        </div>
       </m.div>
 
-      <div aria-hidden className="relative z-0 grid gap-1 pb-6 font-sans text-[clamp(2.75rem,8vw,8rem)] leading-[1] font-medium tracking-[-0.04em] whitespace-nowrap select-none">
-        <WordRow words={ROW_A} x={rowA} play={play} />
-        <WordRow words={ROW_B} x={rowB} play={play} offset={1} />
-      </div>
+      {/* One segment per featured game along the bottom edge; the current one fills while it waits */}
+      {n > 1 && (
+        <div className="absolute inset-x-4 bottom-3 flex gap-1 md:inset-x-8 md:bottom-4">
+          {games.map((g, i) => (
+            <button
+              key={g.id}
+              type="button"
+              aria-label={`Show ${g.title}`}
+              aria-current={i === focus}
+              onClick={() => turnTo(i)}
+              className="group/seg relative h-4 flex-1 outline-none focus-visible:outline-2 focus-visible:outline-foreground"
+            >
+              <span className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 bg-foreground/15 transition-colors group-hover/seg:bg-foreground/35">
+                {i < focus && <span className="absolute inset-0 bg-foreground/55" />}
+                {i === focus && (
+                  <m.span
+                    key={`${focus}-${attract}`}
+                    className="absolute inset-0 origin-left bg-primary"
+                    initial={{ scaleX: attract ? 0 : 1 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: attract ? TURN_MS / 1000 : 0, ease: "linear" }}
+                  />
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
 
-function WordRow({ words, x, play, offset = 0 }: { words: string[]; x: MotionValue<string>; play: boolean; offset?: number }) {
+/** A block of the featured game's text, rising out of a mask as the game arrives. */
+function Line({ delay, reduced, play, children }: { delay: number; reduced: boolean; play: boolean; children: React.ReactNode }) {
   return (
-    <m.div
-      style={{ x }}
-      initial={{ opacity: 0 }}
-      animate={play ? { opacity: 1 } : undefined}
-      transition={{ duration: 1.2, ease: ease.inkFade, delay: 0.9 + offset * 0.15 }}
-      className="flex gap-[0.35em] will-change-transform"
-    >
-      {words.map((w, i) => (
-        <span key={i} className={(i + offset) % 2 ? (i % 4 < 2 ? "text-neon" : "text-neon-reverse") : "text-white"}>
-          {w}
-        </span>
-      ))}
-    </m.div>
+    <div className="overflow-hidden pb-[0.06em]">
+      <m.div
+        className="grid gap-2"
+        initial={reduced ? false : { y: "105%" }}
+        animate={play ? { y: "0%" } : undefined}
+        transition={{ duration: 0.9, ease: ease.cine, delay }}
+      >
+        {children}
+      </m.div>
+    </div>
   )
 }
 
-function FloatingCover({
-  game,
-  slot,
-  index,
-  play,
-  progress,
-  sx,
-  sy,
-}: {
-  game: GameSummary
-  slot: (typeof SLOTS)[number]
-  index: number
-  play: boolean
-  progress: MotionValue<number>
-  sx: MotionValue<number>
-  sy: MotionValue<number>
-}) {
-  const scrollY = useTransform(progress, [0, 1], [0, -260 * slot.depth])
-  const mouseX = useTransform(sx, (v) => v * -60 * slot.depth)
-  const mouseY = useTransform(sy, (v) => v * -40 * slot.depth)
-  const y = useTransform(() => scrollY.get() + mouseY.get())
+/**
+ * Letters on the longer of the title's two lines, give or take a word: the h2 divides its
+ * column by this, so short names run huge and long ones step down, two lines at most.
+ * (Dela Gothic One is wide, about 0.85em a capital.)
+ */
+const perLine = (title: string) => Math.max(7, Math.ceil(title.length / 2) + 2)
 
+/**
+ * The featured cover, tilted on a lime plate. A new game wipes across it (from the side it's
+ * coming from) while the old one is wiped off; the plate stays and turns a little.
+ */
+function Cover({
+  game,
+  index,
+  direction,
+  play,
+  reduced,
+  onOpen,
+}: {
+  game: GameSummary | undefined
+  index: number
+  direction: number
+  play: boolean
+  reduced: boolean
+  onOpen: (id: string) => void
+}) {
+  const hidden = direction > 0 ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)"
+  const gone = direction > 0 ? "inset(0% 100% 0% 0%)" : "inset(0% 0% 0% 100%)"
   return (
     <m.div
-      aria-hidden
-      style={{ left: slot.left, top: slot.top, x: mouseX, y }}
-      className={cn("absolute z-[5] w-[clamp(84px,11vw,190px)] will-change-transform", "desktop" in slot && "hidden md:block")}
+      className="relative mx-auto w-[min(50vw,15rem)] lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:mr-[4%] lg:w-[min(30vw,29rem)] lg:self-center short:lg:w-[min(24vw,22rem)]"
+      initial={reduced ? false : { opacity: 0, y: 60, rotate: -6 }}
+      animate={play ? { opacity: 1, y: 0, rotate: 0 } : undefined}
+      transition={{ duration: 1.2, ease: ease.cine, delay: 0.2 }}
     >
+      {/* The lime plate behind the case */}
       <m.div
-        initial={{ clipPath: "inset(100% 0% 0% 0%)", rotate: slot.rotate * 1.6, scale: 1.1 }}
-        animate={play ? { clipPath: "inset(0% 0% 0% 0%)", rotate: slot.rotate, scale: 1 } : undefined}
-        whileHover={{ rotate: 0, scale: 1.08, transition: { duration: 0.5, ease: ease.wg } }}
-        transition={{ duration: 1.1, ease: ease.wg, delay: 0.25 + index * 0.08 }}
-        className="pointer-events-auto aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 shadow-[0_30px_60px_-20px_rgb(0_0_0/0.8)]"
-      >
-        {/* At most 190px wide; 400px covers 2x screens and is the copy the loading screen preloads */}
-        <CoverArt src={game.image} title={game.title} width={400} />
-      </m.div>
+        aria-hidden
+        className="chamfer-lg absolute inset-0 bg-primary"
+        animate={{ rotate: index % 2 ? -7 : -4, x: index % 2 ? "-5%" : "6%", y: "4%" }}
+        transition={{ duration: 1.1, ease: ease.cine }}
+      />
+      <div className="relative aspect-[4/5] rotate-[3deg]">
+        <AnimatePresence initial={false} custom={direction}>
+          {game ? (
+            <m.button
+              key={game.id}
+              type="button"
+              data-game-card={game.id}
+              aria-label={`${game.title}: see all ${game.offerCount} prices`}
+              onClick={() => onOpen(game.id)}
+              className="group/cover absolute inset-0 block outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+              initial={reduced ? false : { clipPath: hidden }}
+              animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
+              exit={reduced ? undefined : { clipPath: gone, transition: { duration: 0.7, ease: ease.cineInOut } }}
+              transition={{ duration: 1, ease: ease.cineInOut }}
+            >
+              <span className="chamfer-lg absolute inset-0 overflow-hidden bg-raised">
+                <CoverArt
+                  src={game.image}
+                  title={game.title}
+                  width={HERO_COVER_WIDTH}
+                  className="transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cover:scale-[1.04]"
+                />
+              </span>
+            </m.button>
+          ) : (
+            <div className={cn("sweep chamfer-lg absolute inset-0 bg-raised")} />
+          )}
+        </AnimatePresence>
+      </div>
     </m.div>
   )
 }

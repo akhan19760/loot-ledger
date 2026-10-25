@@ -1,6 +1,7 @@
 import { AnimatePresence, m } from "motion/react"
 import { Search, SlidersHorizontal, X } from "lucide-react"
 import { useEffect, useEffectEvent, useId, useState } from "react"
+import { cn } from "cn"
 import type { FiltersResponse, SortOrder } from "@lootledger/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
@@ -8,7 +9,7 @@ import { useScrollLock } from "@/components/motion/smooth-scroll"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { DrawerContent } from "@/components/ui/drawer"
-import { Eyebrow } from "@/components/ui/eyebrow"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Toggle } from "@/components/ui/toggle"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -26,8 +27,8 @@ const KINDS = [["game", "Games"], ["hardware", "Hardware"], ["giftcard", "Gift c
 const SORTS: [SortOrder, string][] = [["price", "Lowest price"], ["spread", "Biggest price difference"], ["stores", "Most stores"], ["az", "A–Z"]]
 const EXAMPLES = ["spider-man", "fc 26", "elden ring", "god of war", "gran turismo 7"]
 
-/** The chip highlight glides between options (one shared layout per group). */
-const pillSpring = { type: "spring", bounce: 0.22, duration: 0.55 } as const
+/** The chip highlight glides between options (one shared layout per group), without a bounce. */
+const pillSpring = { type: "spring", bounce: 0, duration: 0.6 } as const
 
 interface Props {
   filters: Filters
@@ -48,12 +49,12 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
     <>
       {/* Phones: just the search, with the filters a tap away in a drawer, so the games
           aren't a long scroll down */}
-      <section aria-label="Search and filters" className="flex items-center gap-2 rounded-2xl border border-border/50 bg-surface p-2 md:hidden">
+      <section aria-label="Search and filters" className="chamfer flex items-center gap-2 bg-surface p-2 md:hidden">
         <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} lead="Search, e.g." className="min-w-0 flex-1" />
         <FilterDrawer filters={filters} meta={meta} list={list} counts={counts} onChange={onChange} onListChange={onListChange} />
       </section>
 
-      <section aria-label="Filters" className="hidden grid-cols-1 gap-8 rounded-2xl border border-border/50 bg-surface p-8 md:grid">
+      <section aria-label="Filters" className="chamfer-lg hidden grid-cols-1 gap-8 bg-surface p-8 md:grid">
         <ListChips list={list} counts={counts} onChange={onListChange} />
 
         <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} />
@@ -65,17 +66,17 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
 
           <div className="ml-auto flex items-center gap-4">
             {total !== undefined && (
-              <Eyebrow className="text-muted-foreground" aria-live="polite">
+              <Label className="text-sm" aria-live="polite">
                 <CountUp value={total} duration={0.6} /> {total === 1 ? "result" : "results"}
-              </Eyebrow>
+              </Label>
             )}
             <AnimatePresence>
               {changed && (
                 <m.div
-                  initial={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, scale: 0.6, filter: "blur(6px)" }}
-                  transition={{ duration: 0.4, ease: ease.inkRoll }}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ duration: 0.4, ease: ease.cine }}
                 >
                   <Button variant="secondary" onClick={onReset}>
                     <RollText>Reset</RollText>
@@ -139,8 +140,8 @@ function FilterDrawer({
                 initial={{ scale: 0.4 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0 }}
-                transition={{ duration: 0.4, ease: ease.inkRoll }}
-                className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-semibold text-black tabular-nums"
+                transition={{ duration: 0.4, ease: ease.cine }}
+                className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center bg-primary px-1 text-[10px] font-bold text-ink tabular-nums"
               >
                 {active}
               </m.span>
@@ -242,28 +243,38 @@ function SelectFilters({ filters, meta, onChange, fill = false }: { filters: Fil
 }
 
 /**
- * Rounded search field: a magnifier, the text, and a clear button that spins in. The
- * border lights neon on focus; while empty, the example after "Search games, e.g."
- * rolls to the next one (INK slide).
+ * Chamfered search field: a magnifier, the text, and a clear button that turns in. A lime
+ * bar runs along its foot on focus; while empty, the example after "Search games, e.g."
+ * rolls to the next one (INK slide). `lg` is the hero's; `action` sits at its end.
  */
-function SearchField({
+export function SearchField({
   committed,
   onCommit,
   lead = "Search games, e.g.",
+  size = "default",
+  action,
   className,
 }: {
   committed: string
   onCommit: (value: string) => void
   lead?: string
+  size?: "default" | "lg"
+  /** A button at the field's end, e.g. the hero's submit. */
+  action?: React.ReactNode
   className?: string
 }) {
   const q = useDebouncedSearch(committed, onCommit)
   const [focused, setFocused] = useState(false)
   const example = useCycle(EXAMPLES.length, 2600, !q.value)
+  const text = size === "lg" ? "text-base md:text-xl" : "text-base md:text-lg"
 
   return (
     <div
-      className={`relative flex h-12 items-center gap-3 rounded-2xl border border-border bg-white/5 pr-1.5 pl-4 transition-[border-color,box-shadow] duration-300 focus-within:border-primary focus-within:shadow-[0_0_18px_-6px_var(--primary)] light:bg-black/[0.03] light:focus-within:border-foreground light:focus-within:shadow-none md:h-14 md:pl-5 ${className ?? ""}`}
+      className={cn(
+        "chamfer relative flex items-center gap-3 bg-secondary pr-1.5 pl-4 shadow-[inset_0_-2px_0_transparent] transition-shadow duration-300 focus-within:shadow-[inset_0_-3px_0_var(--primary-ink)] md:pl-5",
+        size === "lg" ? "h-14 md:h-16 md:pr-2" : "h-12 md:h-14",
+        className,
+      )}
     >
       <Search aria-hidden className={`size-5 shrink-0 transition-colors ${focused ? "text-foreground" : "text-muted-foreground"}`} />
       <div className="relative min-w-0 flex-1 self-stretch">
@@ -276,11 +287,11 @@ function SearchField({
           onChange={(e) => q.set(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className="size-full bg-transparent text-base text-foreground outline-none md:text-lg [&::-webkit-search-cancel-button]:hidden"
+          className={`size-full bg-transparent text-foreground outline-none [&::-webkit-search-cancel-button]:hidden ${text}`}
         />
         {!q.value && (
-          <span aria-hidden className="pointer-events-none absolute inset-0 flex items-center gap-[0.3em] overflow-hidden text-base whitespace-nowrap md:text-lg">
-            <span className={focused ? "text-foreground transition-colors" : "text-muted-foreground transition-colors"}>{lead}</span>
+          <span aria-hidden className={`pointer-events-none absolute inset-0 flex items-center gap-[0.3em] overflow-hidden whitespace-nowrap ${text}`}>
+            <span className="text-muted-foreground">{lead}</span>
             <span className="relative inline-flex h-[1.3em] min-w-0 items-center overflow-hidden">
               <AnimatePresence mode="popLayout" initial={false}>
                 <m.span
@@ -289,7 +300,7 @@ function SearchField({
                   animate={{ y: "0%" }}
                   exit={{ y: "-105%" }}
                   transition={{ duration: 0.7, ease: ease.wgInOut }}
-                  className="text-neon"
+                  className="text-foreground"
                 >
                   {EXAMPLES[example]}
                 </m.span>
@@ -303,22 +314,24 @@ function SearchField({
         {q.value && (
           <m.span
             className="shrink-0"
-            initial={{ opacity: 0, scale: 0.4, rotate: -90 }}
+            initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            exit={{ opacity: 0, scale: 0.4, rotate: 90 }}
-            transition={{ duration: 0.4, ease: ease.inkRoll }}
+            exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
+            transition={{ duration: 0.4, ease: ease.cine }}
           >
-            <Button variant="round" size="icon-sm" aria-label="Clear search" onClick={() => q.set("")}>
+            {/* type="button": inside the hero's form it must clear, not submit */}
+            <Button type="button" variant="round" size="icon-sm" aria-label="Clear search" onClick={() => q.set("")}>
               <X />
             </Button>
           </m.span>
         )}
       </AnimatePresence>
+      {action}
     </div>
   )
 }
 
-/** WG chips with one neon pill gliding between them, under an eyebrow label. "" is a value like any other. */
+/** Chips with one lime block gliding between them, under a small label. "" is a value like any other. */
 export function ChipGroup({
   label,
   value,
@@ -333,7 +346,7 @@ export function ChipGroup({
   const layoutId = useId()
   return (
     <div className="grid min-w-0 content-start gap-3">
-      <Eyebrow className="text-muted-foreground">{label}</Eyebrow>
+      <Label className="label-caps">{label}</Label>
       <ToggleGroup
         type="single"
         aria-label={label}
@@ -347,13 +360,13 @@ export function ChipGroup({
             <ToggleGroupItem
               key={toUi(v)}
               value={toUi(v)}
-              className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
+              className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
             >
               {on && (
                 <m.span
                   layoutId={layoutId}
                   transition={pillSpring}
-                  className="absolute inset-0 -z-10 rounded-2xl chip-on"
+                  className="chamfer-sm absolute inset-0 -z-10 bg-primary"
                 />
               )}
               <RollText>{text}</RollText>
@@ -371,7 +384,7 @@ function StockToggle({ pressed, onChange, className }: { pressed: boolean; onCha
       pressed={pressed}
       onPressedChange={onChange}
       aria-label="In stock only"
-      className={`${className ?? ""} group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent`}
+      className={`${className ?? ""} group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent`}
     >
       <AnimatePresence initial={false}>
         {pressed && (
@@ -381,7 +394,7 @@ function StockToggle({ pressed, onChange, className }: { pressed: boolean; onCha
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.7 }}
             transition={pillSpring}
-            className="absolute inset-0 -z-10 rounded-2xl chip-on"
+            className="chamfer-sm absolute inset-0 -z-10 bg-primary"
           />
         )}
       </AnimatePresence>

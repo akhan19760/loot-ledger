@@ -4,7 +4,7 @@ import { useState } from "react"
 export type Theme = "dark" | "light"
 
 const KEY = "lootledger-theme" // also read by the inline script in index.html
-const THEME_COLOR: Record<Theme, string> = { dark: "#000000", light: "#f1f1ec" }
+const THEME_COLOR: Record<Theme, string> = { dark: "#0b0c0e", light: "#eeede8" }
 
 const current = (): Theme => (document.documentElement.classList.contains("dark") ? "dark" : "light")
 

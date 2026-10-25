@@ -28,7 +28,7 @@ const FLY_S = 1.1
 const FLY_STAGGER = 0.04
 const LANDED_S = FLY_S + 9 * FLY_STAGGER + 0.15 // the last letter down, with a frame or two to measure
 
-const FONTS = ["1em Anton", "1em 'Urbanist Variable'"]
+const FONTS = ["1em 'Dela Gothic One'", "1em 'Mona Sans Variable'"]
 const LETTERS = [..."LootLedger"]
 
 // Keys that never count as "any key".
@@ -411,11 +411,6 @@ function flight(from: HTMLElement, to: HTMLElement): Flight {
       letterSpacing: cs.letterSpacing,
       textTransform: cs.textTransform as React.CSSProperties["textTransform"],
       color: cs.color,
-      // The neon letters' slice of the title's gradient
-      backgroundImage: cs.backgroundImage,
-      backgroundSize: cs.backgroundSize,
-      backgroundPosition: cs.backgroundPosition,
-      backgroundClip: "text",
     },
     x: a.left + a.width / 2 - (b.left + b.width / 2),
     y: a.top + a.height / 2 - (b.top + b.height / 2),

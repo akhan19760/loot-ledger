@@ -20,16 +20,16 @@ function useShelfToggle(game: ShelfGame) {
   return { current, toggle }
 }
 
-/** The icon, popping in when it switches on (INK roll ease). */
+/** The icon, turning in when it switches on (cinematic ease, no overshoot). */
 function ShelfIcon({ list, on }: { list: ShelfList; on: boolean }) {
   const reduced = useReducedMotion()
   const Icon = ICONS[list]
   return (
     <m.span
       key={String(on)}
-      initial={reduced || !on ? false : { scale: 0.3, rotate: -30 }}
+      initial={reduced || !on ? false : { scale: 0.5, rotate: -45 }}
       animate={{ scale: 1, rotate: 0 }}
-      transition={{ duration: 0.5, ease: ease.inkRoll }}
+      transition={{ duration: 0.6, ease: ease.cine }}
       className="grid place-items-center"
     >
       <Icon className={cn("size-4", on && list === "wishlist" && "fill-current")} strokeWidth={list === "collection" ? 3 : 2} />
@@ -38,8 +38,8 @@ function ShelfIcon({ list, on }: { list: ShelfList; on: boolean }) {
 }
 
 /**
- * WG black circles over a card's art: wishlist and owned. They appear on hover or focus
- * (always on touch screens), and stay once switched on.
+ * Two chamfered ink squares over a cover: wishlist and owned. They appear on hover or focus
+ * (always on touch screens), and stay once switched on (lime).
  */
 export function ShelfCardButtons({ game, className }: { game: ShelfGame; className?: string }) {
   const { current, toggle } = useShelfToggle(game)
@@ -53,11 +53,9 @@ export function ShelfCardButtons({ game, className }: { game: ShelfGame; classNa
         title={on ? activeLabel : label}
         onClick={() => toggle(list)}
         className={cn(
-          "grid size-9 place-items-center rounded-full border border-white/10 bg-black text-white transition-[border-color,color,background-color,opacity,scale] duration-300 outline-none hover:border-primary hover:text-primary focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary active:scale-90",
+          "chamfer-sm grid size-9 place-items-center bg-ink text-bone transition-[color,background-color,opacity,scale] duration-300 outline-none hover:text-lime focus-visible:opacity-100 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-lime active:scale-90",
           on
-            ? list === "collection"
-              ? "border-primary bg-primary text-black hover:text-black"
-              : "text-primary"
+            ? "bg-lime text-ink hover:text-ink"
             : "opacity-0 group-focus-within/card:opacity-100 group-hover/card:opacity-100 [@media(hover:none)]:opacity-100",
         )}
       >

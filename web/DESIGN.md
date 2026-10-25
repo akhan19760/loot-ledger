@@ -1,183 +1,133 @@
-# LootLedger design system
+# LootLedger design system: "Title Screen"
 
-Every token, component style and animation below comes from one of two references:
+LootLedger is built like a big game's front end. The home page opens on a title screen, the navigation is a pause menu, today's biggest price gaps are fights, there's a bonus round, and the page ends on the credits. Box art plays the part of key art.
 
-- **WG** = [wondermakers.games](https://wondermakers.games/) (screenshots + its CSS/markup). This is the **base**: surfaces, buttons, fields, chips, the header bar.
-- **INK** = [inkgames.com](https://inkgames.com/) (screenshots + its CSS). **Accents** only: the headline type, "■ LABEL" eyebrows, and image cards with the title over the art.
+The direction was chosen from an options board (one decision per row: direction, type, palette, shape, header, hero, deals, library, footer, motion, extras) set against two reference sites, [1minus1.com](https://1minus1.com/) and [two26.studio](https://two26.studio/). Nothing is copied from them. They set the bar for finish, and these are the principles taken from them:
 
-Both references are dark, so dark is the default theme. A light theme is available from the header toggle (remembered per browser); it is derived from the dark tokens rather than taken from a reference. The hero, the game cards and the loading screen stay dark in both themes (they carry the `dark` class), the same way the footer stays neon: they are panels over artwork, not page background.
+- **One loud typeface, used huge.** The display face runs from 2rem to about 9rem. Everything else is one quiet sans. Most of the drama comes from that jump in size.
+- **Three colours, held to.** Ink, lime and bone. There are no gradients, no glow (one exception: the loading screen's START) and no blur, not even in the header.
+- **Colour comes in whole blocks.** The pause menu, the dearer half of a fight, the achievement toast and the finale are solid lime with ink type, never lime glowing on black.
+- **One shape language.** Every corner is cut at 45°, and nothing is rounded.
+- **A quiet header.** The wordmark, the cart and one Menu button. No stats.
+- **One choreographed move per section.** Each section has a single scroll-driven moment and stays still otherwise.
+- **Box art, big.** The covers are the only real media, so they're shown large and tilted.
+- **A voice.** Game language: Featured, Up next, Round 1, K.O., Bonus round, Paused, Resume, Thanks for playing, Return to title.
+- **A finale.** The page ends on the credits and a lime block, not on a list of links.
 
 ## Fonts
 
-The references use commercial fonts, so the app uses the closest free Google Fonts (self-hosted via Fontsource). Swap them in `src/index.css` (`--font-*`) if you license the originals.
+Self-hosted via Fontsource (`src/index.css`, `--font-*`).
 
-| Role | Reference font | Used here |
+| Role | Font | Used for |
 |---|---|---|
-| Body, UI (`font-sans`) | Codec Pro (WG) | Urbanist |
-| Headlines (`font-display`), uppercase | Ruder Plakat LL (INK) | Anton |
-| Eyebrow and small labels, uppercase | Codec Pro (WG header labels) | Urbanist, semibold, wider tracking |
+| Display (`font-display`) | **Dela Gothic One**, always uppercase, leading 0.84–0.92 | Titles, prices, menu items, the wordmark, stickers |
+| Text and UI (`font-sans`) | **Mona Sans** (variable weight) | Sentences, buttons, chips, fields, tables |
+| Label (`label-caps`) | Mona Sans 650, 12px, tracking 0.14em, uppercase | The small second voice: "Cheapest today", "Up next", "Shop around", section labels |
 
-No monospace font: INK's mono eyebrows were tried with JetBrains Mono and dropped because they looked generic. Labels use the body font, like WG's header labels ("● ONLINE", "61 FPS").
+Two voices on a game card: the name in Mona Sans bold uppercase, the price in Dela Gothic. Figures are tabular everywhere (`tabular-nums` on `<html>`).
 
-## Colors
+## Colours (Lime Ink)
 
-| Token | Value | Source |
+| Token | Dark (default) | Light | Use |
+|---|---|---|---|
+| `background` | `#0b0c0e` ink | `#eeede8` bone | The page |
+| `foreground` | `#eeede8` bone | `#0b0c0e` ink | Type |
+| `primary` | `#d4fb08` lime | `#d4fb08` lime | Fills: buttons, chosen chips, blocks. Always with ink type on it |
+| `primary-ink` | lime | ink | Lime as a text colour: prices, "Ledger". It turns ink on bone, where lime can't be read |
+| `raised` / `popover` | `#1a1b1f` graphite | `#f8f7f3` | Dialogs, panels, cover backs |
+| `secondary` / `muted` / `accent` | bone 8% | ink 7% | Flat chips, fields and secondary buttons |
+| `surface` | bone 4.5% | ink 4.5% | Large panels (the filter bar) |
+| `muted-foreground` | bone 62% | ink 62% | Secondary text |
+| `destructive` | `#ff5236` | `#d42600` | Errors, a wrong guess |
+
+The four colours also exist by name (`ink`, `bone`, `lime`, `graphite`) for things that mean the colour itself, such as an ink button on a lime block. `.on-lime` makes any element a lime block: ink type, ink lines and ink muted text, in either theme. The hero, the fights and the credits carry `dark`, so they stay ink in the light theme. The pause menu and the finale are lime in both themes.
+
+Platform bands on the shelf use each console's own case colours: PS5 `#f4f4f2`, PS4 `#003791`, Switch `#e60012`, Xbox `#107c10`. These are content, not palette.
+
+## Shape
+
+| Utility | Cut | Used for |
 |---|---|---|
-| `background` | `#000` | WG page background |
-| `foreground` | `#fff` | WG text |
-| `muted-foreground` | white 70% | WG placeholders `md:placeholder:text-white/70`, `#ffffffb3` |
-| `primary` | `#d4fb08` | WG `neon-400` (buttons, chips, highlights) |
-| `primary-hover` | `#bae200` | WG `hover:bg-neon-500` |
-| `primary-foreground` | `#253300` | WG `text-neon-950` on neon buttons |
-| `secondary` / `muted` / `accent` | white 10% | WG chips `bg-white/10` |
-| `surface` | white 5% | WG `#ffffff0d` |
-| `border` | white 10% | WG field underline `border-white/10` |
-| `input` | white 20% | WG select `border-white/20` |
-| `destructive` | `#ff2e00` | WG `text-invalid` / `border-invalid` |
-| `popover` | `#252525` | WG gradient stop `#252525` |
-| `neon-from` → `neon-to` | `#abf62c` → `#f6fd02` | WG gradient hero words, sampled from the screenshot; used as `text-neon` / `text-neon-reverse` |
-| `primary-ink` | `#d4fb08` | Neon used as a text or line colour (prices, eyebrows, outline chips, chosen selects). Same as `primary` in dark; black in light, see below |
+| `chamfer` | 12px | Buttons, fields, covers, cards, panels |
+| `chamfer-sm` | 7px | Chips, icon buttons, selects, small covers |
+| `chamfer-xs` | 4px | Tags and badges |
+| `chamfer-lg` | 22px | Dialogs, the hero cover, big panels |
+| `chamfer-top` | top-left only | The phone drawer |
 
-### Light theme
+The radius tokens are all 0. The chamfer is a clip-path, so it clips anything drawn outside the box. Focus therefore shows as an inset outline (`outline-offset: -4px`), and outlined boxes are avoided because the cut corners would break the line. Separation comes from fills and tone steps instead.
 
-White-alpha tokens become black-alpha. Neon is hard on the eye on a light background, both as text and as a glowing fill, so on the page (not the always-dark panels):
+## Layout
 
-- Neon *text* (`primary-ink`, and the `text-neon` gradient) is plain black.
-- Primary buttons and chosen chips are black with neon text and no glow; the round icon on a primary button turns neon with a black icon.
-- Glows become thicker edges: a chosen select has a 2px border, and the cheapest offer's edge pulses between 1px and 2px.
-- The footer stays neon, with a black wordmark (as in dark).
+- The page gutter is 16px on phones and 32px from `md` up. The hero, the fights and the credits run edge to edge, with their content on the same gutter.
+- Labels sit above headlines and are left-aligned. Headlines are as big as their column allows.
+- The grid has a 12px column gap and a 28px row gap. Covers are 4:5, with a fixed 124px of text beneath (the virtualized grid relies on that height).
+- The header is 80px tall (60px on phones), transparent at the top and solid ink once scrolled.
 
-| Token | Light value |
+## Sections (home page, top to bottom)
+
+| Section | What it is | Its one move |
+|---|---|---|
+| **Title screen** (`hero.tsx`) | The wordmark as a game logo, then one featured game: its cover tilted on a lime plate, its cheapest price as the biggest figure on the page, its title as large as two lines allow. "Up next" shows the queue; segments run along the bottom | Attract mode: every 7s the next game wipes in from the side it's coming from, and the plate turns. It pauses on hover or focus, off screen and in a hidden tab. Arrows, ← → keys and the segments move by hand |
+| **Shop around** (`versus.tsx`) | Today's three biggest price gaps as fights: the same game and version at two shops, ink against lime across a diagonal split, with fighting-game health bars | Pinned. Scrolling drains the dearer shop's bar while the damage (the rupees saved) counts up, then K.O. A wipe brings in the next round. With reduced motion the rounds stack, already decided |
+| **Bonus round** (`bonus-round.tsx`) | Higher or Lower with today's real cheapest prices. The best streak is kept per browser, and a tie counts as right | The hidden price counts up on reveal, and the cover frames lime (right) or red (wrong) |
+| **Library** (`App.tsx`, `shelf-view.tsx`, `virtual-game-grid.tsx`) | A heading with a Shelf / Grid switch (remembered per browser; the shelf by default with a mouse, the grid on touch), the filter panel, then the games | **Shelf:** spines cut from each cover, with the console band on top and the price on a lime foot. Reached for, a spine slides up and its case turns out to show the cover. **Grid:** big unboxed covers; reached for, the cover steps back into a lime frame |
+| **Credits** (`site-footer.tsx`) | "Prices by" and the nine shops, each linking to its site; then credits (games tracked, offers, last check), role and name either side of a centre gutter | Lines rise in as they scroll up, like a roll. It ends in a lime block: "Thanks for playing", the small print, and Return to title |
+
+The deals page (`/deals`) uses the same parts: the label, a huge title, the filter panel and grids of cards with a tilted lime sticker (−58%, Save Rs 12,001).
+
+## Header and pause menu (`site-header.tsx`)
+
+The bar holds the wordmark (hidden over the title screen, which has its own), the cart (a chamfered square with a lime count) and **Menu** (lime). It slides in after the intro, tucks away while scrolling down and returns on the way up.
+
+Menu opens the **pause screen**, a full-screen lime block that wipes down:
+
+- **Items:** huge items (Resume, Library, Deals, Shop around, Wishlist, Collection, The shops), each with a hint on the right.
+- **Marker:** an ink ▶ glides to whichever item the pointer, the keyboard (↑ ↓ Home End) or focus is on, with a tick each time it moves.
+- **Options and status:** an ink panel with Sound and Theme, and the live status (online, last price check, counts).
+- **Closing:** Esc or Resume closes it. Choosing an item closes the menu first, then travels.
+
+## Achievements (`hooks/use-achievements.ts`, `components/achievements.tsx`)
+
+Five real moments, each unlocked once per browser and announced by a lime toast that wipes in at the bottom left:
+
+- First pick (a game added to the wishlist).
+- Collector (a game marked as owned).
+- Window shopper (ten games' prices opened).
+- Shopped around (a cart whose cheapest mix saves Rs 2,000 or more).
+- Price sense (five in a row in the bonus round).
+
+Additions are counted when they happen, not when a shelf from an earlier visit loads.
+
+## Motion (cinematic)
+
+Nothing bounces. Reveals run 0.6–1.2s; wipes are clip-path insets. One move per section (see the table above), smooth scrolling (Lenis), and reduced motion turns every scroll scene into its finished state.
+
+| Token (`src/lib/motion.ts`) | Curve | Use |
+|---|---|---|
+| `ease.cine` | `cubic-bezier(0.16, 1, 0.3, 1)` | Every reveal, rise, hover and roll |
+| `ease.cineInOut` | `cubic-bezier(0.76, 0, 0.24, 1)` | Wipes that cover and uncover: the hero's covers, rounds, the pause menu, toasts |
+| `ease.wg`, `ease.wgInOut` | as before | The loading screen and the game dialog's flight, kept from the original |
+
+| Element | Effect |
 |---|---|
-| `background` / `foreground` | `#f1f1ec` / `#0b0b0b` |
-| `popover` | `#fff` |
-| `surface` / `card` | black 4% |
-| `secondary` / `muted` / `accent` | black 6% |
-| `muted-foreground` | black 60% |
-| `border` / `input` | black 10% / black 20% |
-| `primary-ink` | `#0b0b0b` (same as `foreground`) |
-| `destructive` | `#d42600` |
-| `neon-from` → `neon-to` | `#0b0b0b` → `#0b0b0b` (the gradient reads as plain black) |
+| Buttons | The label rolls up on hover (0.6s, `cine`); the square's arrow nudges the way it points; press scales to 0.97 |
+| Chips | One lime block glides between options (spring, no bounce) |
+| Cards | They rise 48px while the cover wipes up from a 1.2× zoom, staggered by column |
+| Headings | Split by word (or letter) and slid up out of a mask |
+| Game dialog | Grows out of the clicked card or cover and flies back into it on close |
 
-For the few effects that can't be a token (the secondary button's gradient, the dialog's glass), the `light:` variant targets the page in light theme but not the always-dark panels.
+## Loading screen: the boot sequence (`loading-screen.tsx`)
 
-## Shape, spacing, effects
-
-| | Value | Source |
-|---|---|---|
-| Radius | 16px (`rounded-2xl`) for panels, buttons, fields, chips | WG `--radius: 16px`, `rounded-[16px]`, `rounded-2xl` |
-| Small radius | 10px | WG secondary ("Contact") button `rounded-[10px]` |
-| Panel gap | 8px | WG `--gap: 8px` |
-| Header bar | 80px (56px on mobile), floating 8px from the edges, blurred | WG `--h-controller: 80px / 56px`, `backdrop-blur` |
-| Panel blur | 37.5px | WG `backdrop-blur-[37.5px]` on content blocks |
-| Overlay | black 50% + 8px blur | WG `#00000080`, `blur(8px)` |
-| Glow | `drop-shadow(0 0 15px #d4fb08)` | WG neon drop-shadows |
-| Scrollbars | Slim pill in the `input` colour on a clear track, `primary-ink` on hover; inset from rounded edges | — (matches WG chips/fields) |
-| Dialog | At most 44rem tall; the body scrolls inside the rounded panel, the close button stays pinned | WG content block |
-| Drawer | Phones: the dialog's glass docked to the bottom edge, top corners rounded, at most 88% of the screen tall; grab handle, display-type title and close button on top, the body scrolls, actions pinned along the bottom. Rises with `ease.wg`, drops away quicker | WG content block; bottom sheet *new* |
-| Stripes | 45° neon stripes | WG hazard-stripe panels |
-
-## Components
-
-| Component | Look | Source |
-|---|---|---|
-| Button, primary | neon fill, `#253300` text, 42px high, 24px side padding, 16px radius, darker neon on hover. Light theme: black fill, neon text, no glow | WG "Learn more" / "Play demo" |
-| Button, secondary | black→neutral-700 30% gradient, white text, 10px radius, lifts 1px on hover | WG "Contact" |
-| Button, ghost | plain white text | WG nav links "Our work", "Services" |
-| Round icon button | 48px black circle | WG play-icon circle, close control |
-| Arrow on outbound links `↗` | after the label | INK "SIGN UP ↗", "EXPLORE ↗" |
-| Chip / toggle | white 10% fill, white text, 16px radius, `text-sm leading-none`; selected = neon fill, dark text (light theme: black fill, neon text, no glow) | WG tag chips (both variants) |
-| Search field | 48px (56px from md) rounded box, white 5% fill, `border` outline, magnifier on the left; the border turns neon with a soft neon glow on focus (light theme: black border, no glow) | — (rounded field, chosen over WG's underline input) |
-| Select | transparent, `white/20` border, 16px radius; white border on focus; 2px `primary-ink` border + text when a value is chosen (an inset ring doubles the 1px border, so the label doesn't move) | WG contact form selects |
-| Panel | white 5% fill (or neutral-700 20% + blur on overlays), 16px radius | WG content blocks |
-| Status stat | small neon value over an uppercase grey label, optional dot | WG header "● ONLINE", "61 FPS" |
-| Eyebrow | `■ LABEL`: small square + uppercase semibold body font | INK "■ INKGAMES", "■ PLAY" (square), WG header labels (type) |
-| Headline | uppercase condensed display | INK "PLAY. WIN. EARN." |
-| Image card | art fills the card, eyebrow + uppercase title over the bottom | INK "BUILD YOUR KINGDOM" cards |
-| Compare grid (dialog) | "All offers / Compare" chips. Compare: highlight panels (neon value over a grey detail), then one panel per version (platform · condition · format) with a range bar on a scale shared by every version (neon dot = cheapest, hollow = out of stock) and one cell per store in the same order in every panel, so stores line up in columns and wrap on a phone. Cheapest cell has a neon edge; missing stores are dashed "Not listed" cells. The chosen view is remembered per browser | WG chips, WG panels, WG field underline (dashed variant) |
-| Share | A secondary "Share" button beside the dialog's wishlist and cart buttons. On a phone it opens the share sheet; elsewhere it turns neon and "WhatsApp" and "Copy link" slide in beside it (tick and "Link copied" for 2 s). The link's preview (served by the API, not the app) is the cover, "Game: Rs 9,000 at Store" and the version, markdown and number of stores | WG chips and secondary buttons |
-| Cart optimizer | Header: WG black circle with a bag and a neon count chip that pops on change. Dialog: "Delivering to" chips; one panel per game with its cover, the store and price the best plan picked, and version selects (neon when narrowed); the best plan in a neon-edged panel (total in the display face, neon), an order per store with neon price links, savings as outline chips; the single-store and each-cheapest alternatives as small panels | WG chips, WG selects, WG panels, INK headline type |
-| Deals page | Its own path, `/deals`, reached from the header ("Deals", neon while on it) and the hero. Headline and eyebrows like the library, jump chips for its three lists, the library's Platform and Condition chips in a panel. Each list is a section with an INK headline ("Marked down.", "Shop around.", "Just in.") over the usual card grid, 12 cards then "Show more". Deal cards add a neon sticker in the display face, tilted slightly ("−69%", "Save Rs 9,499", "In stock"), the struck-through was price, and a one-line note in place of the badges | INK headline type, INK price-tag stickers, WG chips, WG panels |
-| Filters on phones | Below 768px the filter panel gives way to the search field and a round filters button beside it, its neon chip counting the filters in use. The button opens the filters in a drawer; choices there are a draft until "Show results" applies them and closes it, while the X, a tap outside or Esc close it unchanged. Reset clears the draft. Opening and closing whoosh like a dialog | Search field, WG round icon + neon count chip (as the cart), WG chips and selects |
-| Wishlist and collection | Heart and tick in WG black circles at a card's top-left, shown on hover or focus (always on touch screens) and kept once on; wishlist = neon heart, owned = neon-filled circle with a black tick; the icon pops in with `ease.inkRoll`. The dialog has the same two as labelled buttons (secondary, neon when on). "Show: All games / Wishlist · n / Collection · n" chips top the filter bar; a list view gets a summary panel of big display figures (count, in stock, cost today in neon), notes for games the filters hide or no store lists, and backup export/import | WG round icon, WG chips, INK headline type |
-
-## Motion
-
-Built with [motion](https://motion.dev) (React) and [Lenis](https://lenis.darkroom.engineering/) smooth scrolling, plus [three.js](https://threejs.org/) for the footer's controller. Everything honours the OS "reduce motion" setting: motion goes instant, Lenis, the grain, stripes, equalizer and loading sweep stop, the loading screen is skipped, and the footer's controller is shown at rest.
-
-Keeping it smooth while scrolling:
-
-- Lenis is stepped from motion's frame loop, so scroll-linked effects read the scroll position the page is drawn at (two loops drift a frame apart: jitter).
-- Scroll-in animations (sections, headlines, cards) animate `transform`, `opacity` and `clipPath`, which the browser runs off the main thread, rather than motion's `x`, `y` and `scale`, which run in JavaScript every frame. Anything moved from JavaScript by scroll or the pointer has `will-change`, so moving it doesn't repaint it.
-- Components use the slim `m.*` elements; `LazyMotion` (main.tsx) loads their features after the first render. The loading screen, a lazy chunk of its own, keeps the full `motion.*` elements from `motion/react-client`.
-- The library grid is virtualized: only the rows near the viewport are in the DOM.
-- While a wheel or trackpad scrolls the page fast, game cards ignore the pointer, so the ones sliding under it don't start their hover effects (not after touch or keyboard scrolling, which would swallow taps).
-
-### Easing (`src/lib/motion.ts`)
-
-| Token | Curve | Source |
-|---|---|---|
-| `ease.wg` | `cubic-bezier(.3,0,.04,1)` | WG's panel/reveal transitions |
-| `ease.wgWipe` | `cubic-bezier(.77,0,.175,1)` | WG page loader in/out (1.5 s) |
-| `ease.wgInOut` | `cubic-bezier(.645,.045,.355,1)` | WG height/transform changes |
-| `ease.inkRoll` | `cubic-bezier(.175,.885,.32,1.275)` | INK button label roll (0.5 s) |
-| `ease.inkSlide` | `cubic-bezier(.835,.12,.225,.77)` | INK text slide-up reveal (0.8 s) |
-| `ease.inkFade` | `cubic-bezier(.2,.715,.205,.99)` | INK fade-in |
-
-### Effects
-
-| Where | Effect | Source |
-|---|---|---|
-| Whole page | Film grain, jittering | WG `#noise` overlay |
-| Whole page | Inertial smooth scrolling | Lenis (the one addition not taken from the references) |
-| Header | Slides in after the loading screen, hides on scroll down, returns on scroll up, turns more opaque once scrolled; stats count up | WG floating header + WG live FPS counter |
-| Header | Round black badge with neon bars (grey when the API is offline); it's the sound switch, and the bars bounce while sound is on, with "● Sound" / "Muted" beside it on wide screens | WG audio control ("● AUDIO") |
-| Hero | Wordmark letters slide up from a mask; "Ledger" in the neon gradient | INK split-text + WG gradient words |
-| Hero | Real game covers, tilted, around the headline; clip-path reveal; drift with scroll and pointer; straighten on hover | INK tilted art around its headline + INK clip-path |
-| Hero | Neon light that follows the pointer | WG `#star-glow-element` (blurred neon) |
-| Hero | Two rows of huge words, white/neon alternating, sliding opposite ways on scroll | WG "Animation Website / 3D Game UX/UI Web3" rows |
-| Hero | Headline shrinks, blurs and fades as you scroll past | WG block transitions |
-| Sections | Rise 80px and fade in as they enter | WG blocks start `translate-y-[5rem]` |
-| Buttons | Label rolls up, copy rolls in from below | INK `ButtonInnerMain` translateY(-100%) |
-| Buttons | Neon glow on hover, press-in on click | WG neon drop-shadows |
-| Big buttons | Black circle icon spins to 330° on hover | WG `#big-button #icon` fastSpin |
-| Chips | One neon pill glides between options (spring); labels roll | WG neon chip + INK roll |
-| Search | Border lights neon on focus; example text rolls to the next every 2.6 s; clear button spins in | INK slide |
-| Selects | Chevron flips, chosen select's border thickens, options cascade in | WG select states + INK stagger |
-| Cards | Scroll-in stagger; cover wipes in (clip-path) and zooms; 3D tilt toward the pointer with a neon glare; neon glow + border; arrow circle spins in; "View N offers" rises | INK cards, clip-path, tilt; WG glow |
-| Grid | Virtualized; when filters change, cards that stay glide to their new place | — (CSS transition on each card's position) |
-| Dialog | Grows out of the clicked card: a panel carrying the card's cover flies to the dialog's box while the cover fades, then hands over to the dialog; closing flies back into the card. Opened from a link (no card on screen), it rises and scales in with `ease.wg`. Then the title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | Material container transform, WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
-| Header | Theme toggle: black circle, sun/moon roll through it; the new theme spreads in a circle from the button (View Transitions) | WG round icon + INK roll |
-| Footer | Neon hazard stripes slide endlessly; giant black wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |
-| Footer | WG's 3D controller, scrubbed by scroll down the tall neon panel: it rises from the bottom of the screen, tumbles, spins round and comes to rest on the wordmark at the page's end, reflections sweeping over it as it turns. Their model, environment map, camera and Theatre.js keyframes, on three.js r152 like theirs (`src/lib/controller-scene.ts`); loaded only as the footer comes near. On narrow screens the camera backs off so it fits across | WG `#section-skills` controller |
-| Loading | Skeletons with a sweeping light band (`sweep`) | — |
-
-### Loading screen (`src/components/loading-screen.tsx`)
-
-WG's loader, on a first visit to the home page: shown at most once a week per browser, never on a link to something in particular (a shared game, /deals, a wishlist), and skipped with reduced motion. Nothing on it is faked: each loading step (fonts, ledger, stores, library, cover art) resolves only when that part of the page has loaded, and the letters and bar follow them. Steps are paced about 0.15 s apart so a fast load still reads as a sequence, and the screen never waits on loading for more than 3.5 s. Once loaded it waits for START (or any key, tap or click); a tap, click or Esc skips it before then. The parts marked *new* have no counterpart in the references.
-
-| Part | Effect | Source |
-|---|---|---|
-| Backdrop | Plain black with the film grain | WG loader |
-| Wordmark | The header's LootLedger wordmark, where the header's will land | WG loader logo |
-| Live count | "Tracking" over the real game and store counts, counting up once the ledger is in ("Connecting…", or "Offline") | WG "Login / Player 1"; counts *new* |
-| Letters | "LootLedger", one underline per letter. Each letter sharpens from a dim neon blur to neon as the progress passes it, left to right; all glow once ready | WG name entry |
-| Bar | A pill filling with striped neon, the step in progress named above it | WG loading bar |
-| START | Once the bar has filled completely and rested a moment, it turns into a glowing neon START button, which takes the focus; "Or press any key" / "Tap to start" under it | WG START |
-| Exit (START) | The page jumps to the top (the screen also opens there, rather than where a reload left it), then the letters fly into the hero's title, one after another, each crossfading from the loader's neon letter into the title's own and landing on it exactly; the title then shows in their place (no slide-up). The black fades as the page's entrance starts behind, and START sinks away | WG exit (letters spreading over the page), flown into the title *new* |
-| Exit (skip) | The letters spread large and blur away as the black fades | WG exit |
+This is kept from the original design at the user's request, now in Dela Gothic and Mona Sans. It shows on a first visit to the home page at most once a week per browser, never on a link to something in particular, and never with reduced motion. Each loading step (fonts, ledger, stores, library, cover art) resolves only when that part has really loaded. The bar then turns into START (the one glow on the site), and on START the letters fly into the title screen's wordmark (`#hero-title`) and land on it exactly.
 
 ## Sound (`src/lib/sfx.ts`, `src/hooks/use-sound-effects.ts`)
 
-Short effects, synthesized with the Web Audio API (no audio files): a few oscillators or a burst of filtered noise each. On by default, switched by the header's equalizer badge and remembered per browser. Browsers allow audio only after a click, tap or key, so the first sound is the first click. The effects come from listeners on the document, not from each component.
+Short synthesized effects, on by default and switched in the pause menu's Options:
 
-| When | Sound |
-|---|---|
-| Hovering something clickable (mouse only; not while the page scrolls under the pointer) | Faint high tick |
-| Clicking a button or link | Soft falling blip over a tiny noise click |
-| Switching something on: a chip, a select option, the wishlist, In stock only | Two notes up |
-| Switching something off | Two notes down |
-| A dialog opening / closing | Rising / falling whoosh |
-| Scrolling with a mouse or trackpad (not touch) | A wheel-like tick every 140px, brighter and louder the faster the scroll |
-| Turning sound back on | Two notes up, to confirm |
-| START on the loading screen (or the key or tap that continues) | An arcade arpeggio up an octave over a rising whoosh. Often the visit's first gesture: the sound waits for audio to start |
+- **Pointer and clicks:** a faint tick on hover; a soft blip on click.
+- **Switches:** two notes up for on, two notes down for off.
+- **Dialogs and the menu:** a whoosh as one opens or closes.
+- **Movement:** a tick as the pause menu's marker moves, as the hero turns and as each round starts.
+- **Bonus round:** two notes up for a right guess, two down for a wrong one.
+- **Achievements:** two notes up as the toast arrives.
+- **START:** the loading screen's START plays an arcade arpeggio.

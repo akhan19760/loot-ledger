@@ -5,7 +5,7 @@ import type { GamesResponse } from "@lootledger/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
 import { Button } from "@/components/ui/button"
-import { Eyebrow } from "@/components/ui/eyebrow"
+import { Label } from "@/components/ui/label"
 import { exportShelf, importShelf, removeFromShelf, type Shelf, type ShelfList } from "@/hooks/use-shelf"
 import { formatPrice } from "@/lib/format"
 import { ease } from "@/lib/motion"
@@ -38,7 +38,7 @@ export function ShelfSummary({ list, shelf, ids, data, onShowAll, onPlan }: Prop
   const hidden = data ? ids.length - missing.length - data.total : 0
 
   return (
-    <section aria-label={COPY[list].count} className="grid gap-6 rounded-2xl border border-border/50 bg-surface p-5 md:p-8">
+    <section aria-label={COPY[list].count} className="grid gap-6 chamfer-lg bg-surface p-5 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <dl className="grid grid-cols-2 gap-x-10 gap-y-6 sm:flex sm:flex-wrap">
           <Figure label={COPY[list].count} value={<CountUp value={ids.length} duration={0.6} />} />
@@ -91,7 +91,7 @@ function Figure({ label, value, neon, className }: { label: string; value: React
   return (
     <div className={`grid content-start gap-2 sm:col-span-1 ${className ?? ""}`}>
       <dt>
-        <Eyebrow className="text-muted-foreground">{label}</Eyebrow>
+        <Label>{label}</Label>
       </dt>
       <dd className={`font-display text-4xl leading-none tabular-nums md:text-5xl ${neon ? "text-primary-ink" : ""}`}>{value}</dd>
     </div>
