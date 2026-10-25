@@ -28,20 +28,19 @@ function DrawerContent({
         data-slot="drawer-content"
         aria-describedby={undefined}
         className={cn(
-          // The dialog's opaque panel, docked to the bottom with only its top corners rounded.
-          // Rises with WG's ease; drops away quicker.
-          "fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col overflow-hidden rounded-t-2xl bg-raised text-foreground outline-none data-open:animate-in data-open:slide-in-from-bottom data-open:duration-500 data-open:ease-[cubic-bezier(0.3,0,0.04,1)] data-closed:animate-out data-closed:slide-out-to-bottom data-closed:duration-300 data-closed:ease-[cubic-bezier(0.645,0.045,0.355,1)]",
+          // The dialog's opaque panel, docked to the bottom with its top corner cut.
+          // Rises with the cinematic ease; drops away quicker.
+          "chamfer-top fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col overflow-hidden bg-raised [--cut:22px] text-foreground outline-none data-open:animate-in data-open:slide-in-from-bottom data-open:duration-500 data-open:ease-[cubic-bezier(0.16,1,0.3,1)] data-closed:animate-out data-closed:slide-out-to-bottom data-closed:duration-300 data-closed:ease-[cubic-bezier(0.645,0.045,0.355,1)]",
           className,
         )}
         {...props}
       >
         {/* Grab handle: says "sheet", even though it isn't dragged */}
-        <span aria-hidden className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-foreground/20" />
+        <span aria-hidden className="mx-auto mt-2 h-1 w-10 shrink-0 bg-foreground/20" />
         <div className="flex shrink-0 items-center justify-between gap-4 px-5 pt-2 pb-3">
-          <DialogPrimitive.Title className="font-display text-3xl leading-none uppercase">{title}</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="font-display text-2xl leading-none uppercase">{title}</DialogPrimitive.Title>
           <DialogPrimitive.Close asChild>
-            {/* WG spinToClose: the close icon turns as you reach for it */}
-            <Button variant="round" size="icon-sm" className="duration-500 hover:rotate-180">
+            <Button variant="round" size="icon-sm">
               <XIcon />
               <span className="sr-only">Close</span>
             </Button>

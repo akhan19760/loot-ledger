@@ -87,19 +87,20 @@ export function DealsPage({ filters, onFiltersChange, storeNames, onOpenGame, on
 
   // A short top: the first deals start on the first screen, below the title and the filters.
   return (
-    <section id="deals" className="grid grid-cols-1 gap-2">
-      <Reveal className="grid justify-items-start gap-5 px-2 pt-10 pb-4 md:px-6 md:pt-10 md:pb-6">
-        <h1 className="font-display text-[clamp(2.75rem,5vw,4.5rem)] leading-[0.85] uppercase">
+    <section id="deals" className="grid grid-cols-1 gap-3">
+      <Reveal className="grid justify-items-start gap-5 pt-10 pb-4 md:pt-14 md:pb-8">
+        <span className="label-caps text-muted-foreground">Deals</span>
+        <h1 className="font-display text-[clamp(2.75rem,7.5vw,7.5rem)] leading-[0.86] uppercase">
           <SplitText text="Today's deals." stagger={0.08} />
         </h1>
-        <p className="max-w-3xl text-lg md:text-xl">
+        <p className="max-w-3xl text-lg text-muted-foreground md:text-xl">
           Markdowns, the biggest gaps between stores, and what just came into stock, across every store we compare.
           {updated && ` Prices checked ${updated}.`}
         </p>
       </Reveal>
 
       <Reveal>
-        <div className="flex flex-wrap items-end gap-x-8 gap-y-5 px-2 md:px-6">
+        <div className="chamfer-lg flex flex-wrap items-end gap-x-8 gap-y-5 bg-surface p-5 md:p-8">
           <ChipGroup label="Platform" value={filters.platform} options={platforms} onChange={(platform) => onFiltersChange({ platform })} />
           <ChipGroup
             label="Condition"
@@ -109,10 +110,10 @@ export function DealsPage({ filters, onFiltersChange, storeNames, onOpenGame, on
           />
           {/* Phones show two rows per list, so the lists are a short scroll apart anyway */}
           <nav aria-label="The lists" className="grid gap-3 max-sm:hidden xl:ml-auto">
-            <Label>Jump to</Label>
+            <Label className="label-caps">Jump to</Label>
             <div className="flex flex-wrap gap-2">
               {lists.map((l) => (
-                <Button key={l.id} variant="secondary" className="h-[42px]" onClick={() => scrollTo(l.id)}>
+                <Button key={l.id} variant="secondary" className="h-11" onClick={() => scrollTo(l.id)}>
                   <RollText>{l.label}</RollText>
                   {l.cards && <span className="text-muted-foreground">{l.cards.length}</span>}
                 </Button>
@@ -146,6 +147,7 @@ export function DealsPage({ filters, onFiltersChange, storeNames, onOpenGame, on
 
 function DealList({
   id,
+  label,
   title,
   body,
   empty,
@@ -155,6 +157,7 @@ function DealList({
   onOpenGame,
 }: {
   id: string
+  label: string
   title: string
   body: string
   empty: string
@@ -169,12 +172,16 @@ function DealList({
   const shown = cards && (all ? cards : cards.slice(0, first))
 
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="grid scroll-mt-24 grid-cols-1 gap-2">
-      <Reveal className="grid gap-3 px-2 pt-12 pb-4 md:px-6 md:pt-14 md:pb-6">
-        <h2 id={`${id}-title`} className="font-display text-[clamp(2.25rem,4.5vw,4rem)] leading-[0.85] uppercase">
+    <section id={id} aria-labelledby={`${id}-title`} className="grid scroll-mt-24 grid-cols-1 gap-3">
+      <Reveal className="grid gap-3 pt-16 pb-6 md:pt-24 md:pb-8">
+        <span className="label-caps text-muted-foreground">
+          {label}
+          {cards ? ` · ${cards.length}` : ""}
+        </span>
+        <h2 id={`${id}-title`} className="font-display text-[clamp(2.25rem,5.5vw,5.5rem)] leading-[0.86] uppercase">
           <SplitText text={title} stagger={0.08} />
         </h2>
-        <p className="max-w-3xl">{body}</p>
+        <p className="max-w-3xl text-muted-foreground md:text-lg">{body}</p>
       </Reveal>
 
       {!shown ? (
@@ -216,7 +223,7 @@ function DealList({
 
 function Panel({ title, body, children }: { title: string; body: string; children?: React.ReactNode }) {
   return (
-    <Reveal className="grid justify-items-center gap-4 rounded-2xl bg-surface px-6 py-16 text-center">
+    <Reveal className="grid justify-items-center gap-4 chamfer bg-surface px-6 py-16 text-center">
       <h3 className="font-display text-3xl uppercase md:text-5xl">{title}</h3>
       <p className="max-w-md text-muted-foreground">{body}</p>
       {children}

@@ -38,7 +38,7 @@ export function ShelfSummary({ list, shelf, ids, data, onShowAll, onPlan }: Prop
   const hidden = data ? ids.length - missing.length - data.total : 0
 
   return (
-    <section aria-label={COPY[list].count} className="grid gap-6 rounded-2xl border border-border/50 bg-surface p-5 md:p-8">
+    <section aria-label={COPY[list].count} className="grid gap-6 chamfer-lg bg-surface p-5 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <dl className="grid grid-cols-2 gap-x-10 gap-y-6 sm:flex sm:flex-wrap">
           <Figure label={COPY[list].count} value={<CountUp value={ids.length} duration={0.6} />} />

@@ -1,6 +1,7 @@
 import { useQueries } from "@tanstack/react-query"
 import { m, useReducedMotion } from "motion/react"
 import { ArrowUpRight, Check, Heart, ShoppingBag, X } from "lucide-react"
+import { useEffect } from "react"
 import { cn } from "cn"
 import { PLATFORM_FILTERS, planCart, wantMatches, type CartLine, type CartPlans, type CartWant, type Game, type Plan, type Store, type Zone } from "@lootledger/shared"
 import { CoverArt } from "@/components/cover-art"
@@ -12,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { PillToggle } from "@/components/ui/pill-toggle"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { unlock } from "@/hooks/use-achievements"
 import { addToCart, clearCart, removeFromCart, setCartWant, setCartZone, useCart, type CartItem } from "@/hooks/use-cart"
 import { api } from "@/lib/api"
 import { formatPrice, versionLabel } from "@/lib/format"
@@ -75,7 +77,7 @@ export function CartDialog({ open, onOpenChange, stores, wishlist, defaultWant }
         </div>
 
         {cart.items.length === 0 ? (
-          <div className="grid justify-items-start gap-4 rounded-2xl bg-surface p-6">
+          <div className="grid justify-items-start gap-4 chamfer bg-surface p-6">
             <p className="text-muted-foreground">Your cart is empty. Open any game and press “Add to cart”, or start from your wishlist.</p>
             {missingWishlist.length > 0 && (
               <Button onClick={() => addToCart(missingWishlist, defaultWant)}>
@@ -115,7 +117,7 @@ export function CartDialog({ open, onOpenChange, stores, wishlist, defaultWant }
             ) : plans.best ? (
               <PlanSection plans={plans} stores={stores ?? []} storeName={storeName} titleOf={titleOf} />
             ) : (
-              <p className="rounded-2xl bg-surface p-6 text-muted-foreground">None of these games are in stock in the versions you picked. Try “Any” on a line.</p>
+              <p className="chamfer bg-surface p-6 text-muted-foreground">None of these games are in stock in the versions you picked. Try “Any” on a line.</p>
             )}
           </>
         )}
@@ -178,9 +180,9 @@ function CartRow({
       initial={reduced ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: ease.wg, delay: Math.min(index * 0.04, 0.6) }}
-      className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-3 rounded-2xl bg-surface p-3 sm:gap-x-4"
+      className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-3 chamfer bg-surface p-3 sm:gap-x-4"
     >
-      <div className="aspect-[4/5] w-12 overflow-hidden rounded-sm bg-surface sm:w-14">
+      <div className="aspect-[4/5] w-12 overflow-hidden chamfer-xs bg-surface sm:w-14">
         <CoverArt src={item.image} title={item.title} width={56} />
       </div>
       <div className="grid min-w-0 gap-1">
@@ -245,6 +247,11 @@ function PlanSection({ plans, stores, storeName, titleOf }: { plans: CartPlans; 
   const { singleStore, eachCheapest } = plans
   const vsEach = eachCheapest ? eachCheapest.total - best.total : 0
   const vsSingle = singleStore ? singleStore.total - best.total : 0
+  // A cheapest mix that beats buying it all at one shop by Rs 2,000 or more is an achievement.
+  const saved = Math.max(vsEach, vsSingle)
+  useEffect(() => {
+    if (saved >= 2000) unlock("smart-cart", formatPrice(saved))
+  }, [saved])
   const used = new Set(best.orders.map((o) => o.store))
   const notes = stores.filter((s) => used.has(s.id) && s.delivery?.note).map((s) => `${s.name}: ${s.delivery!.note}`)
   const checked = [...new Set(stores.flatMap((s) => (used.has(s.id) && s.delivery ? [s.delivery.checked] : [])))].sort()
@@ -254,7 +261,7 @@ function PlanSection({ plans, stores, storeName, titleOf }: { plans: CartPlans; 
     <section className="grid min-w-0 gap-4">
       <Label>Cheapest way to buy {plural(best.orders.reduce((n, o) => n + o.lines.length, 0), "game")}</Label>
 
-      <div className="grid min-w-0 gap-5 rounded-2xl border border-primary-ink bg-surface p-4 sm:p-5">
+      <div className="grid min-w-0 gap-5 chamfer bg-surface p-4 light:bg-primary/30 sm:p-5">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
           <div className="grid gap-1">
             <span className="font-display text-5xl leading-none text-primary-ink tabular-nums">{formatPrice(best.total)}</span>
@@ -274,7 +281,7 @@ function PlanSection({ plans, stores, storeName, titleOf }: { plans: CartPlans; 
 
         <ul className="grid min-w-0 gap-3">
           {best.orders.map((o) => (
-            <li key={o.store} className="grid min-w-0 gap-2 rounded-xl bg-surface p-3">
+            <li key={o.store} className="grid min-w-0 gap-2 chamfer-sm bg-surface p-3">
               <div className="flex flex-wrap items-baseline justify-between gap-x-4">
                 <span className="font-semibold">{storeName(o.store)}</span>
                 <span className="text-sm text-muted-foreground tabular-nums">
@@ -340,13 +347,13 @@ function PlanSection({ plans, stores, storeName, titleOf }: { plans: CartPlans; 
 
 /** A pale neon tint (black text on a light page), like the outline badge. */
 function Saving({ children }: { children: React.ReactNode }) {
-  return <span className="inline-flex h-6 items-center rounded-sm bg-primary/15 px-2 font-medium text-primary-ink light:bg-primary/40">{children}</span>
+  return <span className="inline-flex h-6 items-center chamfer-xs bg-primary/15 px-2 font-medium text-primary-ink light:bg-primary/40">{children}</span>
 }
 
 function Alternative({ label, plan, best, describe, none }: { label: string; plan: Plan | null; best: Plan; describe: (p: Plan) => string; none: string }) {
   const extra = plan ? plan.total - best.total : 0
   return (
-    <div className="grid content-start gap-1 rounded-2xl bg-surface p-4">
+    <div className="grid content-start gap-1 chamfer bg-surface p-4">
       <dt>
         <Label>{label}</Label>
       </dt>

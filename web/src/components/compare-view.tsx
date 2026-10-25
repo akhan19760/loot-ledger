@@ -93,7 +93,7 @@ function Highlights({ insights, nameOf }: { insights: Insights; nameOf: (id: str
   return (
     <dl className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
       {tiles.map((t) => (
-        <div key={t.label} className="grid content-start gap-2 rounded-2xl bg-surface p-4">
+        <div key={t.label} className="grid content-start gap-2 chamfer bg-surface p-4">
           <dt>
             <Label>{t.label}</Label>
           </dt>
@@ -127,7 +127,7 @@ function VersionPanel({ version: v, stores, scale, filters, dimmed, nameOf }: Pa
         : `Same price at ${inStockStores.length} stores`
 
   return (
-    <div className={cn("grid gap-4 rounded-2xl bg-surface p-4 transition-opacity", dimmed && "opacity-60")}>
+    <div className={cn("grid gap-4 chamfer bg-surface p-4 transition-opacity", dimmed && "opacity-60")}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="grid gap-1">
           <h3 className="font-semibold">{versionLabel(v)}</h3>
@@ -157,7 +157,7 @@ function VersionPanel({ version: v, stores, scale, filters, dimmed, nameOf }: Pa
   )
 }
 
-/** Each store's price as a dot on the shared scale; the version's span is highlighted. */
+/** Each store's price as a mark on the shared scale (a small diamond); the version's span is highlighted. */
 function RangeBar({ version: v, scale, nameOf }: { version: Version; scale: { min: number; max: number }; nameOf: (id: string) => string }) {
   const at = (price: number) => (scale.max > scale.min ? ((price - scale.min) / (scale.max - scale.min)) * 100 : 50)
   const dots = [...v.byStore.values()].toSorted((a, b) => Number(a.in_stock) - Number(b.in_stock))
@@ -167,7 +167,7 @@ function RangeBar({ version: v, scale, nameOf }: { version: Version; scale: { mi
       <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border" />
       {v.best && (
         <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-primary-ink/40"
+          className="absolute top-1/2 h-1 -translate-y-1/2 bg-primary-ink/40"
           style={{ left: `${at(v.best.price)}%`, width: `${at(v.high!) - at(v.best.price)}%` }}
         />
       )}
@@ -176,7 +176,7 @@ function RangeBar({ version: v, scale, nameOf }: { version: Version; scale: { mi
           key={l.store}
           title={`${nameOf(l.store)}: ${formatPrice(l.price)}${l.in_stock ? "" : " (out of stock)"}`}
           className={cn(
-            "absolute top-1/2 size-2.5 -translate-1/2 rounded-full",
+            "absolute top-1/2 size-2.5 -translate-1/2 rotate-45",
             !l.in_stock ? "border border-muted-foreground bg-transparent" : l === v.best ? "bg-primary-ink" : "bg-foreground/60",
           )}
           style={{ left: `${at(l.price)}%` }}
@@ -189,7 +189,7 @@ function RangeBar({ version: v, scale, nameOf }: { version: Version; scale: { mi
 function StoreCell({ storeName, listing: l, best, filters }: { storeName: string; listing?: Listing; best: Listing | null; filters: Filters }) {
   if (!l)
     return (
-      <div className="grid gap-1 rounded-xl border border-dashed border-border px-3 py-2.5 text-sm">
+      <div className="grid gap-1 chamfer-sm bg-surface/50 px-3 py-2.5 text-sm">
         <span className="truncate text-[13px] text-muted-foreground">{storeName}</span>
         <span className="text-muted-foreground">Not listed</span>
       </div>
@@ -204,8 +204,8 @@ function StoreCell({ storeName, listing: l, best, filters }: { storeName: string
       rel="noopener"
       title={`${l.raw_title}${l.variant ? ` (${l.variant})` : ""}`}
       className={cn(
-        "group/cell grid content-start gap-1 rounded-xl border border-transparent bg-surface px-3 py-2.5 text-sm transition-colors duration-300 hover:border-foreground/15 hover:bg-foreground/[0.08] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        isBest && "border-primary-ink",
+        "group/cell grid content-start gap-1 chamfer-sm bg-surface px-3 py-2.5 text-sm transition-colors duration-300 hover:bg-foreground/[0.08] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-current",
+        isBest && "light:bg-primary/35",
         (!l.in_stock || !listingMatches(l, filters)) && "opacity-60",
       )}
     >

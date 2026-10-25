@@ -187,7 +187,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
             exit={{ opacity: 0, transition: { duration: 0.3, ease: "easeOut" } }}
             transition={{ duration: flight.dir === "open" ? 0.65 : 0.5, ease: ease.wg }}
             onAnimationComplete={() => setFlight(null)}
-            className="pointer-events-none fixed z-[60] overflow-hidden rounded-2xl bg-raised shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)]"
+            className="chamfer-lg pointer-events-none fixed z-[60] overflow-hidden bg-raised"
           >
             {flight.image && (
               <m.img
@@ -248,7 +248,7 @@ function DialogBody({ play, game, offers, matching, others, cheapest, storeCount
           animate={play ? { clipPath: "inset(0% 0% 0% 0%)", rotate: -3, scale: 1 } : undefined}
           whileHover={{ rotate: 0, scale: 1.05, transition: { duration: 0.5, ease: ease.wg } }}
           transition={{ duration: 1, ease: ease.wg, delay: 0.1 }}
-          className="aspect-[4/5] w-20 shrink-0 overflow-hidden rounded-sm bg-surface sm:row-span-2 sm:w-28"
+          className="aspect-[4/5] w-20 shrink-0 overflow-hidden chamfer-xs bg-surface sm:row-span-2 sm:w-28"
         >
           <CoverArt src={game.data.image} title={game.data.title} />
         </m.div>
@@ -340,9 +340,9 @@ function OfferRow({ listing: l, storeName, cheapest, badge }: { listing: Listing
   return (
     <div
       className={cn(
-        "group/row grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 rounded-2xl border bg-surface p-4 transition-colors duration-300 hover:bg-foreground/[0.08]",
-        // The cheapest offer keeps a neon edge (black on a light page); the rest show one on hover
-        cheapest ? "border-primary-ink" : "border-transparent hover:border-foreground/15",
+        "group/row chamfer grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 bg-surface p-4 transition-colors duration-300 hover:bg-foreground/[0.08]",
+        // The cheapest offer: its tag and its lime price say so; on a light page, a lime tint too
+        cheapest && "light:bg-primary/35 light:hover:bg-primary/45",
         !l.in_stock && "opacity-60",
       )}
     >
@@ -363,7 +363,7 @@ function OfferRow({ listing: l, storeName, cheapest, badge }: { listing: Listing
 
       <div className="text-right tabular-nums">
         {l.was && <s className="mr-2 text-sm text-muted-foreground">{formatPrice(l.was)}</s>}
-        <span className={cn("text-xl font-semibold transition-colors duration-300", cheapest ? "text-primary-ink" : "group-hover/row:text-primary-ink")}>
+        <span className={cn("font-display text-xl transition-colors duration-300", cheapest ? "text-primary-ink" : "group-hover/row:text-primary-ink")}>
           {formatPrice(l.price)}
         </span>
       </div>

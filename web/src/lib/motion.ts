@@ -3,6 +3,10 @@
 type Bezier = [number, number, number, number]
 
 export const ease = {
+  /** Cinematic ease-out (expo): every reveal, wipe and hover. Nothing overshoots. */
+  cine: [0.16, 1, 0.3, 1] as Bezier,
+  /** Cinematic in-out: wipes that cover and uncover, scene changes. */
+  cineInOut: [0.76, 0, 0.24, 1] as Bezier,
   /** WG's signature ease-out for panels and reveals. */
   wg: [0.3, 0, 0.04, 1] as Bezier,
   /** WG page loader wipe (1.5 s). */

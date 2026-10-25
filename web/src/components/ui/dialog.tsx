@@ -34,9 +34,9 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        // WG's dim, deeper and without the blur: the panel stands out by tone, not glass
-        // (lighter in light theme, so the white panel stays white)
-        "fixed inset-0 isolate z-50 bg-black/70 light:bg-black/40 duration-500 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-200",
+        // A dim, without blur: the panel stands out by tone, not glass
+        // (lighter in light theme, so the pale panel stays pale)
+        "fixed inset-0 isolate z-50 bg-ink/80 light:bg-ink/45 duration-500 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-200",
         className
       )}
       {...props}
@@ -60,10 +60,10 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          // WG content block: 16px radius, opaque and one tone step off the page.
-          // Height capped; the body scrolls inside the rounded edge, the close button stays put.
-          // Opens with WG's ease: rises 2rem while scaling up; closes quicker.
-          "fixed top-1/2 left-1/2 z-50 flex max-h-[min(calc(100dvh-2rem),44rem)] w-full max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-raised text-foreground outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-90 data-open:slide-in-from-bottom-8 data-open:duration-700 data-open:ease-[cubic-bezier(0.3,0,0.04,1)] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:duration-200",
+          // A chamfered block, opaque and one tone step off the page.
+          // Height capped; the body scrolls inside it, the close button stays put.
+          // Opens with the cinematic ease: rises 2rem while scaling up; closes quicker.
+          "chamfer-lg fixed top-1/2 left-1/2 z-50 flex max-h-[min(calc(100dvh-2rem),44rem)] w-full max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden bg-raised text-foreground outline-none sm:max-w-lg data-open:animate-in data-open:fade-in-0 data-open:zoom-in-90 data-open:slide-in-from-bottom-8 data-open:duration-700 data-open:ease-[cubic-bezier(0.16,1,0.3,1)] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:duration-200",
           className
         )}
         {...props}
@@ -72,7 +72,7 @@ function DialogContent({
           data-slot="dialog-body"
           data-lenis-prevent
           className={cn(
-            // The scrollbar's track stops short of the rounded corners; on desktop its gutter
+            // The scrollbar's track stops short of the cut corners; on desktop its gutter
             // is reserved and taken out of the right padding, so both sides stay 32px.
             "grid min-h-0 flex-1 gap-6 overflow-y-auto overscroll-contain p-5 sm:p-8 sm:pr-[18px] sm:[scrollbar-gutter:stable] [&::-webkit-scrollbar-track]:my-4",
             bodyClassName
@@ -84,8 +84,7 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="round"
-              // WG spinToClose: the close icon turns as you reach for it
-              className="absolute top-3 right-3 duration-500 hover:rotate-180 sm:top-4 sm:right-4"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4"
               size="icon-sm"
             >
               <XIcon
@@ -144,8 +143,8 @@ function DialogTitle({
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn(
-        // INK headline: uppercase condensed display
-        "font-display text-3xl leading-[0.95] uppercase sm:text-4xl",
+        // The display face: uppercase, tight
+        "font-display text-2xl leading-[0.95] uppercase sm:text-3xl",
         className
       )}
       {...props}

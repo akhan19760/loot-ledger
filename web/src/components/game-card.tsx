@@ -1,16 +1,16 @@
-import { m, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
+import { m, useReducedMotion } from "motion/react"
 import { memo, useState } from "react"
-import { ArrowUpRight } from "lucide-react"
 import type { GameSummary } from "@lootledger/shared"
 import { CoverArt } from "@/components/cover-art"
 import { ShelfCardButtons } from "@/components/shelf-buttons"
-import { Label } from "@/components/ui/label"
 import { capitalize, formatPrice } from "@/lib/format"
-import { useFinePointer } from "@/hooks/use-fine-pointer"
-import { ease, pointerSpring } from "@/lib/motion"
+import { ease } from "@/lib/motion"
 
 // Card width per grid breakpoint in App.tsx: 2 columns, then 3 / 4 / 5 / 6 / 7.
 const CARD_SIZES = "(min-width: 2200px) 14vw, (min-width: 1536px) 17vw, (min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+
+/** The text under every cover is this tall, so the virtualized grid knows each row's height. */
+export const CARD_META_HEIGHT = 124
 
 interface Props {
   game: GameSummary
@@ -18,7 +18,7 @@ interface Props {
   /** Position in the grid (or column in a row), for the stagger when cards scroll in. */
   index: number
   onOpen: (id: string) => void
-  /** On the deals page: a neon sticker ("−60%") and a note that replaces the usual badges. */
+  /** On the deals page: a lime sticker ("−60%") and a note that replaces the usual line. */
   deal?: { sticker: string; note?: string }
   /** False skips the scroll-in, e.g. for a card the virtualized grid brings back into the DOM. */
   appear?: boolean
@@ -27,51 +27,31 @@ interface Props {
 }
 
 /**
- * INK image card: art fills the card; platform and condition, the uppercase title and the
- * price sit over the bottom. Tilts toward the pointer in 3D (INK tilted cards), takes a
- * neon edge on hover, and wipes in with INK's clip-path reveal. Neon is for the price:
- * the one thing on the card someone is comparing.
+ * A game in the grid (DESIGN.md, "Library"): its cover, big and unboxed, with the name, price
+ * and shop written beneath in the two voices (the name in the text face, the price in the
+ * display face). Reached for, the cover steps back into a lime chamfered frame, like a game
+ * menu's selected tile. It wipes up into view with the cinematic ease.
  * Memoized: the virtualized grid re-renders as rows come and go while scrolling.
  */
 export const GameCard = memo(function GameCard({ game, storeName, index, onOpen, deal, appear = true, onAppear }: Props) {
   const { best } = game
   const reduced = useReducedMotion()
-  // The tilt follows a mouse: on a touch screen there's none, so it isn't set up.
-  const fine = useFinePointer()
-  const tilt = !reduced && fine
   // Fixed at mount: dropping whileInView later would send the card back to "hidden".
   const [scrollsIn] = useState(appear)
 
-  // Pointer position over the card, 0..1 (centre = 0.5).
-  const px = useMotionValue(0.5)
-  const py = useMotionValue(0.5)
-  const rotateX = useSpring(useTransform(py, [0, 1], [8, -8]), pointerSpring)
-  const rotateY = useSpring(useTransform(px, [0, 1], [-10, 10]), pointerSpring)
-
-  const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    if (reduced || e.pointerType !== "mouse") return
-    const r = e.currentTarget.getBoundingClientRect()
-    px.set((e.clientX - r.left) / r.width)
-    py.set((e.clientY - r.top) / r.height)
-  }
-  const onPointerLeave = () => {
-    px.set(0.5)
-    py.set(0.5)
-  }
-
-  const delay = (index % 6) * 0.06
-  // The wrapper watches the viewport and drives the image through variants: the
-  // image itself starts fully clipped, and Chrome never reports a fully clipped
-  // element as in view. `transform` rather than `y`/`scale`, so the browser runs these
-  // off the main thread and they stay smooth while the page scrolls.
+  const delay = (index % 7) * 0.05
+  // The wrapper watches the viewport and drives the cover through variants: the cover itself
+  // starts fully clipped, and Chrome never reports a fully clipped element as in view.
+  // `transform` rather than `y`/`scale`, so it runs off the main thread while the page scrolls.
   const card = {
-    hidden: { opacity: 0, transform: "translateY(60px)" },
-    shown: { opacity: 1, transform: "translateY(0px)", transition: { duration: 0.9, ease: ease.wg, delay } },
+    hidden: { opacity: 0, transform: "translateY(48px)" },
+    shown: { opacity: 1, transform: "translateY(0px)", transition: { duration: 0.9, ease: ease.cine, delay } },
   }
   const art = {
-    hidden: { clipPath: "inset(100% 0% 0% 0%)", transform: "scale(1.25)" },
-    shown: { clipPath: "inset(0% 0% 0% 0%)", transform: "scale(1)", transition: { duration: 1.2, ease: ease.wg, delay: delay + 0.1 } },
+    hidden: { clipPath: "inset(100% 0% 0% 0%)", transform: "scale(1.2)" },
+    shown: { clipPath: "inset(0% 0% 0% 0%)", transform: "scale(1)", transition: { duration: 1.1, ease: ease.cine, delay: delay + 0.08 } },
   }
+  const version = [best.platform, best.condition && capitalize(best.condition)].filter(Boolean).join(" · ")
 
   return (
     <m.div
@@ -80,86 +60,49 @@ export const GameCard = memo(function GameCard({ game, storeName, index, onOpen,
       whileInView={scrollsIn ? "shown" : undefined}
       viewport={{ once: true, margin: "0px 0px -6% 0px" }}
       onViewportEnter={onAppear && (() => onAppear(game.id))}
-      style={{ perspective: 1000 }}
     >
-      {/* The tilting card holds the open button and, beside it, the shelf buttons (buttons can't nest). */}
-      <m.div
-        // The game dialog opens out of (and closes back into) the element with this attribute.
-        data-game-card={game.id}
-        onPointerMove={onPointerMove}
-        onPointerLeave={onPointerLeave}
-        style={tilt ? { rotateX, rotateY } : undefined}
-        className="dark group/card relative aspect-[4/5] w-full rounded-2xl text-foreground"
-      >
-        {/* Opaque: the card is dark in either theme, and a cover still loading mustn't show a light page through */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl bg-raised">
-          <m.button
-            type="button"
-            onClick={() => {
-              onPointerLeave() // level the tilt so the dialog grows from the card's resting box
-              onOpen(game.id)
-            }}
-            whileTap={{ scale: 0.97 }}
-            className="absolute inset-0 block rounded-2xl text-left outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
-          >
-            {/* INK clip-path reveal, then a slow zoom on hover */}
-            <m.div className="absolute inset-0" variants={art}>
-              <CoverArt src={game.image} title={game.title} sizes={CARD_SIZES} className="transition-transform duration-[1.2s] ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-110" />
-            </m.div>
-  
-            {/* The scrim the text sits on, so it needs no shadow of its own. Scaled rather than
-                resized: it costs nothing on the cards the page scrolls past. */}
-            <div className="absolute inset-0 origin-bottom bg-gradient-to-t from-black via-black/85 to-transparent transition-transform duration-700 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:scale-y-100 sm:scale-y-75" />
-            <span className="pointer-events-none absolute inset-0 rounded-2xl border border-transparent transition-colors duration-300 group-hover/card:border-primary" />
-  
-            {/* WG black circle with the arrow that spins in on hover */}
-            <span className="absolute top-3 right-3 grid size-10 scale-50 place-items-center rounded-full bg-black text-primary opacity-0 transition-[scale,opacity] duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] group-hover/card:scale-100 group-hover/card:opacity-100">
-              <ArrowUpRight className="size-4 -rotate-90 transition-transform duration-700 ease-[cubic-bezier(0.645,0.045,0.355,1)] group-hover/card:rotate-0" />
+      {/* The game dialog opens out of (and closes back into) the element with this attribute. */}
+      <div data-game-card={game.id} className="group/card relative text-foreground">
+        <button type="button" onClick={() => onOpen(game.id)} className="grid w-full text-left outline-none">
+          <span className="relative block aspect-[4/5]">
+            {/* The frame the cover steps back into */}
+            <span aria-hidden className="chamfer absolute inset-0 bg-primary opacity-0 transition-opacity duration-300 group-hover/card:opacity-100 group-has-[button:focus-visible]/card:opacity-100" />
+            <span className="chamfer absolute inset-0 overflow-hidden bg-raised transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:scale-[0.9] group-hover/card:-rotate-2 group-has-[button:focus-visible]/card:scale-[0.9] group-active/card:scale-[0.87]">
+              <m.span className="absolute inset-0 block" variants={art}>
+                <CoverArt src={game.image} title={game.title} sizes={CARD_SIZES} />
+              </m.span>
             </span>
-  
-            {/* Sits one offers row (h-6) low, so that row starts below the card's edge; on hover
-                the block slides up to show it. Moved, not resized: no layout while it plays. */}
-            <div className="absolute inset-x-0 bottom-0 grid translate-y-6 gap-2 p-3 transition-transform duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:-translate-y-1 sm:p-4">
-              {deal && (
-                <span className="w-fit -rotate-2 rounded-sm bg-primary px-2 pt-1 pb-0.5 font-display text-2xl leading-none text-black uppercase sm:text-3xl">
-                  {deal.sticker}
-                </span>
-              )}
-              <Label className="transition-colors duration-300 group-hover/card:text-foreground">
-                {[best.platform, best.condition && capitalize(best.condition)].filter(Boolean).join(" · ")}
-              </Label>
-              {/* Two lines at most; the full title is in the dialog (and read out here in full) */}
-              <h3 className="line-clamp-2 font-display text-xl leading-[0.95] uppercase sm:text-2xl">{game.title}</h3>
-              <div className="flex min-w-0 items-baseline justify-between gap-2">
-                <span className={`text-lg font-semibold whitespace-nowrap sm:text-xl ${best.in_stock ? "text-primary" : "text-muted-foreground"}`}>
-                  {deal && best.was && <s className="mr-1.5 text-sm font-normal text-muted-foreground">{formatPrice(best.was)}</s>}
-                  {formatPrice(best.price)}
-                </span>
-                <span className="min-w-0 truncate text-[13px] text-muted-foreground sm:text-sm">{storeName}</span>
-              </div>
+            {deal && (
+              <span className="chamfer-xs absolute -bottom-2 left-3 max-w-[calc(100%-1.5rem)] -rotate-3 truncate bg-primary px-2 pt-1.5 pb-1 font-display text-base leading-none text-ink uppercase sm:text-lg">
+                {deal.sticker}
+              </span>
+            )}
+            {!best.in_stock && <span className="chamfer-xs absolute bottom-3 left-3 bg-ink px-2 py-1 label-caps text-bone">Out of stock</span>}
+          </span>
+
+          <span className="grid content-start gap-1.5 overflow-hidden pt-3.5" style={{ height: CARD_META_HEIGHT }}>
+            <span className="truncate label-caps text-muted-foreground">{version}</span>
+            <span className="line-clamp-2 text-sm leading-[1.2] font-bold tracking-[0.01em] uppercase sm:text-[15px]">{game.title}</span>
+            <span className="flex min-w-0 items-baseline justify-between gap-2">
+              <span className={`font-display text-lg leading-none whitespace-nowrap sm:text-xl ${best.in_stock ? "text-primary-ink" : "text-muted-foreground"}`}>
+                {formatPrice(best.price)}
+              </span>
+              <span className="min-w-0 truncate text-xs text-muted-foreground">{storeName}</span>
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
               {deal ? (
-                deal.note && <p className="text-[13px] text-muted-foreground">{deal.note}</p>
+                deal.note
               ) : (
-                <p className="flex h-5 flex-wrap gap-x-3 overflow-hidden text-[13px] leading-5 text-muted-foreground">
-                  {!best.in_stock && <span className="text-destructive">Out of stock</span>}
-                  {/* Phones keep the line to the saving, the reason to look closer */}
-                  <span className={game.spread >= 100 ? "max-sm:hidden" : undefined}>
-                    {game.storeCount} {game.storeCount === 1 ? "store" : "stores"}
-                  </span>
-                  {game.spread >= 100 && <span className="text-foreground">Save up to {formatPrice(game.spread)}</span>}
-                </p>
+                <>
+                  {game.storeCount} {game.storeCount === 1 ? "shop" : "shops"}
+                  {game.spread >= 100 && <span className="text-foreground"> · save up to {formatPrice(game.spread)}</span>}
+                </>
               )}
-              {/* Rises in on hover */}
-              <div className="h-6 opacity-0 transition-opacity duration-500 ease-[cubic-bezier(0.3,0,0.04,1)] group-hover/card:opacity-100">
-                <span className="mt-1 inline-flex text-[13px] font-semibold text-primary">
-                  View {game.offerCount} {game.offerCount === 1 ? "offer" : "offers"} ↗
-                </span>
-              </div>
-            </div>
-          </m.button>
-          <ShelfCardButtons game={game} className="absolute top-3 left-3" />
-        </div>
-      </m.div>
+            </span>
+          </span>
+        </button>
+        <ShelfCardButtons game={game} className="absolute top-2.5 right-2.5" />
+      </div>
     </m.div>
   )
 })

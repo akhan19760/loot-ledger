@@ -28,9 +28,8 @@ function SelectValue({
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
-// WG contact-form select: transparent, `input` border, 16px radius; foreground border
-// on focus; once a value is chosen (`chosen`), a 2px primary-ink border and text (an inset
-// ring doubles the border, so the label doesn't shift).
+// A chamfered field, a tone step off the page (no outline: the cut corners would break it);
+// once a value is chosen (`chosen`), solid lime with ink type, like a pressed chip.
 function SelectTrigger({
   className,
   chosen = false,
@@ -44,7 +43,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-chosen={chosen}
       className={cn(
-        "group/select flex h-[42px] w-fit items-center justify-between gap-2 rounded-2xl border border-input bg-transparent px-4 text-sm leading-none whitespace-nowrap text-foreground transition-[color,border-color,box-shadow] duration-300 outline-none select-none hover:border-foreground/40 data-[chosen=true]:shadow-[inset_0_0_0_1px_var(--primary-ink)] data-[state=open]:border-foreground focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:text-destructive data-placeholder:text-muted-foreground data-[chosen=true]:border-primary-ink data-[chosen=true]:text-primary-ink *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group/select chamfer-sm flex h-11 w-fit items-center justify-between gap-2 bg-secondary px-4 text-sm leading-none font-semibold whitespace-nowrap text-foreground transition-[color,background-color] duration-300 outline-none select-none hover:bg-foreground/15 data-[state=open]:bg-foreground/15 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-current disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:text-destructive data-placeholder:text-muted-foreground data-[chosen=true]:bg-primary data-[chosen=true]:text-ink data-[chosen=true]:hover:bg-primary-hover *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -70,7 +69,7 @@ function SelectContent({
         data-slot="select-content"
         data-lenis-prevent
         data-align-trigger={position === "item-aligned"}
-        className={cn("relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-2xl border border-border bg-popover p-1 text-popover-foreground shadow-lg duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", position ==="popper"&&"data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1", className )}
+        className={cn("relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto chamfer bg-popover p-1 text-popover-foreground duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", position ==="popper"&&"data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1", className )}
         position={position}
         align={align}
         {...props}
@@ -114,7 +113,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         // Options cascade in (pass style.animationDelay per item for the stagger).
-        "relative flex w-full cursor-default items-center gap-1.5 rounded-sm py-2.5 pr-8 pl-3 text-sm outline-hidden transition-[background-color,color,padding] duration-300 select-none animate-in fade-in-0 slide-in-from-left-2 fill-mode-both focus:bg-accent focus:pl-4 focus:text-accent-foreground data-[state=checked]:text-primary-ink data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-default items-center gap-1.5 py-2.5 pr-8 pl-3 text-sm outline-hidden transition-[background-color,color,padding] duration-300 select-none animate-in fade-in-0 slide-in-from-left-2 fill-mode-both focus:bg-accent focus:pl-4 focus:text-accent-foreground data-[state=checked]:text-primary-ink data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}

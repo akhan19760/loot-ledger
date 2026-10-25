@@ -3,15 +3,15 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { Slot } from "radix-ui"
 
-// Small WG chips: white/10 or neon fill; `outline` = a pale neon tint with neon text
-// (black on a light page); `destructive` = a pale tint of WG invalid red. Tints, not
-// outlines: a 1px box around every pill is noise in a row of them.
+// Small chamfered tags: a tone step off the page, or solid lime; `outline` = a pale lime
+// tint with lime text (ink on a light page); `destructive` = a pale tint of the error red.
+// Tints, not outlines: a 1px box around every tag is noise in a row of them.
 const badgeVariants = cva(
-  "inline-flex h-6 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-sm border border-transparent px-2 text-xs leading-none font-medium whitespace-nowrap [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "chamfer-xs inline-flex h-6 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden px-2 text-[11px] leading-none font-semibold tracking-[0.08em] whitespace-nowrap uppercase [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
-        default: "bg-primary text-black",
+        default: "bg-primary text-ink",
         secondary: "bg-secondary text-secondary-foreground",
         outline: "bg-primary/15 text-primary-ink light:bg-primary/40",
         destructive: "bg-destructive/15 text-destructive",

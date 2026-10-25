@@ -2,22 +2,28 @@ import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useR
 import { ArrowDown } from "lucide-react"
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import type { GamesResponse } from "@lootledger/shared"
+import { Achievements } from "@/components/achievements"
+import { BonusRound } from "@/components/bonus-round"
 import { FilterBar } from "@/components/filter-bar"
 import { GameGrid } from "@/components/game-grid"
-import { Hero, type TitleEntrance } from "@/components/hero"
+import { HERO_COVER_WIDTH, Hero, type TitleEntrance } from "@/components/hero"
 import { LoadingScreen } from "@/components/intro"
-import { Grain } from "@/components/motion/grain"
 import { Reveal } from "@/components/motion/reveal"
 import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
 import { SiteFooter } from "@/components/site-footer"
 import { BackupButtons, ShelfSummary } from "@/components/shelf-summary"
+import { ShelfView } from "@/components/shelf-view"
 import { SiteHeader } from "@/components/site-header"
 import { Button, ButtonCircle } from "@/components/ui/button"
+import { PillToggle } from "@/components/ui/pill-toggle"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Versus } from "@/components/versus"
 import { VirtualGameGrid } from "@/components/virtual-game-grid"
+import { countGameOpened } from "@/hooks/use-achievements"
 import { DEFAULT_FILTERS, gameOpen, useGameId, useLibraryUrl, type Filters, type LibraryList, type Page } from "@/hooks/use-library-url"
+import { useLibraryView, type LibraryView } from "@/hooks/use-library-view"
 import { addToCart, useCart } from "@/hooks/use-cart"
 import { idsOn, useShelf } from "@/hooks/use-shelf"
 import { useDialogSound, useSoundEffects } from "@/hooks/use-sound-effects"
@@ -46,12 +52,18 @@ function prefetchWhenIdle() {
 }
 
 const withArt = (r: GamesResponse) => r.items.filter((g) => g.image)
+const NO_GAMES: GamesResponse["items"] = []
 
 const HEADINGS: Record<LibraryList, string> = {
-  all: "Cheapest offer first.",
+  all: "Every game. Cheapest first.",
   wishlist: "Your wishlist.",
   collection: "Your collection.",
 }
+
+const VIEWS: readonly (readonly [LibraryView, string])[] = [
+  ["shelf", "Shelf"],
+  ["grid", "Grid"],
+]
 
 const EMPTY_LIST = {
   wishlist: { title: "Your wishlist is empty", body: "Tap the heart on any game to save it here, with today's cheapest price for everything on it." },
@@ -69,6 +81,7 @@ export default function App() {
   const listEmpty = shelfIds?.length === 0
   const cart = useCart()
   const [cartOpen, setCartOpen] = useState(false)
+  const [view, setView] = useLibraryView()
   useSoundEffects()
   useDialogSound("cart", cartOpen)
   const wishlist = useMemo(() => idsOn(shelf, "wishlist").map((id) => ({ id, title: shelf[id]!.title, image: shelf[id]!.image })), [shelf])
@@ -112,9 +125,11 @@ export default function App() {
     select: withArt,
     staleTime: Infinity,
   })
-  const heroCovers = useMemo(() => covers.data?.slice(0, 6) ?? [], [covers.data])
-  // The same 400px copies the hero shows, so the loading screen's preload is what the hero reuses.
-  const heroArt = useMemo(() => heroCovers.map((g) => thumb(g.image!, 400)), [heroCovers])
+  // The hero's first two covers, at the size it shows them: the loading screen preloads them.
+  const heroArt = useMemo(() => (covers.data ?? []).slice(0, 2).map((g) => thumb(g.image!, HERO_COVER_WIDTH)), [covers.data])
+  // The face-offs (today's biggest gaps), narrowed like the library; the deals page shares the fetch.
+  const dealsQuery = { platform: filters.platform, condition: filters.condition, limit: 36 }
+  const deals = useQuery({ queryKey: ["deals", dealsQuery], queryFn: () => api.deals(dealsQuery), placeholderData: keepPreviousData, enabled: page === "library" })
   const games = useInfiniteQuery({
     queryKey: ["games", filters, shelfIds],
     queryFn: ({ pageParam }) => {
@@ -132,8 +147,15 @@ export default function App() {
   // The cards and the hero's art render a moment after their data, in slices React can
   // pause between frames, rather than in one long task as the data lands.
   const shownItems = useDeferredValue(items)
-  const shownCovers = useDeferredValue(heroCovers)
+  const shownCovers = useDeferredValue(covers.data ?? NO_GAMES)
+  // The hero's search button: to the library's field, cursor in it (the one showing at this width).
+  const goSearch = () => {
+    scrollTo("search")
+    const field = [...document.querySelectorAll<HTMLInputElement>("#search input[type=search]")].find((i) => i.offsetParent)
+    field?.focus({ preventScroll: true })
+  }
   const total = games.data?.pages[0]?.total
+  const fading = games.isPlaceholderData ? "opacity-40 transition-opacity duration-300" : "transition-opacity duration-300"
 
   return (
     <>
@@ -147,7 +169,6 @@ export default function App() {
         onDone={onIntroDone}
         onTitle={setTitleEntrance}
       />
-      <Grain />
       <SiteHeader
         filters={meta.data}
         online={!meta.isError}
@@ -156,32 +177,44 @@ export default function App() {
         onOpenCart={openCart}
         page={page}
         onNavigate={navigate}
+        onList={setList}
+        counts={counts}
       />
 
-      {/* Full width: only the 8px edge padding, matching the header's inset (WG --gap) */}
       {/* inert until the loading screen has gone, so focus can't wander behind it */}
-      <main inert={!introDone} className="grid grid-cols-1 gap-2 px-2 pt-[calc(var(--height-bar-mobile)+1rem)] pb-2 md:pt-[calc(var(--height-bar)+1rem)]">
+      <main inert={!introDone} className="grid grid-cols-1">
         {page === "deals" ? (
-          <Suspense fallback={<div className="min-h-svh" />}>
-            <DealsPage filters={filters} onFiltersChange={setFilters} storeNames={storeNames} onOpenGame={setGameId} onBack={() => navigate("library", "library")} />
-          </Suspense>
+          <div className="px-4 pt-[calc(var(--height-bar-mobile)+1rem)] pb-24 md:px-8 md:pt-[calc(var(--height-bar)+1rem)]">
+            <Suspense fallback={<div className="min-h-svh" />}>
+              <DealsPage filters={filters} onFiltersChange={setFilters} storeNames={storeNames} onOpenGame={setGameId} onBack={() => navigate("library", "library")} />
+            </Suspense>
+          </div>
         ) : (
           <>
             <Hero
               meta={meta.data}
               covers={shownCovers}
+              storeNames={storeNames}
               play={introDone}
               title={titleEntrance}
-              query={filters.q}
-              onSearch={(q) => setFilters({ q })}
-              onBrowse={() => scrollTo("search")}
-              onDeals={() => navigate("deals")}
+              onOpen={setGameId}
+              onSearch={goSearch}
             />
 
-            <section id="library" className="grid scroll-mt-24 grid-cols-1 gap-2">
-              <Reveal className="grid gap-4 px-2 pt-16 pb-8 md:px-6 md:pt-28 md:pb-12">
-                <h2 className="font-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85] uppercase">
-                  <SplitText key={list} text={HEADINGS[list]} stagger={0.08} />
+            <Versus deals={deals.data} storeNames={storeNames} onOpen={setGameId} onAllDeals={() => navigate("deals")} />
+
+            <BonusRound games={shownCovers} storeNames={storeNames} />
+
+            <section id="library" aria-labelledby="library-title" className="grid scroll-mt-24 grid-cols-1 gap-6 px-4 pt-16 pb-24 md:gap-8 md:px-8 md:pt-28">
+              <Reveal className="grid gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <span className="label-caps text-muted-foreground">
+                    The library{total !== undefined && !listEmpty ? ` · ${total.toLocaleString("en-PK")} ${total === 1 ? "game" : "games"}` : ""}
+                  </span>
+                  <PillToggle label="Layout" value={view} options={VIEWS} onChange={setView} />
+                </div>
+                <h2 id="library-title" className="font-display text-[clamp(2.4rem,6.6vw,6.75rem)] leading-[0.88] uppercase text-balance">
+                  <SplitText key={list} text={HEADINGS[list]} stagger={0.07} />
                 </h2>
               </Reveal>
 
@@ -251,13 +284,12 @@ export default function App() {
                 />
               ) : (
                 <>
-                  <VirtualGameGrid
-                    games={shownItems}
-                    storeNames={storeNames}
-                    onOpen={setGameId}
+                  {view === "shelf" ? (
+                    <ShelfView games={shownItems} storeNames={storeNames} onOpen={setGameId} className={fading} />
+                  ) : (
                     // Faded while a new filter loads: the old results stay put, plainly out of date
-                    className={games.isPlaceholderData ? "opacity-40 transition-opacity duration-300" : "transition-opacity duration-300"}
-                  />
+                    <VirtualGameGrid games={shownItems} storeNames={storeNames} onOpen={setGameId} className={fading} />
+                  )}
                   {games.hasNextPage && (
                     <div className="flex justify-center py-10">
                       <Button size="lg" onClick={() => games.fetchNextPage()} disabled={games.isFetchingNextPage}>
@@ -272,9 +304,10 @@ export default function App() {
           </>
         )}
 
-        {meta.data && <SiteFooter stores={meta.data.stores} />}
+        {meta.data && <SiteFooter meta={meta.data} onTitle={() => (page === "library" ? scrollTo(0) : navigate("library"))} />}
       </main>
 
+      <Achievements />
       <Suspense fallback={null}>
         <GameDialogHost filters={filters} storeNames={storeNames} onOpenCart={openCart} />
         {cartUsed && <CartDialog open={cartOpen} onOpenChange={setCartOpen} stores={meta.data?.stores} wishlist={wishlist} defaultWant={cartWant} />}
@@ -292,6 +325,9 @@ function GameDialogHost({ filters, storeNames, onOpenCart }: { filters: Filters;
   const gameId = useGameId()
   const { setGameId } = useLibraryUrl()
   useDialogSound("game", gameId !== null)
+  useEffect(() => {
+    if (gameId) countGameOpened(gameId)
+  }, [gameId])
   const [used, setUsed] = useState(gameId !== null)
   if (gameId && !used) setUsed(true)
   return used ? <GameDialog gameId={gameId} filters={filters} storeNames={storeNames} onClose={() => setGameId(null)} onOpenCart={onOpenCart} /> : null
@@ -299,8 +335,8 @@ function GameDialogHost({ filters, storeNames, onOpenCart }: { filters: Filters;
 
 function Message({ title, body, action }: { title: string; body: string; action: React.ReactNode }) {
   return (
-    <Reveal className="grid justify-items-center gap-4 rounded-2xl bg-surface px-6 py-20 text-center">
-      <h2 className="font-display text-4xl uppercase md:text-6xl">
+    <Reveal className="chamfer-lg grid justify-items-center gap-4 bg-surface px-6 py-20 text-center">
+      <h2 className="font-display text-3xl uppercase md:text-5xl">
         <SplitText text={title} onMount stagger={0.05} />
       </h2>
       <p className="max-w-md text-muted-foreground">{body}</p>

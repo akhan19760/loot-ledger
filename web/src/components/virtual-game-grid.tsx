@@ -2,11 +2,12 @@ import { useWindowVirtualizer } from "@tanstack/react-virtual"
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { cn } from "cn"
 import type { GameSummary } from "@lootledger/shared"
-import { GameCard } from "@/components/game-card"
+import { CARD_META_HEIGHT, GameCard } from "@/components/game-card"
 import { columnsAt } from "@/hooks/use-grid-columns"
 
-const GAP = 8 // gap-2, as in GameGrid
-const CARD_ASPECT = 5 / 4 // height over width: cards are 4:5
+const GAP_X = 12 // gap-x-3, as in GameGrid
+const GAP_Y = 28 // gap-y-7
+const COVER_ASPECT = 5 / 4 // height over width: covers are 4:5, with the text beneath
 
 /** A new list that starts with the old one: "Show more" added a page. */
 const isAppend = (prev: readonly GameSummary[], next: readonly GameSummary[]) =>
@@ -45,12 +46,12 @@ export function VirtualGameGrid({ games, storeNames, onOpen, className }: Props)
   }, [])
 
   const { width, top, columns } = box
-  const cardWidth = width ? (width - GAP * (columns - 1)) / columns : 0
-  const rowHeight = cardWidth * CARD_ASPECT
+  const cardWidth = width ? (width - GAP_X * (columns - 1)) / columns : 0
+  const rowHeight = cardWidth * COVER_ASPECT + CARD_META_HEIGHT
   const virtualizer = useWindowVirtualizer({
     count: width ? Math.ceil(games.length / columns) : 0,
     estimateSize: () => rowHeight,
-    gap: GAP,
+    gap: GAP_Y,
     overscan: 2,
     scrollMargin: top,
   })
@@ -89,7 +90,7 @@ export function VirtualGameGrid({ games, storeNames, onOpen, className }: Props)
             <div
               key={game.id}
               className={cn("absolute top-0 left-0", gliding && "transition-transform duration-700 ease-[cubic-bezier(0.3,0,0.04,1)]")}
-              style={{ width: cardWidth, transform: `translate(${column * (cardWidth + GAP)}px, ${row.start - scrollMargin}px)` }}
+              style={{ width: cardWidth, transform: `translate(${column * (cardWidth + GAP_X)}px, ${row.start - scrollMargin}px)` }}
             >
               <GameCard
                 game={game}

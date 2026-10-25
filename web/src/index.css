@@ -1,19 +1,22 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/urbanist";
-@import "@fontsource/anton";
+@import "@fontsource/dela-gothic-one/latin.css";
+@import "@fontsource/dela-gothic-one/latin-ext.css";
+@import "@fontsource-variable/mona-sans";
 @import "lenis/dist/lenis.css";
 
-/* Tokens and their sources: see DESIGN.md. Dark is the default theme; light is opt-in. */
+/* Tokens and their sources: see DESIGN.md ("Title Screen"). Dark is the default theme; light is opt-in. */
 
 @custom-variant dark (&:is(.dark *));
 /* Outside every `.dark` scope: the page in light theme, but not the always-dark panels in it. */
 @custom-variant light (&:not(.dark *));
 /* Stacked (below lg) on a short screen, e.g. an iPhone SE: the loading screen tightens up. */
 @custom-variant compact (@media (max-width: 1023.98px) and (max-height: 760px));
+/* Wide but short (a 1366×768 laptop): the hero tightens so its title still fits. */
+@custom-variant short (@media (min-width: 1024px) and (max-height: 820px));
 /* A touch screen (a phone or tablet): lighter effects, since those GPUs and CPUs have far
-   less to spare. The JS side is hooks/use-fine-pointer.ts. */
+   less to spare. */
 @custom-variant touch {
   @media (hover: none), (pointer: coarse) {
     @slot;
@@ -21,9 +24,10 @@
 }
 
 @theme inline {
-  --font-sans: "Urbanist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Mona Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  /* The one loud face: titles, prices, menu items. Always uppercase. */
+  --font-display: "Dela Gothic One", "Arial Black", sans-serif;
   --font-heading: var(--font-display);
-  --font-display: "Anton", "Arial Narrow", sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -47,80 +51,104 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  /* The four colours by name, for the few places that mean the colour itself */
+  --color-ink: #0b0c0e;
+  --color-bone: #eeede8;
+  --color-lime: #d4fb08;
+  --color-graphite: #1a1b1f;
 
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
-  --radius-2xl: var(--radius);
+  /* No rounding anywhere: corners are cut (the chamfer utilities below), never rounded. */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
 
   /* Ultra-wide screens get a 7th grid column (2200px) */
   --breakpoint-3xl: 137.5rem;
 }
 
 :root {
-  --radius: 16px;
+  --radius: 0px;
   --gap: 8px;
-  /* WG --h-controller */
   --height-bar: 80px;
-  --height-bar-mobile: 56px;
+  --height-bar-mobile: 60px;
+  /* The chamfer: how much of each cut corner goes */
+  --cut: 12px;
 
-  /* Light theme. Neon stays the fill colour; text that would be neon (primary-ink) is
-     plain black, since neon on a light background is unreadable. */
-  --background: #f1f1ec;
-  --foreground: #0b0b0b;
-  --card: rgb(0 0 0 / 0.04);
-  --card-foreground: #0b0b0b;
-  --popover: #fff;
-  --popover-foreground: #0b0b0b;
+  /* Light theme: bone page, ink type, lime stays a fill (ink text on it). Lime as a text
+     colour (primary-ink) turns ink, since lime on bone can't be read. */
+  --background: #eeede8;
+  --foreground: #0b0c0e;
+  --card: rgb(11 12 14 / 0.04);
+  --card-foreground: #0b0c0e;
+  --popover: #f8f7f3;
+  --popover-foreground: #0b0c0e;
   --primary: #d4fb08;
-  --primary-hover: #bae200;
-  --primary-foreground: #253300;
-  --primary-ink: #0b0b0b;
-  --secondary: rgb(0 0 0 / 0.06);
-  --secondary-foreground: #0b0b0b;
-  --muted: rgb(0 0 0 / 0.06);
-  --muted-foreground: rgb(0 0 0 / 0.6);
-  --accent: rgb(0 0 0 / 0.06);
-  --accent-foreground: #0b0b0b;
-  --surface: rgb(0 0 0 / 0.04);
-  /* Opaque, one tone step off the page: the header once scrolled, dialogs, the drawer. */
-  --raised: #fff;
+  --primary-hover: #c4ea00;
+  --primary-foreground: #0b0c0e;
+  --primary-ink: #0b0c0e;
+  --secondary: rgb(11 12 14 / 0.07);
+  --secondary-foreground: #0b0c0e;
+  --muted: rgb(11 12 14 / 0.07);
+  --muted-foreground: rgb(11 12 14 / 0.62);
+  --accent: rgb(11 12 14 / 0.07);
+  --accent-foreground: #0b0c0e;
+  --surface: rgb(11 12 14 / 0.045);
+  --raised: #f8f7f3;
   --destructive: #d42600;
-  --border: rgb(0 0 0 / 0.1);
-  --input: rgb(0 0 0 / 0.2);
-  --ring: #0b0b0b;
+  --border: rgb(11 12 14 / 0.12);
+  --input: rgb(11 12 14 / 0.22);
+  --ring: #0b0c0e;
 
   color-scheme: light;
 }
 
-/* Dark theme: on <html> by default, and on panels that stay dark in either theme
-   (hero, game cards, loading screen). */
+/* Dark theme (Lime Ink): on <html> by default, and on panels that stay dark in either theme. */
 .dark {
-  --background: #000;
-  --foreground: #fff;
-  --card: rgb(255 255 255 / 0.05);
-  --card-foreground: #fff;
-  --popover: #252525;
-  --popover-foreground: #fff;
+  --background: #0b0c0e;
+  --foreground: #eeede8;
+  --card: rgb(238 237 232 / 0.05);
+  --card-foreground: #eeede8;
+  --popover: #1a1b1f;
+  --popover-foreground: #eeede8;
   --primary: #d4fb08;
-  --primary-hover: #bae200;
-  --primary-foreground: #253300;
+  --primary-hover: #c4ea00;
+  --primary-foreground: #0b0c0e;
   --primary-ink: #d4fb08;
-  --secondary: rgb(255 255 255 / 0.1);
-  --secondary-foreground: #fff;
-  --muted: rgb(255 255 255 / 0.1);
-  --muted-foreground: rgb(255 255 255 / 0.7);
-  --accent: rgb(255 255 255 / 0.1);
-  --accent-foreground: #fff;
-  --surface: rgb(255 255 255 / 0.05);
-  --raised: #141414;
-  --destructive: #ff2e00;
-  --border: rgb(255 255 255 / 0.1);
-  --input: rgb(255 255 255 / 0.2);
-  --ring: #fff;
+  --secondary: rgb(238 237 232 / 0.08);
+  --secondary-foreground: #eeede8;
+  --muted: rgb(238 237 232 / 0.08);
+  --muted-foreground: rgb(238 237 232 / 0.62);
+  --accent: rgb(238 237 232 / 0.08);
+  --accent-foreground: #eeede8;
+  --surface: rgb(238 237 232 / 0.045);
+  --raised: #1a1b1f;
+  --destructive: #ff5236;
+  --border: rgb(238 237 232 / 0.1);
+  --input: rgb(238 237 232 / 0.2);
+  --ring: #eeede8;
 
   color-scheme: dark;
+}
+
+/* A lime block: ink type and ink lines on lime, in either theme. In a layer, so a utility
+   (bg-transparent, say) can still override its fill. */
+@layer components {
+.on-lime {
+  --foreground: #0b0c0e;
+  --muted-foreground: rgb(11 12 14 / 0.66);
+  --primary-ink: #0b0c0e;
+  --secondary: rgb(11 12 14 / 0.1);
+  --secondary-foreground: #0b0c0e;
+  --border: rgb(11 12 14 / 0.16);
+  --input: rgb(11 12 14 / 0.3);
+  --ring: #0b0c0e;
+  background-color: var(--primary);
+  color: #0b0c0e;
+}
 }
 
 @layer base {
@@ -139,21 +167,23 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  ::selection {
+    background: var(--primary);
+    color: #0b0c0e;
+  }
 
-  /* Scrollbars: a slim pill in the input colour, neon on hover, floating on a clear
-     track. The transparent border insets the pill from the edge. Chrome ignores these
-     ::-webkit rules once scrollbar-color is set, so that is left to Firefox. */
+  /* Scrollbars: a slim bar in the input colour, lime on hover, on a clear track. Chrome
+     ignores these ::-webkit rules once scrollbar-color is set, so that is left to Firefox. */
   ::-webkit-scrollbar {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
   }
   ::-webkit-scrollbar-track,
   ::-webkit-scrollbar-corner {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    border: 5px solid transparent;
-    border-radius: 999px;
+    border: 4px solid transparent;
     background: var(--input) padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
@@ -174,59 +204,52 @@
   mix-blend-mode: normal;
 }
 
-/* The loading screen's START button only: the one glow left, on the arcade moment. */
+/* ---------------------------------------------------------------- shape */
+
+/* The chamfer: the one shape on the site. Two opposite corners cut at 45°, like tactical
+   game UI. Clips everything, outlines included, so focus shows as an inset outline. */
+@utility chamfer {
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+@utility chamfer-sm {
+  --cut: 7px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+@utility chamfer-xs {
+  --cut: 4px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+@utility chamfer-lg {
+  --cut: 22px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+/* A sheet docked to the bottom edge: only its top-left corner cut. */
+@utility chamfer-top {
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+}
+
+/* The small capitalised label every section and control carries (the references' second voice). */
+@utility label-caps {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* The loading screen's START button only: the one glow left, on the boot sequence. */
 @utility glow-primary {
   filter: drop-shadow(0 0 15px var(--primary));
 }
 
-/* Chosen chip, light theme: neon fill on a light page strains the eye, so it's a black
-   chip with neon text. The always-dark panels keep the neon chip. */
-@utility chip-on {
-  background-color: var(--primary);
-  &:not(.dark *) {
-    background-color: #000;
-  }
-}
-
-/* The wordmark's "Ledger": flat neon (plain black on a light page, like primary-ink). */
+/* The wordmark's "Ledger": lime (ink on a light page, like primary-ink). */
 @utility text-neon {
   color: var(--primary-ink);
 }
 
-/* WG film grain (#noise): tiled fractal noise, jittered a few px per frame. */
-@utility grain {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  animation: grain-jitter 0.9s steps(6) infinite;
-}
-@keyframes grain-jitter {
-  0% { transform: translate(0, 0); }
-  20% { transform: translate(-3%, 2%); }
-  40% { transform: translate(2%, -3%); }
-  60% { transform: translate(-2%, -1%); }
-  80% { transform: translate(3%, 3%); }
-  100% { transform: translate(0, 0); }
-}
-
-/* WG hazard stripe band: neon/black stripes sliding endlessly (their slideFooter loop).
-   On a strip one period wider than the band (hazard-band.tsx), moved rather than repainted. */
-@utility hazard-band {
-  background-image: repeating-linear-gradient(-45deg, var(--primary) 0 28px, #000 28px 56px);
-  background-size: 79.2px 79.2px; /* one stripe period along x: 56px / cos(45deg) */
-  animation: hazard-slide 1.6s linear infinite;
-}
-@keyframes hazard-slide {
-  to { transform: translateX(-79.2px); }
-}
-
-/* WG header audio bars. */
-@utility equalizer-bar {
-  transform-origin: bottom;
-  animation: equalize 1.1s ease-in-out infinite alternate;
-}
-@keyframes equalize {
-  0% { transform: scaleY(0.25); }
-  50% { transform: scaleY(1); }
-  100% { transform: scaleY(0.45); }
+/* Fine 45° lines behind missing cover art. */
+@utility stripes {
+  background-image: repeating-linear-gradient(-45deg, rgb(212 251 8 / 0.08) 0 2px, transparent 2px 14px);
 }
 
 /* Loading sweep: a soft light band crossing a surface. (Not `shimmer`: shadcn's utility of
@@ -241,27 +264,34 @@
   to { background-position: -50% 0; }
 }
 
-/* WG big-button icon: spins to 330° on hover and back. */
-@utility spin-on-hover {
-  transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+/* WG film grain, the loading screen's: tiled fractal noise, jittered a few px per frame. */
+@utility grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain-jitter 0.9s steps(6) infinite;
+}
+@keyframes grain-jitter {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -1%); }
+  80% { transform: translate(3%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* "Press any key": a slow two-step blink, like a title screen's prompt. */
+@utility blink {
+  animation: blink 1.6s steps(2, jump-none) infinite;
+}
+@keyframes blink {
+  50% { opacity: 0.25; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .grain,
-  .hazard-band,
-  .equalizer-bar,
-  .sweep {
+  .sweep,
+  .blink {
     animation: none !important;
   }
-}
-
-/* 45° neon stripes (WG hazard panels), used faintly behind missing cover art. */
-@utility stripes {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgb(212 251 8 / 0.08) 0 24px,
-    transparent 24px 48px
-  );
 }
 
 /* Radix's scroll lock sets this on <body> as a dialog opens and drops it as it closes. As an
@@ -281,7 +311,7 @@ html.lenis.lenis-stopped:not(.lenis-autoToggle) {
 }
 
 /* While the page glides (smooth-scroll.tsx), cards sliding under the pointer don't start
-   their hover effects: glow, tilt and glare on every card crossed, mid-scroll. */
+   their hover effects: lift and frame on every card crossed, mid-scroll. */
 .scrolling [data-game-card] {
   pointer-events: none;
 }

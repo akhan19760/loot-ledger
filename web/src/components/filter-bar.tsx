@@ -27,8 +27,8 @@ const KINDS = [["game", "Games"], ["hardware", "Hardware"], ["giftcard", "Gift c
 const SORTS: [SortOrder, string][] = [["price", "Lowest price"], ["spread", "Biggest price difference"], ["stores", "Most stores"], ["az", "A–Z"]]
 const EXAMPLES = ["spider-man", "fc 26", "elden ring", "god of war", "gran turismo 7"]
 
-/** The chip highlight glides between options (one shared layout per group). */
-const pillSpring = { type: "spring", bounce: 0.22, duration: 0.55 } as const
+/** The chip highlight glides between options (one shared layout per group), without a bounce. */
+const pillSpring = { type: "spring", bounce: 0, duration: 0.6 } as const
 
 interface Props {
   filters: Filters
@@ -49,12 +49,12 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
     <>
       {/* Phones: just the search, with the filters a tap away in a drawer, so the games
           aren't a long scroll down */}
-      <section aria-label="Search and filters" className="flex items-center gap-2 rounded-2xl bg-surface p-2 md:hidden">
+      <section aria-label="Search and filters" className="chamfer flex items-center gap-2 bg-surface p-2 md:hidden">
         <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} lead="Search, e.g." className="min-w-0 flex-1" />
         <FilterDrawer filters={filters} meta={meta} list={list} counts={counts} onChange={onChange} onListChange={onListChange} />
       </section>
 
-      <section aria-label="Filters" className="hidden grid-cols-1 gap-8 rounded-2xl bg-surface p-8 md:grid">
+      <section aria-label="Filters" className="chamfer-lg hidden grid-cols-1 gap-8 bg-surface p-8 md:grid">
         <ListChips list={list} counts={counts} onChange={onListChange} />
 
         <SearchField committed={filters.q} onCommit={(q) => onChange({ q })} />
@@ -76,7 +76,7 @@ export function FilterBar({ filters, meta, total, onChange, onReset, list, count
                   initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 0.4, ease: ease.inkRoll }}
+                  transition={{ duration: 0.4, ease: ease.cine }}
                 >
                   <Button variant="secondary" onClick={onReset}>
                     <RollText>Reset</RollText>
@@ -140,8 +140,8 @@ function FilterDrawer({
                 initial={{ scale: 0.4 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0 }}
-                transition={{ duration: 0.4, ease: ease.inkRoll }}
-                className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-semibold text-black tabular-nums"
+                transition={{ duration: 0.4, ease: ease.cine }}
+                className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center bg-primary px-1 text-[10px] font-bold text-ink tabular-nums"
               >
                 {active}
               </m.span>
@@ -243,8 +243,8 @@ function SelectFilters({ filters, meta, onChange, fill = false }: { filters: Fil
 }
 
 /**
- * Rounded search field: a magnifier, the text, and a clear button that spins in. The
- * border turns neon on focus; while empty, the example after "Search games, e.g."
+ * Chamfered search field: a magnifier, the text, and a clear button that turns in. A lime
+ * bar runs along its foot on focus; while empty, the example after "Search games, e.g."
  * rolls to the next one (INK slide). `lg` is the hero's; `action` sits at its end.
  */
 export function SearchField({
@@ -271,7 +271,7 @@ export function SearchField({
   return (
     <div
       className={cn(
-        "relative flex items-center gap-3 rounded-2xl border border-border bg-white/5 pr-1.5 pl-4 transition-[border-color] duration-300 focus-within:border-primary light:bg-black/[0.03] light:focus-within:border-foreground md:pl-5",
+        "chamfer relative flex items-center gap-3 bg-secondary pr-1.5 pl-4 shadow-[inset_0_-2px_0_transparent] transition-shadow duration-300 focus-within:shadow-[inset_0_-3px_0_var(--primary-ink)] md:pl-5",
         size === "lg" ? "h-14 md:h-16 md:pr-2" : "h-12 md:h-14",
         className,
       )}
@@ -314,10 +314,10 @@ export function SearchField({
         {q.value && (
           <m.span
             className="shrink-0"
-            initial={{ opacity: 0, scale: 0.4, rotate: -90 }}
+            initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            exit={{ opacity: 0, scale: 0.4, rotate: 90 }}
-            transition={{ duration: 0.4, ease: ease.inkRoll }}
+            exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
+            transition={{ duration: 0.4, ease: ease.cine }}
           >
             {/* type="button": inside the hero's form it must clear, not submit */}
             <Button type="button" variant="round" size="icon-sm" aria-label="Clear search" onClick={() => q.set("")}>
@@ -331,7 +331,7 @@ export function SearchField({
   )
 }
 
-/** WG chips with one neon pill gliding between them, under a small label. "" is a value like any other. */
+/** Chips with one lime block gliding between them, under a small label. "" is a value like any other. */
 export function ChipGroup({
   label,
   value,
@@ -346,7 +346,7 @@ export function ChipGroup({
   const layoutId = useId()
   return (
     <div className="grid min-w-0 content-start gap-3">
-      <Label>{label}</Label>
+      <Label className="label-caps">{label}</Label>
       <ToggleGroup
         type="single"
         aria-label={label}
@@ -360,13 +360,13 @@ export function ChipGroup({
             <ToggleGroupItem
               key={toUi(v)}
               value={toUi(v)}
-              className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent"
+              className="group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent"
             >
               {on && (
                 <m.span
                   layoutId={layoutId}
                   transition={pillSpring}
-                  className="absolute inset-0 -z-10 rounded-2xl chip-on"
+                  className="chamfer-sm absolute inset-0 -z-10 bg-primary"
                 />
               )}
               <RollText>{text}</RollText>
@@ -384,7 +384,7 @@ function StockToggle({ pressed, onChange, className }: { pressed: boolean; onCha
       pressed={pressed}
       onPressedChange={onChange}
       aria-label="In stock only"
-      className={`${className ?? ""} group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent light:data-[state=on]:bg-transparent light:data-[state=on]:hover:bg-transparent`}
+      className={`${className ?? ""} group/roll relative isolate active:scale-95 data-[state=on]:bg-transparent data-[state=on]:hover:bg-transparent`}
     >
       <AnimatePresence initial={false}>
         {pressed && (
@@ -394,7 +394,7 @@ function StockToggle({ pressed, onChange, className }: { pressed: boolean; onCha
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.7 }}
             transition={pillSpring}
-            className="absolute inset-0 -z-10 rounded-2xl chip-on"
+            className="chamfer-sm absolute inset-0 -z-10 bg-primary"
           />
         )}
       </AnimatePresence>
