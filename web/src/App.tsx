@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { ArrowDown } from "lucide-react"
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import type { GamesResponse } from "@lootledger/shared"
@@ -130,6 +130,10 @@ export default function App() {
 
   const storeNames = useMemo(() => new Map(meta.data?.stores.map((s) => [s.id, s.name])), [meta.data])
   const items = useMemo(() => games.data?.pages.flatMap((p) => p.items) ?? [], [games.data])
+  // The cards and the hero's art render a moment after their data, in slices React can
+  // pause between frames, rather than in one long task as the data lands.
+  const shownItems = useDeferredValue(items)
+  const shownCovers = useDeferredValue(heroCovers)
   const total = games.data?.pages[0]?.total
 
   return (
@@ -166,7 +170,7 @@ export default function App() {
           <>
             <Hero
               meta={meta.data}
-              covers={heroCovers}
+              covers={shownCovers}
               play={introDone}
               title={titleEntrance}
               onBrowse={() => scrollTo("library")}
@@ -252,7 +256,7 @@ export default function App() {
               ) : (
                 <>
                   <VirtualGameGrid
-                    games={items}
+                    games={shownItems}
                     storeNames={storeNames}
                     onOpen={setGameId}
                     className={games.isPlaceholderData ? "opacity-50 blur-[2px] transition-[opacity,filter] duration-300" : "transition-[opacity,filter] duration-300"}

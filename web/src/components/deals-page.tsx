@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useDeferredValue, useEffect, useState } from "react"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { ArrowDown, ArrowLeft } from "lucide-react"
 import type { GameSummary } from "@lootledger/shared"
@@ -51,7 +51,8 @@ export function DealsPage({ filters, onFiltersChange, storeNames, onOpenGame, on
     document.title = "Deals · LootLedger"
     return () => void (document.title = previous)
   }, [])
-  const data = deals.data
+  // Rendered in slices React can pause between frames, not one long task as the data lands.
+  const data = useDeferredValue(deals.data)
   const updated = data?.pricesAt ? timeAgo(data.pricesAt) : null
   // Keep a platform that came in by link (e.g. PC) visible as a chip.
   const platforms = PLATFORMS.some(([v]) => v === filters.platform) ? PLATFORMS : [...PLATFORMS, [filters.platform, filters.platform] as const]
