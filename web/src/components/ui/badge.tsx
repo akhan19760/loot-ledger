@@ -3,8 +3,9 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { Slot } from "radix-ui"
 
-// Small WG chips: white/10 or neon fill; `outline` = WG's "chosen" neon border + text;
-// `destructive` = WG invalid red.
+// Small WG chips: white/10 or neon fill; `outline` = a pale neon tint with neon text
+// (black on a light page); `destructive` = a pale tint of WG invalid red. Tints, not
+// outlines: a 1px box around every pill is noise in a row of them.
 const badgeVariants = cva(
   "inline-flex h-6 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-sm border border-transparent px-2 text-xs leading-none font-medium whitespace-nowrap [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
@@ -12,8 +13,8 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-black",
         secondary: "bg-secondary text-secondary-foreground",
-        outline: "border-primary-ink text-primary-ink",
-        destructive: "border-destructive text-destructive",
+        outline: "bg-primary/15 text-primary-ink light:bg-primary/40",
+        destructive: "bg-destructive/15 text-destructive",
       },
     },
     defaultVariants: {

@@ -5,7 +5,7 @@ import type { GamesResponse } from "@lootledger/shared"
 import { CountUp } from "@/components/motion/count-up"
 import { RollText } from "@/components/motion/roll-text"
 import { Button } from "@/components/ui/button"
-import { Eyebrow } from "@/components/ui/eyebrow"
+import { Label } from "@/components/ui/label"
 import { exportShelf, importShelf, removeFromShelf, type Shelf, type ShelfList } from "@/hooks/use-shelf"
 import { formatPrice } from "@/lib/format"
 import { ease } from "@/lib/motion"
@@ -91,7 +91,7 @@ function Figure({ label, value, neon, className }: { label: string; value: React
   return (
     <div className={`grid content-start gap-2 sm:col-span-1 ${className ?? ""}`}>
       <dt>
-        <Eyebrow className="text-muted-foreground">{label}</Eyebrow>
+        <Label>{label}</Label>
       </dt>
       <dd className={`font-display text-4xl leading-none tabular-nums md:text-5xl ${neon ? "text-primary-ink" : ""}`}>{value}</dd>
     </div>

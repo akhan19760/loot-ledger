@@ -3,9 +3,11 @@
 Every token, component style and animation below comes from one of two references:
 
 - **WG** = [wondermakers.games](https://wondermakers.games/) (screenshots + its CSS/markup). This is the **base**: surfaces, buttons, fields, chips, the header bar.
-- **INK** = [inkgames.com](https://inkgames.com/) (screenshots + its CSS). **Accents** only: the headline type, "■ LABEL" eyebrows, and image cards with the title over the art.
+- **INK** = [inkgames.com](https://inkgames.com/) (screenshots + its CSS). **Accents** only: the headline type and image cards with the title over the art.
 
 Both references are dark, so dark is the default theme. A light theme is available from the header toggle (remembered per browser); it is derived from the dark tokens rather than taken from a reference. The hero, the game cards and the loading screen stay dark in both themes (they carry the `dark` class), the same way the footer stays neon: they are panels over artwork, not page background.
+
+**Neon means something.** It marks prices, the one main action on a screen, selected states and the wordmark's "Ledger"; headlines are one colour. Surfaces are flat and separate by a step in tone, not by glass, glows or outlines: the only gradient on the page is the scrim under a card's text, and the only glow is the loading screen's START. Labels are sentence case at a readable size (13px and up) and never sit above a heading as an eyebrow.
 
 ## Fonts
 
@@ -15,9 +17,9 @@ The references use commercial fonts, so the app uses the closest free Google Fon
 |---|---|---|
 | Body, UI (`font-sans`) | Codec Pro (WG) | Urbanist |
 | Headlines (`font-display`), uppercase | Ruder Plakat LL (INK) | Anton |
-| Eyebrow and small labels, uppercase | Codec Pro (WG header labels) | Urbanist, semibold, wider tracking |
+| Small labels | Codec Pro (WG header labels) | Urbanist, medium, 13px, sentence case |
 
-No monospace font: INK's mono eyebrows were tried with JetBrains Mono and dropped because they looked generic. Labels use the body font, like WG's header labels ("● ONLINE", "61 FPS").
+No monospace font: INK's mono eyebrows were tried with JetBrains Mono and dropped because they looked generic. Labels use the body font, like WG's header labels ("● Online", "61 FPS"). Figures are tabular everywhere (`tabular-nums` on `<html>`), so prices line up and counts keep their width as they change.
 
 ## Colors
 
@@ -31,20 +33,20 @@ No monospace font: INK's mono eyebrows were tried with JetBrains Mono and droppe
 | `primary-foreground` | `#253300` | WG `text-neon-950` on neon buttons |
 | `secondary` / `muted` / `accent` | white 10% | WG chips `bg-white/10` |
 | `surface` | white 5% | WG `#ffffff0d` |
+| `raised` | `#141414` | Opaque, one tone step off the page: the header once scrolled, dialogs, the drawer, a card's base. Replaces WG's glass |
 | `border` | white 10% | WG field underline `border-white/10` |
 | `input` | white 20% | WG select `border-white/20` |
 | `destructive` | `#ff2e00` | WG `text-invalid` / `border-invalid` |
 | `popover` | `#252525` | WG gradient stop `#252525` |
-| `neon-from` → `neon-to` | `#abf62c` → `#f6fd02` | WG gradient hero words, sampled from the screenshot; used as `text-neon` / `text-neon-reverse` |
-| `primary-ink` | `#d4fb08` | Neon used as a text or line colour (prices, eyebrows, outline chips, chosen selects). Same as `primary` in dark; black in light, see below |
+| `primary-ink` | `#d4fb08` | Neon used as a text or line colour (prices, "Ledger" via `text-neon`, chosen selects, the cheapest offer's edge). Same as `primary` in dark; black in light, see below |
 
 ### Light theme
 
-White-alpha tokens become black-alpha. Neon is hard on the eye on a light background, both as text and as a glowing fill, so on the page (not the always-dark panels):
+White-alpha tokens become black-alpha. Neon is hard on the eye on a light background, both as text and as a fill, so on the page (not the always-dark panels):
 
-- Neon *text* (`primary-ink`, and the `text-neon` gradient) is plain black.
-- Primary buttons and chosen chips are black with neon text and no glow; the round icon on a primary button turns neon with a black icon.
-- Glows become thicker edges: a chosen select has a 2px border, and the cheapest offer's edge pulses between 1px and 2px.
+- Neon *text* (`primary-ink`, `text-neon`) is plain black.
+- Primary buttons and chosen chips are black with neon text; the round icon on a primary button turns neon with a black icon.
+- A chosen select has a 2px black border; the cheapest offer's edge is black. Pale neon tints (outline badges, cart savings) are stronger, so they still read on white.
 - The footer stays neon, with a black wordmark (as in dark).
 
 | Token | Light value |
@@ -52,14 +54,14 @@ White-alpha tokens become black-alpha. Neon is hard on the eye on a light backgr
 | `background` / `foreground` | `#f1f1ec` / `#0b0b0b` |
 | `popover` | `#fff` |
 | `surface` / `card` | black 4% |
+| `raised` | `#fff` |
 | `secondary` / `muted` / `accent` | black 6% |
 | `muted-foreground` | black 60% |
 | `border` / `input` | black 10% / black 20% |
 | `primary-ink` | `#0b0b0b` (same as `foreground`) |
 | `destructive` | `#d42600` |
-| `neon-from` → `neon-to` | `#0b0b0b` → `#0b0b0b` (the gradient reads as plain black) |
 
-For the few effects that can't be a token (the secondary button's gradient, the dialog's glass), the `light:` variant targets the page in light theme but not the always-dark panels.
+For the few things that can't be a token (the chosen chip's fill, the search field's fill, the neon tints), the `light:` variant targets the page in light theme but not the always-dark panels.
 
 ## Shape, spacing, effects
 
@@ -68,36 +70,35 @@ For the few effects that can't be a token (the secondary button's gradient, the 
 | Radius | 16px (`rounded-2xl`) for panels, buttons, fields, chips | WG `--radius: 16px`, `rounded-[16px]`, `rounded-2xl` |
 | Small radius | 10px | WG secondary ("Contact") button `rounded-[10px]` |
 | Panel gap | 8px | WG `--gap: 8px` |
-| Header bar | 80px (56px on mobile), floating 8px from the edges, blurred | WG `--h-controller: 80px / 56px`, `backdrop-blur` |
-| Panel blur | 37.5px | WG `backdrop-blur-[37.5px]` on content blocks |
-| Overlay | black 50% + 8px blur | WG `#00000080`, `blur(8px)` |
-| Glow | `drop-shadow(0 0 15px #d4fb08)` | WG neon drop-shadows |
+| Header bar | 80px (56px on mobile), floating 8px from the edges; clear over the top of the page, an opaque `raised` bar once scrolled (no blur) | WG `--h-controller: 80px / 56px` |
+| Overlay | black 70% (40% in light), no blur | WG `#00000080`, deepened in place of its `blur(8px)` |
+| Glow | `drop-shadow(0 0 15px #d4fb08)`, on the loading screen's START button only | WG neon drop-shadows |
 | Scrollbars | Slim pill in the `input` colour on a clear track, `primary-ink` on hover; inset from rounded edges | — (matches WG chips/fields) |
 | Dialog | At most 44rem tall; the body scrolls inside the rounded panel, the close button stays pinned | WG content block |
-| Drawer | Phones: the dialog's glass docked to the bottom edge, top corners rounded, at most 88% of the screen tall; grab handle, display-type title and close button on top, the body scrolls, actions pinned along the bottom. Rises with `ease.wg`, drops away quicker | WG content block; bottom sheet *new* |
+| Drawer | Phones: the dialog's opaque panel docked to the bottom edge, top corners rounded, at most 88% of the screen tall; grab handle, display-type title and close button on top, the body scrolls, actions pinned along the bottom. Rises with `ease.wg`, drops away quicker | WG content block; bottom sheet *new* |
 | Stripes | 45° neon stripes | WG hazard-stripe panels |
 
 ## Components
 
 | Component | Look | Source |
 |---|---|---|
-| Button, primary | neon fill, `#253300` text, 42px high, 24px side padding, 16px radius, darker neon on hover. Light theme: black fill, neon text, no glow | WG "Learn more" / "Play demo" |
-| Button, secondary | black→neutral-700 30% gradient, white text, 10px radius, lifts 1px on hover | WG "Contact" |
+| Button, primary | neon fill, `#253300` text, 42px high, 24px side padding, 16px radius, darker neon on hover. Light theme: black fill, neon text | WG "Learn more" / "Play demo" |
+| Button, secondary | flat `secondary` fill (white 10%), white text, 10px radius; lifts 1px and steps lighter on hover | WG "Contact" |
 | Button, ghost | plain white text | WG nav links "Our work", "Services" |
 | Round icon button | 48px black circle | WG play-icon circle, close control |
 | Arrow on outbound links `↗` | after the label | INK "SIGN UP ↗", "EXPLORE ↗" |
-| Chip / toggle | white 10% fill, white text, 16px radius, `text-sm leading-none`; selected = neon fill, dark text (light theme: black fill, neon text, no glow) | WG tag chips (both variants) |
-| Search field | 48px (56px from md) rounded box, white 5% fill, `border` outline, magnifier on the left; the border turns neon with a soft neon glow on focus (light theme: black border, no glow) | — (rounded field, chosen over WG's underline input) |
+| Chip / toggle | white 10% fill, white text, 16px radius, `text-sm leading-none`; selected = neon fill, dark text (light theme: black fill, neon text) | WG tag chips (both variants) |
+| Search field | 48px (56px from md) rounded box, white 5% fill, `border` outline, magnifier on the left; the border turns neon on focus (black in light theme). The hero's is larger (56px, 64px from md) with a neon "Find prices" button at its end (an arrow on phones) | — (rounded field, chosen over WG's underline input) |
 | Select | transparent, `white/20` border, 16px radius; white border on focus; 2px `primary-ink` border + text when a value is chosen (an inset ring doubles the 1px border, so the label doesn't move) | WG contact form selects |
-| Panel | white 5% fill (or neutral-700 20% + blur on overlays), 16px radius | WG content blocks |
-| Status stat | small neon value over an uppercase grey label, optional dot | WG header "● ONLINE", "61 FPS" |
-| Eyebrow | `■ LABEL`: small square + uppercase semibold body font | INK "■ INKGAMES", "■ PLAY" (square), WG header labels (type) |
-| Headline | uppercase condensed display | INK "PLAY. WIN. EARN." |
-| Image card | art fills the card, eyebrow + uppercase title over the bottom | INK "BUILD YOUR KINGDOM" cards |
+| Panel | white 5% fill, no outline (dialogs and the drawer: opaque `raised`), 16px radius | WG content blocks |
+| Status stat | small white value over a grey sentence-case label (13px), optional dot, neon while live | WG header "● ONLINE", "61 FPS" |
+| Label | small grey text over a value or a group of controls: 13px, sentence case, medium weight. Never above a heading: what an eyebrow would say goes into the heading or the sentence under it | WG header labels (type) |
+| Headline | uppercase condensed display, one colour | INK "PLAY. WIN. EARN." |
+| Image card | art fills the card (faint initials hold its place while a slow cover loads); platform · condition, the uppercase title (two lines at most), the price in neon and the store over the bottom, then the store count and the saving in plain text | INK "BUILD YOUR KINGDOM" cards |
 | Compare grid (dialog) | "All offers / Compare" chips. Compare: highlight panels (neon value over a grey detail), then one panel per version (platform · condition · format) with a range bar on a scale shared by every version (neon dot = cheapest, hollow = out of stock) and one cell per store in the same order in every panel, so stores line up in columns and wrap on a phone. Cheapest cell has a neon edge; missing stores are dashed "Not listed" cells. The chosen view is remembered per browser | WG chips, WG panels, WG field underline (dashed variant) |
-| Share | A secondary "Share" button beside the dialog's wishlist and cart buttons. On a phone it opens the share sheet; elsewhere it turns neon and "WhatsApp" and "Copy link" slide in beside it (tick and "Link copied" for 2 s). The link's preview (served by the API, not the app) is the cover, "Game: Rs 9,000 at Store" and the version, markdown and number of stores | WG chips and secondary buttons |
-| Cart optimizer | Header: WG black circle with a bag and a neon count chip that pops on change. Dialog: "Delivering to" chips; one panel per game with its cover, the store and price the best plan picked, and version selects (neon when narrowed); the best plan in a neon-edged panel (total in the display face, neon), an order per store with neon price links, savings as outline chips; the single-store and each-cheapest alternatives as small panels | WG chips, WG selects, WG panels, INK headline type |
-| Deals page | Its own path, `/deals`, reached from the header ("Deals", neon while on it) and the hero. Headline and eyebrows like the library, jump chips for its three lists, the library's Platform and Condition chips in a panel. Each list is a section with an INK headline ("Marked down.", "Shop around.", "Just in.") over the usual card grid, 12 cards then "Show more". Deal cards add a neon sticker in the display face, tilted slightly ("−69%", "Save Rs 9,499", "In stock"), the struck-through was price, and a one-line note in place of the badges | INK headline type, INK price-tag stickers, WG chips, WG panels |
+| Share | A secondary "Share" button beside the dialog's wishlist and cart buttons. On a phone it opens the share sheet; elsewhere it turns neon and "WhatsApp" and "Copy link" slide in beside it (tick and "Link copied" for 2 s). The link's preview (served by the API, not the app) is the cover, "Game: Rs 9,000 at Store" and the version, markdown and number of stores. On a phone the dialog's four buttons (wishlist, own, cart, share) take rows of their own under the cover and title, growing to fill the width; wider, they sit in one line beside the cover | WG chips and secondary buttons |
+| Cart optimizer | Header: WG black circle with a bag and a neon count chip that pops on change. Dialog: "Delivering to" chips; one panel per game with its cover, the store and price the best plan picked, and version selects (neon when narrowed); the best plan in a neon-edged panel (total in the display face, neon), an order per store with neon price links, savings as pale neon chips; the single-store and each-cheapest alternatives as small panels | WG chips, WG selects, WG panels, INK headline type |
+| Deals page | Its own path, `/deals`, reached from the header ("Deals", neon while on it) and the hero's "Or see today's deals". A compact top, so the first deals show on the first screen: the headline, a sentence that says when prices were checked, then one row of the library's Platform and Condition chips and jump buttons for its three lists (the jumps hidden on phones). Each list is a section with an INK headline ("Marked down.", "Shop around.", "Just in.") and a sentence naming it, over the usual card grid: two whole rows at whatever the column count, then "Show more". Deal cards add a neon sticker in the display face, tilted slightly ("−69%", "Save Rs 9,499", "In stock"), the struck-through was price, and a one-line note in place of the badges | INK headline type, INK price-tag stickers, WG chips, WG panels |
 | Filters on phones | Below 768px the filter panel gives way to the search field and a round filters button beside it, its neon chip counting the filters in use. The button opens the filters in a drawer; choices there are a draft until "Show results" applies them and closes it, while the X, a tap outside or Esc close it unchanged. Reset clears the draft. Opening and closing whoosh like a dialog | Search field, WG round icon + neon count chip (as the cart), WG chips and selects |
 | Wishlist and collection | Heart and tick in WG black circles at a card's top-left, shown on hover or focus (always on touch screens) and kept once on; wishlist = neon heart, owned = neon-filled circle with a black tick; the icon pops in with `ease.inkRoll`. The dialog has the same two as labelled buttons (secondary, neon when on). "Show: All games / Wishlist · n / Collection · n" chips top the filter bar; a list view gets a summary panel of big display figures (count, in stock, cost today in neon), notes for games the filters hide or no store lists, and backup export/import | WG round icon, WG chips, INK headline type |
 
@@ -130,23 +131,23 @@ Keeping it smooth while scrolling:
 |---|---|---|
 | Whole page | Film grain, jittering | WG `#noise` overlay |
 | Whole page | Inertial smooth scrolling | Lenis (the one addition not taken from the references) |
-| Header | Slides in after the loading screen, hides on scroll down, returns on scroll up, turns more opaque once scrolled; stats count up | WG floating header + WG live FPS counter |
+| Header | Slides in after the loading screen, hides on scroll down, returns on scroll up, turns into an opaque bar once scrolled; stats count up | WG floating header + WG live FPS counter |
 | Header | Round black badge with neon bars (grey when the API is offline); it's the sound switch, and the bars bounce while sound is on, with "● Sound" / "Muted" beside it on wide screens | WG audio control ("● AUDIO") |
-| Hero | Wordmark letters slide up from a mask; "Ledger" in the neon gradient | INK split-text + WG gradient words |
-| Hero | Real game covers, tilted, around the headline; clip-path reveal; drift with scroll and pointer; straighten on hover | INK tilted art around its headline + INK clip-path |
-| Hero | Neon light that follows the pointer | WG `#star-glow-element` (blurred neon) |
-| Hero | Two rows of huge words, white/neon alternating, sliding opposite ways on scroll | WG "Animation Website / 3D Game UX/UI Web3" rows |
-| Hero | Headline shrinks, blurs and fades as you scroll past | WG block transitions |
+| Hero | Wordmark letters slide up from a mask; "Ledger" in neon | INK split-text |
+| Hero | One sentence saying what this is, then the search, its one action: "Find prices" (or Enter) lands on the library's results with the query applied (the field shares the library's search). "Or see today's deals" under it, which is also the way to the deals on phones | *new* |
+| Hero | Real game covers, tilted, around the headline (two, above the title, on phones); each appears once its image has loaded; clip-path reveal; drift with scroll and pointer; straighten on hover | INK tilted art around its headline + INK clip-path |
+| Hero | Two rows of huge words in a quiet grey (white 35%), sliding opposite ways on scroll: what the library covers | WG "Animation Website / 3D Game UX/UI Web3" rows |
+| Hero | Headline shrinks and fades as you scroll past | WG block transitions |
 | Sections | Rise 80px and fade in as they enter | WG blocks start `translate-y-[5rem]` |
 | Buttons | Label rolls up, copy rolls in from below | INK `ButtonInnerMain` translateY(-100%) |
-| Buttons | Neon glow on hover, press-in on click | WG neon drop-shadows |
+| Buttons | Darker fill on hover, press-in on click | WG hover states |
 | Big buttons | Black circle icon spins to 330° on hover | WG `#big-button #icon` fastSpin |
 | Chips | One neon pill glides between options (spring); labels roll | WG neon chip + INK roll |
-| Search | Border lights neon on focus; example text rolls to the next every 2.6 s; clear button spins in | INK slide |
+| Search | Border turns neon on focus; example text rolls to the next every 2.6 s; clear button spins in | INK slide |
 | Selects | Chevron flips, chosen select's border thickens, options cascade in | WG select states + INK stagger |
-| Cards | Scroll-in stagger; cover wipes in (clip-path) and zooms; 3D tilt toward the pointer with a neon glare; neon glow + border; arrow circle spins in; "View N offers" rises | INK cards, clip-path, tilt; WG glow |
-| Grid | Virtualized; when filters change, cards that stay glide to their new place | — (CSS transition on each card's position) |
-| Dialog | Grows out of the clicked card: a panel carrying the card's cover flies to the dialog's box while the cover fades, then hands over to the dialog; closing flies back into the card. Opened from a link (no card on screen), it rises and scales in with `ease.wg`. Then the title reveals by word; cover wipes in tilted; offers cascade; cheapest offer's edge pulses neon; close icon spins | Material container transform, WG blocks, INK reveals, WG glow keyframes, WG spinToClose |
+| Cards | Scroll-in stagger; cover wipes in (clip-path), fades in once loaded, and zooms on hover; 3D tilt toward the pointer; neon border on hover; arrow circle spins in; "View N offers" rises | INK cards, clip-path, tilt |
+| Grid | Virtualized; when filters change, the old results fade while the new ones load, and cards that stay glide to their new place | — (CSS transition on each card's position) |
+| Dialog | Grows out of the clicked card: a panel carrying the card's cover flies to the dialog's box while the cover fades, then hands over to the dialog; closing flies back into the card. Opened from a link (no card on screen), it rises and scales in with `ease.wg`. Then the title reveals by word; cover wipes in tilted; offers cascade; the cheapest offer keeps a neon edge; close icon spins | Material container transform, WG blocks, INK reveals, WG spinToClose |
 | Header | Theme toggle: black circle, sun/moon roll through it; the new theme spreads in a circle from the button (View Transitions) | WG round icon + INK roll |
 | Footer | Neon hazard stripes slide endlessly; giant black wordmark on neon rises as you reach the end | WG `#yellow-stripe-wrapper` + "Let's join forces" |
 | Footer | WG's 3D controller, scrubbed by scroll down the tall neon panel: it rises from the bottom of the screen, tumbles, spins round and comes to rest on the wordmark at the page's end, reflections sweeping over it as it turns. Their model, environment map, camera and Theatre.js keyframes, on three.js r152 like theirs (`src/lib/controller-scene.ts`); loaded only as the footer comes near. On narrow screens the camera backs off so it fits across | WG `#section-skills` controller |

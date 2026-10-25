@@ -8,7 +8,6 @@ import { RollText } from "@/components/motion/roll-text"
 import { useScrollTo } from "@/components/motion/smooth-scroll"
 import { SplitText } from "@/components/motion/split-text"
 import { Button } from "@/components/ui/button"
-import { Eyebrow } from "@/components/ui/eyebrow"
 
 /**
  * WG closing section: the sliding hazard band, then a tall neon panel. As you scroll
@@ -35,7 +34,7 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
         <div className="grid gap-10 p-6 md:gap-14 md:p-10">
           <div className="relative z-[1] col-start-1 row-start-1 flex flex-wrap items-start justify-between gap-6">
             <div className="grid max-w-3xl gap-4">
-              <Eyebrow>Stores we compare</Eyebrow>
+              <h2 className="text-lg font-semibold">Stores we compare</h2>
               <ul className="flex flex-wrap gap-2">
                 {stores.map((s) => (
                   <li key={s.id}>
@@ -43,7 +42,7 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
                       href={s.base}
                       target="_blank"
                       rel="noopener"
-                      className="group/roll inline-flex h-11 items-center gap-2 rounded-2xl bg-black px-4 text-sm leading-none font-medium text-white transition-[color,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:text-primary hover:shadow-[0_12px_24px_-10px_rgb(0_0_0/0.6)] active:scale-95"
+                      className="group/roll inline-flex h-11 items-center gap-2 rounded-2xl bg-black px-4 text-sm leading-none font-medium text-white transition-[color,transform] duration-300 hover:-translate-y-0.5 hover:text-primary active:scale-95"
                     >
                       <RollText>{s.name}</RollText>
                       <ArrowUpRight className="size-4 transition-transform duration-500 ease-[cubic-bezier(0.645,0.045,0.355,1)] group-hover/roll:rotate-45" />
@@ -78,7 +77,7 @@ export function SiteFooter({ stores }: { stores: Store[] }) {
               Prices are copied from each store's website and may have changed. The store's own page is the final word. Not affiliated with any of the
               listed stores; product data and images belong to their owners.
             </p>
-            <p className="text-xs font-semibold tracking-wider uppercase">LootLedger · for personal use</p>
+            <p className="font-semibold">LootLedger · for personal use</p>
           </div>
         </div>
       </div>

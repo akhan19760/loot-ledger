@@ -3,12 +3,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { cn } from "cn"
 import type { GameSummary } from "@lootledger/shared"
 import { GameCard } from "@/components/game-card"
-import { GRID_COLUMNS } from "@/components/game-grid"
+import { columnsAt } from "@/hooks/use-grid-columns"
 
 const GAP = 8 // gap-2, as in GameGrid
 const CARD_ASPECT = 5 / 4 // height over width: cards are 4:5
-
-const columnsAt = (viewport: number) => GRID_COLUMNS.find(([min]) => viewport >= min)![1]
 
 /** A new list that starts with the old one: "Show more" added a page. */
 const isAppend = (prev: readonly GameSummary[], next: readonly GameSummary[]) =>

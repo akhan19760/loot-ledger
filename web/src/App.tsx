@@ -15,7 +15,6 @@ import { SiteFooter } from "@/components/site-footer"
 import { BackupButtons, ShelfSummary } from "@/components/shelf-summary"
 import { SiteHeader } from "@/components/site-header"
 import { Button, ButtonCircle } from "@/components/ui/button"
-import { Eyebrow } from "@/components/ui/eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
 import { VirtualGameGrid } from "@/components/virtual-game-grid"
 import { DEFAULT_FILTERS, gameOpen, useGameId, useLibraryUrl, type Filters, type LibraryList, type Page } from "@/hooks/use-library-url"
@@ -48,10 +47,10 @@ function prefetchWhenIdle() {
 
 const withArt = (r: GamesResponse) => r.items.filter((g) => g.image)
 
-const HEADINGS: Record<LibraryList, { text: string; neon: string }> = {
-  all: { text: "Cheapest offer first.", neon: "first." },
-  wishlist: { text: "Your wishlist.", neon: "wishlist." },
-  collection: { text: "Your collection.", neon: "collection." },
+const HEADINGS: Record<LibraryList, string> = {
+  all: "Cheapest offer first.",
+  wishlist: "Your wishlist.",
+  collection: "Your collection.",
 }
 
 const EMPTY_LIST = {
@@ -173,25 +172,22 @@ export default function App() {
               covers={shownCovers}
               play={introDone}
               title={titleEntrance}
-              onBrowse={() => scrollTo("library")}
-              onStores={() => scrollTo("stores")}
+              query={filters.q}
+              onSearch={(q) => setFilters({ q })}
+              onBrowse={() => scrollTo("search")}
               onDeals={() => navigate("deals")}
             />
 
             <section id="library" className="grid scroll-mt-24 grid-cols-1 gap-2">
               <Reveal className="grid gap-4 px-2 pt-16 pb-8 md:px-6 md:pt-28 md:pb-12">
-                <Eyebrow className="text-primary-ink">The library</Eyebrow>
                 <h2 className="font-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85] uppercase">
-                  <SplitText
-                    key={list}
-                    text={HEADINGS[list].text}
-                    stagger={0.08}
-                    partClassName={(w) => (w === HEADINGS[list].neon ? "text-neon" : undefined)}
-                  />
+                  <SplitText key={list} text={HEADINGS[list]} stagger={0.08} />
                 </h2>
               </Reveal>
 
-              <Reveal>
+              {/* The hero's search lands here, on the query and the results under it. A fade
+                  only: a block still rising when the page arrives would land it off target. */}
+              <Reveal id="search" y={0} className="scroll-mt-24">
                 <FilterBar
                   filters={filters}
                   meta={meta.data}
@@ -259,7 +255,8 @@ export default function App() {
                     games={shownItems}
                     storeNames={storeNames}
                     onOpen={setGameId}
-                    className={games.isPlaceholderData ? "opacity-50 blur-[2px] transition-[opacity,filter] duration-300" : "transition-[opacity,filter] duration-300"}
+                    // Faded while a new filter loads: the old results stay put, plainly out of date
+                    className={games.isPlaceholderData ? "opacity-40 transition-opacity duration-300" : "transition-opacity duration-300"}
                   />
                   {games.hasNextPage && (
                     <div className="flex justify-center py-10">
@@ -302,8 +299,7 @@ function GameDialogHost({ filters, storeNames, onOpenCart }: { filters: Filters;
 
 function Message({ title, body, action }: { title: string; body: string; action: React.ReactNode }) {
   return (
-    <Reveal className="grid justify-items-center gap-4 rounded-2xl border border-border/50 bg-surface px-6 py-20 text-center">
-      <Eyebrow className="text-muted-foreground">Library</Eyebrow>
+    <Reveal className="grid justify-items-center gap-4 rounded-2xl bg-surface px-6 py-20 text-center">
       <h2 className="font-display text-4xl uppercase md:text-6xl">
         <SplitText text={title} onMount stagger={0.05} />
       </h2>

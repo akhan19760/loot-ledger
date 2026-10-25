@@ -13,11 +13,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // WG neon button + WG neon drop-shadow on hover
+        // WG neon button, a darker neon on hover
         default:
-          "rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover hover:shadow-[0_0_25px_rgb(212_251_8/0.45)] light:bg-black light:text-primary light:hover:bg-neutral-800 light:hover:shadow-none",
-        secondary:
-          "rounded-sm border-white/10 bg-gradient-to-br from-black/30 to-neutral-700/30 text-foreground hover:-translate-y-px hover:border-white/25 hover:to-neutral-800/50 active:translate-y-0 light:border-black/10 light:from-white/70 light:to-neutral-200/70 light:hover:border-black/25 light:hover:to-neutral-300/70",
+          "rounded-2xl bg-primary text-primary-foreground hover:bg-primary-hover light:bg-black light:text-primary light:hover:bg-neutral-800",
+        // WG "Contact", flat: one tone step off the page, a stronger step on hover
+        secondary: "rounded-sm bg-secondary text-foreground hover:-translate-y-px hover:bg-foreground/15 active:translate-y-0",
         ghost: "rounded-sm text-foreground hover:text-primary-ink",
         // Always a black circle, in either theme
         round: "rounded-full border border-white/10 bg-black text-white hover:border-primary hover:text-primary",

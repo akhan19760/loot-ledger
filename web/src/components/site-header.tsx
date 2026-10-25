@@ -16,7 +16,8 @@ import { timeAgo } from "@/lib/format"
 import { ease } from "@/lib/motion"
 
 /**
- * WG header bar: floating 8px from the edges, blurred, status stats on the left.
+ * WG header bar: floating 8px from the edges, status stats on the left. Clear over the top
+ * of the page; once it scrolls, an opaque bar one tone step off the page (no glass).
  * Slides in after the intro, tucks away while scrolling down and returns on the way up.
  */
 export function SiteHeader({
@@ -56,8 +57,8 @@ export function SiteHeader({
       transition={{ duration: 0.8, ease: ease.wg }}
       className={cn(
         // width-before-scroll-bar: Radix's scroll lock (an open dialog) keeps it as wide as the page beneath.
-        "width-before-scroll-bar fixed inset-x-2 top-2 z-40 flex h-(--height-bar-mobile) items-center justify-between gap-4 rounded-2xl border px-3 backdrop-blur-[16px] transition-colors duration-500 md:h-(--height-bar) md:px-4",
-        scrolled ? "border-border bg-popover/70" : "border-transparent bg-popover/40",
+        "width-before-scroll-bar fixed inset-x-2 top-2 z-40 flex h-(--height-bar-mobile) items-center justify-between gap-4 rounded-2xl px-3 transition-colors duration-500 md:h-(--height-bar) md:px-4",
+        scrolled ? "bg-raised" : "bg-transparent",
       )}
     >
       <div className="flex items-center gap-4 md:gap-5">

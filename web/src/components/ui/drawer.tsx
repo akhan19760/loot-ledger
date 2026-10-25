@@ -28,9 +28,9 @@ function DrawerContent({
         data-slot="drawer-content"
         aria-describedby={undefined}
         className={cn(
-          // The dialog's WG glass, docked to the bottom with only its top corners rounded.
+          // The dialog's opaque panel, docked to the bottom with only its top corners rounded.
           // Rises with WG's ease; drops away quicker.
-          "fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col overflow-hidden rounded-t-2xl border border-b-0 border-border bg-neutral-800/70 text-foreground outline-none supports-backdrop-filter:backdrop-blur-[37.5px] light:bg-white/90 data-open:animate-in data-open:slide-in-from-bottom data-open:duration-500 data-open:ease-[cubic-bezier(0.3,0,0.04,1)] data-closed:animate-out data-closed:slide-out-to-bottom data-closed:duration-300 data-closed:ease-[cubic-bezier(0.645,0.045,0.355,1)]",
+          "fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col overflow-hidden rounded-t-2xl bg-raised text-foreground outline-none data-open:animate-in data-open:slide-in-from-bottom data-open:duration-500 data-open:ease-[cubic-bezier(0.3,0,0.04,1)] data-closed:animate-out data-closed:slide-out-to-bottom data-closed:duration-300 data-closed:ease-[cubic-bezier(0.645,0.045,0.355,1)]",
           className,
         )}
         {...props}

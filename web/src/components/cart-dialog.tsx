@@ -8,7 +8,7 @@ import { RollText } from "@/components/motion/roll-text"
 import { useScrollLock } from "@/components/motion/smooth-scroll"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Eyebrow } from "@/components/ui/eyebrow"
+import { Label } from "@/components/ui/label"
 import { PillToggle } from "@/components/ui/pill-toggle"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -65,13 +65,12 @@ export function CartDialog({ open, onOpenChange, stores, wishlist, defaultWant }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader className="pr-10 text-left">
-          <Eyebrow className="text-primary-ink">Cart optimizer</Eyebrow>
           <DialogTitle>Your cart</DialogTitle>
           <DialogDescription>Add the games you want and it finds the cheapest way to buy them all, delivery included.</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <Eyebrow className="text-muted-foreground">Delivering to</Eyebrow>
+          <Label>Delivering to</Label>
           <PillToggle label="Delivering to" value={cart.zone} options={ZONES} onChange={setCartZone} />
         </div>
 
@@ -89,9 +88,9 @@ export function CartDialog({ open, onOpenChange, stores, wishlist, defaultWant }
           <>
             <section className="grid min-w-0 gap-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Eyebrow className="text-muted-foreground">
+                <Label>
                   {cart.items.length} {cart.items.length === 1 ? "game" : "games"}
-                </Eyebrow>
+                </Label>
                 <div className="flex flex-wrap gap-2">
                   {missingWishlist.length > 0 && (
                     <Button variant="secondary" size="sm" onClick={() => addToCart(missingWishlist, defaultWant)}>
@@ -253,7 +252,7 @@ function PlanSection({ plans, stores, storeName, titleOf }: { plans: CartPlans; 
   return (
     // min-w-0 all the way down: titles that don't wrap must not widen the grid past the dialog.
     <section className="grid min-w-0 gap-4">
-      <Eyebrow className="text-muted-foreground">Cheapest way to buy {plural(best.orders.reduce((n, o) => n + o.lines.length, 0), "game")}</Eyebrow>
+      <Label>Cheapest way to buy {plural(best.orders.reduce((n, o) => n + o.lines.length, 0), "game")}</Label>
 
       <div className="grid min-w-0 gap-5 rounded-2xl border border-primary-ink bg-surface p-4 sm:p-5">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
@@ -339,8 +338,9 @@ function PlanSection({ plans, stores, storeName, titleOf }: { plans: CartPlans; 
   )
 }
 
+/** A pale neon tint (black text on a light page), like the outline badge. */
 function Saving({ children }: { children: React.ReactNode }) {
-  return <span className="inline-flex h-6 items-center rounded-sm border border-primary-ink px-2 font-medium text-primary-ink">{children}</span>
+  return <span className="inline-flex h-6 items-center rounded-sm bg-primary/15 px-2 font-medium text-primary-ink light:bg-primary/40">{children}</span>
 }
 
 function Alternative({ label, plan, best, describe, none }: { label: string; plan: Plan | null; best: Plan; describe: (p: Plan) => string; none: string }) {
@@ -348,7 +348,7 @@ function Alternative({ label, plan, best, describe, none }: { label: string; pla
   return (
     <div className="grid content-start gap-1 rounded-2xl bg-surface p-4">
       <dt>
-        <Eyebrow className="text-muted-foreground">{label}</Eyebrow>
+        <Label>{label}</Label>
       </dt>
       <dd className="grid gap-0.5">
         {plan ? (

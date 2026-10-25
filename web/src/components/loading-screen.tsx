@@ -411,11 +411,6 @@ function flight(from: HTMLElement, to: HTMLElement): Flight {
       letterSpacing: cs.letterSpacing,
       textTransform: cs.textTransform as React.CSSProperties["textTransform"],
       color: cs.color,
-      // The neon letters' slice of the title's gradient
-      backgroundImage: cs.backgroundImage,
-      backgroundSize: cs.backgroundSize,
-      backgroundPosition: cs.backgroundPosition,
-      backgroundClip: "text",
     },
     x: a.left + a.width / 2 - (b.left + b.width / 2),
     y: a.top + a.height / 2 - (b.top + b.height / 2),

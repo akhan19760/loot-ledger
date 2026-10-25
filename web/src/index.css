@@ -42,6 +42,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-surface: var(--surface);
+  --color-raised: var(--raised);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -64,8 +65,8 @@
   --height-bar: 80px;
   --height-bar-mobile: 56px;
 
-  /* Light theme. Neon stays the fill colour; text that would be neon (primary-ink and
-     the neon gradient) is plain black, since neon on a light background is unreadable. */
+  /* Light theme. Neon stays the fill colour; text that would be neon (primary-ink) is
+     plain black, since neon on a light background is unreadable. */
   --background: #f1f1ec;
   --foreground: #0b0b0b;
   --card: rgb(0 0 0 / 0.04);
@@ -83,12 +84,12 @@
   --accent: rgb(0 0 0 / 0.06);
   --accent-foreground: #0b0b0b;
   --surface: rgb(0 0 0 / 0.04);
+  /* Opaque, one tone step off the page: the header once scrolled, dialogs, the drawer. */
+  --raised: #fff;
   --destructive: #d42600;
   --border: rgb(0 0 0 / 0.1);
   --input: rgb(0 0 0 / 0.2);
   --ring: #0b0b0b;
-  --neon-from: #0b0b0b;
-  --neon-to: #0b0b0b;
 
   color-scheme: light;
 }
@@ -113,13 +114,11 @@
   --accent: rgb(255 255 255 / 0.1);
   --accent-foreground: #fff;
   --surface: rgb(255 255 255 / 0.05);
+  --raised: #141414;
   --destructive: #ff2e00;
   --border: rgb(255 255 255 / 0.1);
   --input: rgb(255 255 255 / 0.2);
   --ring: #fff;
-  /* WG gradient words, sampled from their hero: green → yellow through neon-400. */
-  --neon-from: #abf62c;
-  --neon-to: #f6fd02;
 
   color-scheme: dark;
 }
@@ -128,8 +127,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Tabular figures everywhere: prices and counts line up, and digits that count up or
+     change with a filter keep their width. */
   html {
-    @apply font-sans;
+    @apply font-sans tabular-nums;
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -173,6 +174,7 @@
   mix-blend-mode: normal;
 }
 
+/* The loading screen's START button only: the one glow left, on the arcade moment. */
 @utility glow-primary {
   filter: drop-shadow(0 0 15px var(--primary));
 }
@@ -181,23 +183,14 @@
    chip with neon text. The always-dark panels keep the neon chip. */
 @utility chip-on {
   background-color: var(--primary);
-  box-shadow: 0 0 22px -4px rgb(212 251 8 / 0.6);
   &:not(.dark *) {
     background-color: #000;
-    box-shadow: none;
   }
 }
 
-/* WG gradient words; `-reverse` runs yellow → green like their alternate words. */
+/* The wordmark's "Ledger": flat neon (plain black on a light page, like primary-ink). */
 @utility text-neon {
-  background-image: linear-gradient(90deg, var(--neon-from), var(--primary-ink) 50%, var(--neon-to));
-  background-clip: text;
-  color: transparent;
-}
-@utility text-neon-reverse {
-  background-image: linear-gradient(90deg, var(--neon-to), var(--primary-ink) 50%, var(--neon-from));
-  background-clip: text;
-  color: transparent;
+  color: var(--primary-ink);
 }
 
 /* WG film grain (#noise): tiled fractal noise, jittered a few px per frame. */
@@ -236,23 +229,6 @@
   100% { transform: scaleY(0.45); }
 }
 
-/* WG neon glow pulse (their glow keyframes: 2px → 5px → 2px), scaled up for a panel edge. */
-@utility glow-pulse {
-  animation: glow-pulse 2.4s ease-in-out infinite;
-  /* Neon glow strains the eye on a light background: the edge thickens instead. */
-  &:not(.dark *) {
-    animation-name: edge-pulse;
-  }
-}
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 1px var(--primary-ink), 0 0 6px rgb(212 251 8 / 0.25); }
-  50% { box-shadow: 0 0 0 1px var(--primary-ink), 0 0 22px rgb(212 251 8 / 0.45); }
-}
-@keyframes edge-pulse {
-  0%, 100% { box-shadow: 0 0 0 1px var(--primary-ink); }
-  50% { box-shadow: 0 0 0 2px var(--primary-ink); }
-}
-
 /* Loading sweep: a soft light band crossing a surface. (Not `shimmer`: shadcn's utility of
    that name is a text effect that makes an element's text transparent.) */
 @utility sweep {
@@ -274,7 +250,6 @@
   .grain,
   .hazard-band,
   .equalizer-bar,
-  .glow-pulse,
   .sweep {
     animation: none !important;
   }

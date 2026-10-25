@@ -1,9 +1,9 @@
 import { m, useReducedMotion } from "motion/react"
 import { cn } from "cn"
 import { listingMatches, type Insights, type Listing, type Version } from "@lootledger/shared"
-import { Eyebrow } from "@/components/ui/eyebrow"
+import { Label } from "@/components/ui/label"
 import type { Filters } from "@/hooks/use-library-url"
-import { formatPrice, versionLabel } from "@/lib/format"
+import { capitalize, formatPrice, versionLabel } from "@/lib/format"
 import { ease } from "@/lib/motion"
 
 interface Props {
@@ -15,8 +15,6 @@ interface Props {
   /** False holds the entrance back (see SplitText's `play`). */
   play?: boolean
 }
-
-const capitalize = (s: string) => s[0]!.toUpperCase() + s.slice(1)
 
 const platformLabel = (p: string | null) => p ?? "Platform unknown"
 
@@ -42,9 +40,9 @@ export function CompareView({ versions, insights, stores, filters, play = true }
 
       <section className="grid gap-2">
         <div className="flex items-end justify-between gap-4 px-4">
-          <Eyebrow className="text-muted-foreground">By version</Eyebrow>
+          <Label>By version</Label>
           {scale.max > scale.min && (
-            <span className="text-xs text-muted-foreground tabular-nums">
+            <span className="text-[13px] text-muted-foreground tabular-nums">
               Scale {formatPrice(scale.min)} to {formatPrice(scale.max)}
             </span>
           )}
@@ -97,7 +95,7 @@ function Highlights({ insights, nameOf }: { insights: Insights; nameOf: (id: str
       {tiles.map((t) => (
         <div key={t.label} className="grid content-start gap-2 rounded-2xl bg-surface p-4">
           <dt>
-            <Eyebrow className="text-muted-foreground">{t.label}</Eyebrow>
+            <Label>{t.label}</Label>
           </dt>
           <dd className="grid gap-1">
             <span className="text-xl font-semibold text-primary-ink tabular-nums">{t.value}</span>
@@ -179,7 +177,7 @@ function RangeBar({ version: v, scale, nameOf }: { version: Version; scale: { mi
           title={`${nameOf(l.store)}: ${formatPrice(l.price)}${l.in_stock ? "" : " (out of stock)"}`}
           className={cn(
             "absolute top-1/2 size-2.5 -translate-1/2 rounded-full",
-            !l.in_stock ? "border border-muted-foreground bg-transparent" : l === v.best ? "bg-primary glow-primary" : "bg-foreground/60",
+            !l.in_stock ? "border border-muted-foreground bg-transparent" : l === v.best ? "bg-primary-ink" : "bg-foreground/60",
           )}
           style={{ left: `${at(l.price)}%` }}
         />
@@ -192,7 +190,7 @@ function StoreCell({ storeName, listing: l, best, filters }: { storeName: string
   if (!l)
     return (
       <div className="grid gap-1 rounded-xl border border-dashed border-border px-3 py-2.5 text-sm">
-        <span className="truncate text-xs text-muted-foreground">{storeName}</span>
+        <span className="truncate text-[13px] text-muted-foreground">{storeName}</span>
         <span className="text-muted-foreground">Not listed</span>
       </div>
     )
@@ -211,11 +209,11 @@ function StoreCell({ storeName, listing: l, best, filters }: { storeName: string
         (!l.in_stock || !listingMatches(l, filters)) && "opacity-60",
       )}
     >
-      <span className="truncate text-xs text-muted-foreground">{storeName}</span>
+      <span className="truncate text-[13px] text-muted-foreground">{storeName}</span>
       <span className={cn("font-semibold tabular-nums transition-colors", isBest ? "text-primary-ink" : "group-hover/cell:text-primary-ink")}>
         {formatPrice(l.price)}
       </span>
-      <span className={cn("text-xs tabular-nums", l.in_stock ? "text-muted-foreground" : "text-destructive")}>
+      <span className={cn("text-[13px] tabular-nums", l.in_stock ? "text-muted-foreground" : "text-destructive")}>
         {!l.in_stock ? "Out of stock" : isBest ? "Cheapest" : extra > 0 ? `+${formatPrice(extra)}` : "Same price"}
       </span>
     </a>

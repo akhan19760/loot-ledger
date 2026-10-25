@@ -14,7 +14,7 @@ import { ShelfActions } from "@/components/shelf-buttons"
 import { Badge } from "@/components/ui/badge"
 import { Button, ButtonCircle } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Eyebrow } from "@/components/ui/eyebrow"
+import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PillToggle } from "@/components/ui/pill-toggle"
 import type { Filters } from "@/hooks/use-library-url"
@@ -147,13 +147,10 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
       <Dialog open={!!gameId} onOpenChange={(open) => !open && onClose()}>
         <DialogContent
           ref={setContent}
-          // The page blurs once the panel has landed, not under it as it flies.
-          overlayBlur={!inFlight}
           className={cn(
             "sm:max-w-3xl",
             // The flying panel stands in for the dialog's own entrance and exit. The dialog
             // waits, hidden but laid out (so the panel knows where to go), then fades in.
-            // Hidden, not just transparent, so its own backdrop blur isn't drawn meanwhile.
             fromCard && "transition-opacity data-open:animate-none! data-closed:animate-none! data-open:duration-300!",
             inFlight && "invisible opacity-0",
           )}
@@ -190,7 +187,7 @@ export function GameDialog({ gameId, filters, storeNames, onClose, onOpenCart }:
             exit={{ opacity: 0, transition: { duration: 0.3, ease: "easeOut" } }}
             transition={{ duration: flight.dir === "open" ? 0.65 : 0.5, ease: ease.wg }}
             onAnimationComplete={() => setFlight(null)}
-            className="pointer-events-none fixed z-[60] overflow-hidden rounded-2xl border border-border bg-popover shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)]"
+            className="pointer-events-none fixed z-[60] overflow-hidden rounded-2xl bg-raised shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)]"
           >
             {flight.image && (
               <m.img
@@ -245,33 +242,40 @@ function DialogBody({ play, game, offers, matching, others, cheapest, storeCount
     </DialogHeader>
   ) : (
     <>
-      <DialogHeader className="flex-row items-start gap-4 pr-10 text-left sm:gap-6">
+      <DialogHeader className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-5 text-left sm:gap-x-6 sm:gap-y-3">
         <m.div
           initial={{ clipPath: "inset(100% 0% 0% 0%)", rotate: -8, scale: 1.1 }}
           animate={play ? { clipPath: "inset(0% 0% 0% 0%)", rotate: -3, scale: 1 } : undefined}
           whileHover={{ rotate: 0, scale: 1.05, transition: { duration: 0.5, ease: ease.wg } }}
           transition={{ duration: 1, ease: ease.wg, delay: 0.1 }}
-          className="aspect-[4/5] w-20 shrink-0 overflow-hidden rounded-sm bg-surface shadow-[0_20px_40px_-12px_rgb(0_0_0/0.8)] sm:w-28"
+          className="aspect-[4/5] w-20 shrink-0 overflow-hidden rounded-sm bg-surface sm:row-span-2 sm:w-28"
         >
           <CoverArt src={game.data.image} title={game.data.title} />
         </m.div>
-        <div className="grid min-w-0 gap-3">
-          <Eyebrow className="text-primary-ink">{game.data.genres.join(" · ") || "Genre unknown"}</Eyebrow>
+        {/* Clear of the close button in the corner */}
+        <div className="grid min-w-0 gap-3 pr-10">
           <DialogTitle>
             <SplitText text={game.data.title} onMount play={play} delay={0.15} stagger={0.05} />
           </DialogTitle>
-          <DialogDescription>
-            {offers.length} {offers.length === 1 ? "offer" : "offers"} across {storeCount} {storeCount === 1 ? "store" : "stores"}
+          <DialogDescription className="grid gap-1">
+            {game.data.genres.length > 0 && <span>{game.data.genres.join(" · ")}</span>}
+            <span>
+              {offers.length} {offers.length === 1 ? "offer" : "offers"} across {storeCount} {storeCount === 1 ? "store" : "stores"}
+            </span>
           </DialogDescription>
-          <div className="flex flex-wrap gap-2">
-            <ShelfActions game={game.data} />
-            <AddToCartButton
-              game={game.data}
-              want={{ platform: filters.platform || null, condition: filters.condition || null, format: null }}
-              onOpenCart={onOpenCart}
-            />
-            <ShareButton game={game.data} storeNames={storeNames} />
-          </div>
+        </div>
+        {/* Phones: rows of their own under the cover, the buttons growing to fill the dialog's
+            width (two a row with today's labels; a longer label such as "In your collection"
+            wraps rather than overflows). Each component's wrapper steps aside so its buttons
+            share the rows. Wider: beside the cover, under the title, in one line. */}
+        <div className="col-span-2 flex flex-wrap gap-2 max-sm:[&>div]:contents max-sm:[&_[data-slot=button]]:grow sm:col-span-1 sm:col-start-2">
+          <ShelfActions game={game.data} />
+          <AddToCartButton
+            game={game.data}
+            want={{ platform: filters.platform || null, condition: filters.condition || null, format: null }}
+            onOpenCart={onOpenCart}
+          />
+          <ShareButton game={game.data} storeNames={storeNames} />
         </div>
       </DialogHeader>
 
@@ -285,7 +289,7 @@ function DialogBody({ play, game, offers, matching, others, cheapest, storeCount
 
           {others.length > 0 && (
             <section className="grid gap-3">
-              <Eyebrow className="text-muted-foreground">Other offers, outside your filters</Eyebrow>
+              <Label>Other offers, outside your filters</Label>
               <OfferList offers={others} storeNames={storeNames} cheapest={cheapest} badged={badged} startDelay={0.3 + matching.length * 0.05} play={play} />
             </section>
           )}
@@ -336,9 +340,10 @@ function OfferRow({ listing: l, storeName, cheapest, badge }: { listing: Listing
   return (
     <div
       className={cn(
-        "group/row grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 rounded-2xl border border-transparent bg-surface p-4 transition-colors duration-300 hover:border-foreground/15 hover:bg-foreground/[0.08]",
+        "group/row grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 rounded-2xl border bg-surface p-4 transition-colors duration-300 hover:bg-foreground/[0.08]",
+        // The cheapest offer keeps a neon edge (black on a light page); the rest show one on hover
+        cheapest ? "border-primary-ink" : "border-transparent hover:border-foreground/15",
         !l.in_stock && "opacity-60",
-        cheapest && "glow-pulse",
       )}
     >
       <div className="grid min-w-0 gap-2">
