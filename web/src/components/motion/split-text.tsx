@@ -42,10 +42,14 @@ export function SplitText({
   const parts = by === "word" ? text.split(/(\s+)/) : [...text]
 
   return (
-    <span ref={ref} className={cn("inline-block", className)} aria-label={text}>
+    <span ref={ref} className={cn("inline-block", className)}>
+      {/* Read as one piece of text; the parts are for the eye only (a plain span can't carry aria-label) */}
+      <span className="sr-only">{text}</span>
       {parts.map((part, i) =>
         /^\s+$/.test(part) ? (
-          <span key={i}>{part}</span>
+          <span key={i} aria-hidden>
+            {part}
+          </span>
         ) : (
           <span key={i} aria-hidden className="inline-block overflow-hidden pb-[0.08em] align-bottom">
             {/* `transform` rather than `y`, so the browser runs it off the main thread */}
